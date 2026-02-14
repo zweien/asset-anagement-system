@@ -1,0 +1,43 @@
+# 长运行代理框架 - Git 忽略规则
+
+# 依赖
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# 构建产物
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 测试覆盖率
+coverage/
+.coverage
+htmlcov/
+
+# 临时文件
+*.tmp
+*.temp
+.cache/

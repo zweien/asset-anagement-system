@@ -1,0 +1,19 @@
+[
+  {
+    "id": "EXAMPLE-001",
+    "category": "example",
+    "priority": "high",
+    "description": "示例功能 - 请替换为实际功能",
+    "steps": [
+      "步骤 1: 描述测试步骤",
+      "步骤 2: 描述验证方法",
+      "步骤 3: 确认功能正常工作"
+    ],
+    "acceptance_criteria": [
+      "验收标准 1",
+      "验收标准 2"
+    ],
+    "passes": false,
+    "notes": "这是一个示例功能，请在实际开发时删除并替换为真实功能"
+  }
+]
