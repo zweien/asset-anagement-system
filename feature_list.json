@@ -18,7 +18,7 @@
       "npm run dev 启动服务器",
       "访问 http://localhost:3000/api/health 返回 200"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CORE-002",
@@ -39,7 +39,7 @@
       "数据库文件 assets.db 创建成功",
       "表结构符合设计"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CORE-003",

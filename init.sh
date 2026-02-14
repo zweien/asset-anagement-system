@@ -2,16 +2,6 @@
 # =============================================================================
 # 长运行代理 - 项目初始化脚本
 # =============================================================================
-# 用法: ./init.sh [command]
-#
-# 命令:
-#   start     - 启动开发服务器
-#   test      - 运行测试
-#   setup     - 安装依赖
-#   reset     - 重置开发环境
-#   status    - 检查项目状态
-# =============================================================================
-
 set -e
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -22,100 +12,59 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# 检查依赖
-check_dependencies() {
-    log_info "检查依赖..."
-
-    # 根据项目类型检查
-    if [ -f "package.json" ]; then
-        if ! command -v node &> /dev/null; then
-            log_error "需要安装 Node.js"
-            exit 1
-        fi
-        log_success "Node.js $(node -v) 已安装"
-    fi
-
-    if [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
-        if ! command -v python3 &> /dev/null; then
-            log_error "需要安装 Python 3"
-            exit 1
-        fi
-        log_success "Python $(python3 --version) 已安装"
-    fi
-}
-
-# 安装依赖
+# 安装所有依赖
 setup() {
     log_info "安装项目依赖..."
 
-    if [ -f "package.json" ]; then
-        log_info "检测到 Node.js 项目"
-        npm install
-        log_success "npm 依赖安装完成"
+    # 后端依赖
+    if [ -d "server" ]; then
+        log_info "安装后端依赖..."
+        cd server && npm install && npm run db:generate && cd ..
+        log_success "后端依赖安装完成"
     fi
 
-    if [ -f "requirements.txt" ]; then
-        log_info "检测到 Python 项目"
-        pip install -r requirements.txt
-        log_success "Python 依赖安装完成"
+    # 前端依赖
+    if [ -d "client" ] && [ -f "client/package.json" ]; then
+        log_info "安装前端依赖..."
+        cd client && npm install && cd ..
+        log_success "前端依赖安装完成"
     fi
 
-    if [ -f "pyproject.toml" ]; then
-        log_info "检测到 Python 项目 (pyproject.toml)"
-        pip install -e .
-        log_success "Python 依赖安装完成"
-    fi
-
-    log_success "依赖安装完成!"
+    log_success "所有依赖安装完成!"
 }
 
-# 启动开发服务器
-start() {
-    log_info "启动开发服务器..."
+# 启动后端服务
+start_server() {
+    log_info "启动后端服务..."
+    cd server && npm run dev
+}
 
-    # 检查是否有自定义启动脚本
-    if [ -f "scripts/start.sh" ]; then
-        ./scripts/start.sh
-    elif [ -f "package.json" ]; then
-        npm run dev 2>/dev/null || npm start
-    elif [ -f "main.py" ]; then
-        python3 main.py
-    elif [ -f "app.py" ]; then
-        python3 app.py
-    else
-        log_warning "未找到启动脚本，请手动配置"
-        log_info "你可以编辑 init.sh 或创建 scripts/start.sh"
-    fi
+# 启动前端服务
+start_client() {
+    log_info "启动前端服务..."
+    cd client && npm run dev
+}
+
+# 启动所有服务
+start() {
+    log_info "启动所有服务..."
+    log_info "后端: http://localhost:3000"
+    log_info "前端: http://localhost:5173 (待实现)"
+    log_warning "请分别运行 './init.sh server' 和 './init.sh client' 启动服务"
 }
 
 # 运行测试
 test() {
     log_info "运行测试..."
-
-    if [ -f "package.json" ]; then
-        npm test
-    elif [ -f "pytest.ini" ] || [ -d "tests" ]; then
-        pytest
-    else
-        log_warning "未找到测试配置"
+    if [ -d "server" ]; then
+        cd server && npm test 2>/dev/null || log_warning "后端暂无测试"
     fi
 }
 
@@ -126,8 +75,6 @@ status() {
     echo "        项目状态检查"
     echo "=========================================="
     echo ""
-
-    # 基本信息
     echo "📁 项目目录: $PROJECT_ROOT"
     echo ""
 
@@ -139,80 +86,59 @@ status() {
         echo "📝 最近提交:"
         git log --oneline -5
         echo ""
-    else
-        echo "⚠️  未初始化 Git 仓库"
     fi
 
     # 功能进度
     if [ -f "feature_list.json" ]; then
-        echo ""
         echo "✅ 功能进度:"
-        python3 -c "
-import json
-with open('feature_list.json') as f:
-    features = json.load(f)
-total = len(features)
-passed = sum(1 for f in features if f.get('passes', False))
-print(f'  {passed}/{total} 功能通过')
-" 2>/dev/null || echo "  (无法解析 feature_list.json)"
+        total=$(grep -c '"id"' feature_list.json 2>/dev/null || echo "0")
+        passed=$(grep -c '"passes": true' feature_list.json 2>/dev/null || echo "0")
+        echo "  $passed/$total 功能通过"
+        echo ""
     fi
 
     # 进度文件
     if [ -f "claude-progress.txt" ]; then
+        echo "📊 最新进度:"
+        grep -A 3 "下一步" claude-progress.txt | head -4
+    fi
+
+    # 后端状态
+    if [ -f "server/package.json" ]; then
         echo ""
-        echo "📊 最新进度 (claude-progress.txt):"
-        tail -10 claude-progress.txt
+        echo "🔧 后端状态:"
+        if [ -f "data/assets.db" ]; then
+            echo "  ✅ 数据库已创建"
+        else
+            echo "  ⚠️  数据库未创建"
+        fi
+        if [ -d "server/node_modules" ]; then
+            echo "  ✅ 依赖已安装"
+        else
+            echo "  ⚠️  依赖未安装"
+        fi
     fi
 
     echo ""
     echo "=========================================="
 }
 
-# 重置环境
-reset() {
-    log_warning "这将重置开发环境!"
-    read -p "确定要继续吗? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "已取消"
-        exit 0
-    fi
-
-    log_info "清理依赖..."
-
-    if [ -d "node_modules" ]; then
-        rm -rf node_modules
-        log_success "已删除 node_modules"
-    fi
-
-    if [ -d "__pycache__" ]; then
-        rm -rf __pycache__
-        log_success "已删除 __pycache__"
-    fi
-
-    if [ -d ".venv" ]; then
-        rm -rf .venv
-        log_success "已删除 .venv"
-    fi
-
-    log_success "环境已重置，运行 './init.sh setup' 重新安装依赖"
-}
-
 # 主入口
 case "${1:-help}" in
+    server)
+        start_server
+        ;;
+    client)
+        start_client
+        ;;
     start)
-        check_dependencies
         start
         ;;
     test)
         test
         ;;
     setup)
-        check_dependencies
         setup
-        ;;
-    reset)
-        reset
         ;;
     status)
         status
@@ -221,10 +147,11 @@ case "${1:-help}" in
         echo "用法: ./init.sh [command]"
         echo ""
         echo "命令:"
-        echo "  start     启动开发服务器"
+        echo "  server    启动后端服务"
+        echo "  client    启动前端服务"
+        echo "  start     显示启动说明"
         echo "  test      运行测试"
-        echo "  setup     安装依赖"
-        echo "  reset     重置开发环境"
+        echo "  setup     安装所有依赖"
         echo "  status    检查项目状态"
         echo "  help      显示此帮助信息"
         ;;
