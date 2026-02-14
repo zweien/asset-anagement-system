@@ -2,39 +2,64 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-14 - 会话 2 (编码代理) - 续
+
+### 完成的工作
+- [x] CORE-003: 前端项目初始化 - React + Vite + TailwindCSS
+
+### 实现细节
+**CORE-003 前端项目初始化**
+- 使用 Vite 创建 React + TypeScript 项目
+- 安装并配置 TailwindCSS (含深色模式)
+- 安装 React Router, TanStack Table, Axios, Lucide Icons
+- 创建基础布局组件 (Header, Layout)
+- 实现深色/浅色模式切换
+- 创建页面组件 (Dashboard, Assets, Import, Reports, Settings)
+- 配置路由
+
+### 当前状态
+- 进度: 3/28 功能通过 (11%)
+- 后端服务: http://localhost:3000
+- 前端服务: http://localhost:5173
+
+### 测试验证
+使用 chrome-devtools MCP 进行完整测试：
+- ✅ 仪表盘页面正常显示
+- ✅ 深色/浅色模式切换正常
+- ✅ 页面导航正常 (Dashboard → Assets → Import → Reports → Settings)
+- ✅ 移动端响应式布局正常
+- ✅ 无控制台错误
+
+### 修复
+- 安装 @tailwindcss/postcss 包
+- 更新 postcss.config.js 配置
+- 重新安装 react-router-dom
+
+### 下一步
+- [ ] CORE-004: 自定义字段配置 API - CRUD
+
+### 项目结构
+```
+client/
+├── src/
+│   ├── components/
+│   │   ├── layout/     # Layout, Header
+│   │   └── ui/         # ThemeToggle
+│   ├── hooks/          # useTheme
+│   ├── pages/          # Dashboard, Assets, Import, Reports, Settings
+│   ├── lib/            # 工具库
+│   └── stores/         # 状态管理
+├── tailwind.config.js
+└── package.json
+```
+
+---
+
 ## 2026-02-14 - 会话 2 (编码代理)
 
 ### 完成的工作
 - [x] CORE-001: 后端项目初始化 - Express + TypeScript + Prisma
 - [x] CORE-002: 数据库模型设计 - 资产、字段配置、图片
-
-### 实现细节
-**CORE-001 后端项目初始化**
-- 创建 server 目录结构 (controllers, services, routes, middleware, utils, types)
-- 配置 TypeScript (tsconfig.json)
-- 安装 Express, CORS, Helmet, Multer 等依赖
-- 配置 Prisma ORM (SQLite)
-- 创建基础 Express 服务器 (含健康检查 API)
-- 创建 .env 配置文件
-
-**CORE-002 数据库模型设计**
-- FieldConfig: 字段配置表 (支持 TEXT, NUMBER, DATE, SELECT, MULTISELECT, TEXTAREA)
-- Category: 分类表 (支持树形结构)
-- Asset: 资产表 (含软删除)
-- AssetImage: 资产图片表
-- OperationLog: 操作日志表
-- User: 用户表
-
-### 当前状态
-- 进度: 2/28 功能通过 (7%)
-- 后端服务: http://localhost:3000
-- 数据库: data/assets.db
-
-### 下一步
-- [ ] CORE-003: 前端项目初始化 - React + Vite + TailwindCSS
-
-### 备注
-SQLite 不支持原生枚举，使用 String 类型替代，应用层验证。
 
 ---
 
@@ -47,18 +72,5 @@ SQLite 不支持原生枚举，使用 String 类型替代，应用层验证。
   - 数据库: SQLite
   - 前端: React + Vite + TailwindCSS
   - 图片存储: 本地文件系统
-- **数据量级**: 万级 (10,000+ 条记录)
-
-### 完成的工作
-- [x] 创建长运行代理框架
-- [x] 确定技术栈方案
-- [x] 创建功能列表 (28 个功能)
-- [x] 项目结构规划
-
-### 功能统计
-- 高优先级: 13 个
-- 中优先级: 8 个
-- 低优先级: 7 个
-- **总计: 28 个功能**
 
 ---

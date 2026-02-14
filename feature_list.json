@@ -60,7 +60,7 @@
       "页面显示基础布局",
       "深色/浅色模式切换正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CORE-004",
