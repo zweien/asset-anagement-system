@@ -23,17 +23,21 @@
 - 前端服务: http://localhost:5173
 
 ### 测试验证
-使用 chrome-devtools MCP 进行完整测试：
-- ✅ 仪表盘页面正常显示
-- ✅ 深色/浅色模式切换正常
-- ✅ 页面导航正常 (Dashboard → Assets → Import → Reports → Settings)
-- ✅ 移动端响应式布局正常
-- ✅ 无控制台错误
+使用 Playwright 进行完整测试：
+- ✅ 初始页面加载正常
+- ✅ 深色/浅色模式切换正常 (html class: '' → 'dark')
+- ✅ 页面导航正常 (/ → /assets → /import)
+- ✅ 移动端响应式布局正常 (375x667)
 
-### 修复
-- 安装 @tailwindcss/postcss 包
-- 更新 postcss.config.js 配置
-- 重新安装 react-router-dom
+### 修复记录
+1. **TailwindCSS PostCSS 配置**
+   - 安装 @tailwindcss/postcss 包
+   - 更新 postcss.config.js 配置
+
+2. **TailwindCSS v4 配置更新**
+   - 使用 `@import "tailwindcss"` 替代 `@tailwind` 指令
+   - 使用 `@theme` 块定义自定义颜色
+   - 删除废弃的 tailwind.config.js 文件
 
 ### 下一步
 - [ ] CORE-004: 自定义字段配置 API - CRUD
