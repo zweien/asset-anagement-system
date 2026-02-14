@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 字段配置表 - 定义自定义字段
+model FieldConfig {
+  id          String   @id @default(uuid())
+  name        String                   // 字段名称
+  label       String                   // 显示名称
+  type        String                   // 字段类型: TEXT, NUMBER, DATE, SELECT, MULTISELECT, TEXTAREA
+  required    Boolean  @default(false) // 是否必填
+  options     String?                  // 选项配置 (JSON 格式，用于下拉选择/多选)
+  defaultValue String?                 // 默认值
+  validation  String?                  // 验证规则 (JSON 格式)
+  order       Int      @default(0)     // 排序
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("field_configs")
+}
+
+// 分类表
+model Category {
+  id          String   @id @default(uuid())
+  name        String                   // 分类名称
+  parentId    String?                  // 父分类ID
+  description String?                  // 描述
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  assets      Asset[]
+
+  @@map("categories")
+}
+
+// 资产表
+model Asset {
+  id          String   @id @default(uuid())
+  name        String                   // 资产名称
+  code        String?  @unique         // 资产编号
+  categoryId  String?                  // 分类ID
+  status      String   @default("ACTIVE") // 状态: ACTIVE, IDLE, MAINTENANCE, SCRAPPED
+  data        String                   // 动态字段数据 (JSON 格式)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?                // 软删除
+
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  images      AssetImage[]
+
+  @@map("assets")
+}
+
+// 资产图片表
+model AssetImage {
+  id          String   @id @default(uuid())
+  assetId     String                   // 资产ID
+  filename    String                   // 文件名
+  originalName String                  // 原始文件名
+  mimeType    String                   // MIME类型
+  size        Int                      // 文件大小 (bytes)
+  path        String                   // 存储路径
+  createdAt   DateTime @default(now())
+
+  asset       Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_images")
+}
+
+// 操作日志表
+model OperationLog {
+  id          String   @id @default(uuid())
+  action      String                   // 操作类型: CREATE, UPDATE, DELETE, IMPORT, EXPORT
+  entityType  String                   // 实体类型: Asset, FieldConfig, etc.
+  entityId    String?                  // 实体ID
+  userId      String?                  // 操作用户ID
+  userName    String?                  // 操作用户名
+  oldValue    String?                  // 旧值 (JSON)
+  newValue    String?                  // 新值 (JSON)
+  ip          String?                  // IP地址
+  userAgent   String?                  // User Agent
+  createdAt   DateTime @default(now())
+
+  @@map("operation_logs")
+}
+
+// 用户表 (后续扩展)
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String                   // 加密后的密码
+  name        String?                  // 显示名称
+  email       String?  @unique
+  role        String   @default("USER") // 角色: ADMIN, USER, VIEWER
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
