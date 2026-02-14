@@ -1,19 +1,559 @@
 [
   {
-    "id": "EXAMPLE-001",
-    "category": "example",
+    "id": "CORE-001",
+    "category": "infrastructure",
     "priority": "high",
-    "description": "示例功能 - 请替换为实际功能",
+    "description": "后端项目初始化 - Express + TypeScript + Prisma",
     "steps": [
-      "步骤 1: 描述测试步骤",
-      "步骤 2: 描述验证方法",
-      "步骤 3: 确认功能正常工作"
+      "创建 server 目录",
+      "初始化 package.json",
+      "配置 TypeScript",
+      "安装 Express 和依赖",
+      "配置 Prisma ORM",
+      "创建基础 Express 服务器",
+      "配置 CORS 和 body-parser"
     ],
     "acceptance_criteria": [
-      "验收标准 1",
-      "验收标准 2"
+      "npm install 成功",
+      "npm run dev 启动服务器",
+      "访问 http://localhost:3000/api/health 返回 200"
     ],
-    "passes": false,
-    "notes": "这是一个示例功能，请在实际开发时删除并替换为真实功能"
+    "passes": false
+  },
+  {
+    "id": "CORE-002",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "数据库模型设计 - 资产、字段配置、图片",
+    "steps": [
+      "设计 Asset 资产表",
+      "设计 FieldConfig 字段配置表",
+      "设计 AssetImage 图片表",
+      "设计 Category 分类表",
+      "设计 OperationLog 操作日志表",
+      "创建 Prisma schema",
+      "执行 prisma migrate dev"
+    ],
+    "acceptance_criteria": [
+      "prisma migrate dev 成功",
+      "数据库文件 assets.db 创建成功",
+      "表结构符合设计"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CORE-003",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "前端项目初始化 - React + Vite + TailwindCSS",
+    "steps": [
+      "使用 Vite 创建 React + TypeScript 项目",
+      "安装 TailwindCSS 和配置",
+      "安装 React Router",
+      "安装 TanStack Table",
+      "安装 Axios",
+      "创建基础布局组件",
+      "配置深色/浅色模式切换"
+    ],
+    "acceptance_criteria": [
+      "npm run dev 启动前端",
+      "页面显示基础布局",
+      "深色/浅色模式切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CORE-004",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "自定义字段配置 API - CRUD",
+    "steps": [
+      "创建字段配置 Controller",
+      "创建字段配置 Service",
+      "实现字段配置 CRUD API",
+      "支持字段类型：文本、数字、日期、下拉选择、多选",
+      "API 测试"
+    ],
+    "acceptance_criteria": [
+      "POST /api/fields 创建字段配置",
+      "GET /api/fields 获取所有字段配置",
+      "PUT /api/fields/:id 更新字段配置",
+      "DELETE /api/fields/:id 删除字段配置",
+      "字段类型验证正确"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CORE-005",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "字段配置前端管理页面",
+    "steps": [
+      "创建字段配置列表页面",
+      "创建字段配置表单组件",
+      "支持添加/编辑/删除字段",
+      "支持字段类型选择",
+      "支持字段排序",
+      "连接后端 API"
+    ],
+    "acceptance_criteria": [
+      "显示字段配置列表",
+      "可添加新字段配置",
+      "可编辑已有字段配置",
+      "可删除字段配置",
+      "字段类型选择正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-001",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产基础 CRUD API",
+    "steps": [
+      "创建资产 Controller",
+      "创建资产 Service",
+      "实现资产创建 API",
+      "实现资产列表查询 API（分页）",
+      "实现资产详情 API",
+      "实现资产更新 API",
+      "实现资产删除 API"
+    ],
+    "acceptance_criteria": [
+      "POST /api/assets 创建资产",
+      "GET /api/assets 获取资产列表（分页）",
+      "GET /api/assets/:id 获取资产详情",
+      "PUT /api/assets/:id 更新资产",
+      "DELETE /api/assets/:id 删除资产",
+      "动态字段值存储正确"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-002",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产列表页面 - 多维表格视图",
+    "steps": [
+      "创建资产列表页面",
+      "使用 TanStack Table",
+      "实现列显示/隐藏",
+      "实现列宽调整",
+      "实现排序功能",
+      "实现分页加载",
+      "连接后端 API"
+    ],
+    "acceptance_criteria": [
+      "显示资产列表",
+      "可切换显示/隐藏列",
+      "可调整列宽",
+      "点击表头可排序",
+      "分页正常工作"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-003",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产筛选功能",
+    "steps": [
+      "后端实现筛选查询",
+      "前端创建筛选面板",
+      "支持文本模糊搜索",
+      "支持数字范围筛选",
+      "支持日期范围筛选",
+      "支持下拉选择筛选",
+      "支持多条件组合筛选"
+    ],
+    "acceptance_criteria": [
+      "可按任意字段筛选",
+      "筛选结果正确",
+      "筛选条件可组合",
+      "筛选条件可清除"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-004",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产分组功能",
+    "steps": [
+      "后端实现分组查询",
+      "前端实现分组视图",
+      "支持按任意字段分组",
+      "显示分组统计",
+      "分组可折叠/展开"
+    ],
+    "acceptance_criteria": [
+      "可按字段分组",
+      "分组统计正确",
+      "分组可折叠",
+      "分组内可排序"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-005",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产新增表单",
+    "steps": [
+      "创建资产表单组件",
+      "根据字段配置动态生成表单",
+      "文本输入组件",
+      "数字输入组件",
+      "日期选择组件",
+      "下拉选择组件",
+      "多选组件",
+      "表单验证"
+    ],
+    "acceptance_criteria": [
+      "表单字段根据配置动态生成",
+      "各类型输入组件正常工作",
+      "表单验证正确",
+      "提交成功后刷新列表"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-006",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产编辑功能",
+    "steps": [
+      "资产表单支持编辑模式",
+      "加载已有资产数据",
+      "编辑后保存更新",
+      "编辑时保留操作日志"
+    ],
+    "acceptance_criteria": [
+      "点击编辑加载资产数据",
+      "可修改任意字段",
+      "保存后数据更新正确"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-007",
+    "category": "functional",
+    "priority": "high",
+    "description": "资产详情页面",
+    "steps": [
+      "创建资产详情页面",
+      "显示所有字段信息",
+      "显示关联图片",
+      "显示操作历史",
+      "返回列表功能"
+    ],
+    "acceptance_criteria": [
+      "显示完整资产信息",
+      "图片显示正常",
+      "可返回列表"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ASSET-008",
+    "category": "functional",
+    "priority": "medium",
+    "description": "资产删除功能",
+    "steps": [
+      "列表页添加删除按钮",
+      "删除确认对话框",
+      "批量删除功能",
+      "软删除机制",
+      "删除操作日志"
+    ],
+    "acceptance_criteria": [
+      "可删除单个资产",
+      "可批量删除",
+      "删除需确认",
+      "删除后列表更新"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPORT-001",
+    "category": "functional",
+    "priority": "medium",
+    "description": "Excel 文件导入",
+    "steps": [
+      "安装 xlsx 解析库",
+      "创建文件上传 API",
+      "解析 Excel 文件",
+      "字段映射配置",
+      "数据验证",
+      "批量导入到数据库",
+      "导入结果反馈"
+    ],
+    "acceptance_criteria": [
+      "可上传 .xlsx 文件",
+      "可配置字段映射",
+      "导入成功显示数量",
+      "导入失败显示错误"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPORT-002",
+    "category": "functional",
+    "priority": "low",
+    "description": "数据库导入 - MySQL/PostgreSQL",
+    "steps": [
+      "创建数据库连接配置界面",
+      "实现 MySQL 连接",
+      "实现 PostgreSQL 连接",
+      "获取远程表结构",
+      "字段映射配置",
+      "数据预览",
+      "批量导入"
+    ],
+    "acceptance_criteria": [
+      "可配置 MySQL 连接",
+      "可配置 PostgreSQL 连接",
+      "连接测试成功",
+      "数据导入正确"
+    ],
+    "passes": false
+  },
+  {
+    "id": "EXPORT-001",
+    "category": "functional",
+    "priority": "medium",
+    "description": "Excel/CSV 导出",
+    "steps": [
+      "安装 Excel 生成库",
+      "创建导出 API",
+      "支持字段选择",
+      "支持筛选条件导出",
+      "生成 Excel 文件",
+      "生成 CSV 文件",
+      "文件下载"
+    ],
+    "acceptance_criteria": [
+      "可导出为 Excel",
+      "可导出为 CSV",
+      "可选择导出字段",
+      "文件下载正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMAGE-001",
+    "category": "functional",
+    "priority": "medium",
+    "description": "图片上传功能",
+    "steps": [
+      "配置静态文件服务",
+      "创建图片上传 API",
+      "图片压缩处理",
+      "图片与资产关联",
+      "前端上传组件",
+      "图片预览"
+    ],
+    "acceptance_criteria": [
+      "可上传图片",
+      "图片压缩后保存",
+      "图片关联到资产",
+      "可预览图片"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMAGE-002",
+    "category": "functional",
+    "priority": "medium",
+    "description": "手机端拍照上传",
+    "steps": [
+      "前端调用相机 API",
+      "支持拍照和选择相册",
+      "图片压缩",
+      "批量上传",
+      "响应式拍照界面"
+    ],
+    "acceptance_criteria": [
+      "手机端可调用相机",
+      "拍照后可上传",
+      "可从相册选择",
+      "移动端界面友好"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMAGE-003",
+    "category": "functional",
+    "priority": "low",
+    "description": "图片批量导出",
+    "steps": [
+      "创建图片导出 API",
+      "打包图片为 ZIP",
+      "支持筛选条件",
+      "文件下载"
+    ],
+    "acceptance_criteria": [
+      "可批量导出图片",
+      "导出为 ZIP 文件",
+      "文件下载正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "VIZ-001",
+    "category": "functional",
+    "priority": "low",
+    "description": "统计图表 - 基础图表",
+    "steps": [
+      "安装 ECharts/Recharts",
+      "创建图表组件",
+      "柱状图组件",
+      "饼图组件",
+      "折线图组件",
+      "按分类统计",
+      "按状态统计"
+    ],
+    "acceptance_criteria": [
+      "显示资产分类统计图",
+      "显示资产状态统计图",
+      "图表交互正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "VIZ-002",
+    "category": "functional",
+    "priority": "low",
+    "description": "自定义报表功能",
+    "steps": [
+      "创建报表配置界面",
+      "选择图表类型",
+      "选择数据维度",
+      "选择筛选条件",
+      "保存报表模板",
+      "加载报表模板",
+      "报表导出"
+    ],
+    "acceptance_criteria": [
+      "可创建自定义报表",
+      "可保存报表模板",
+      "可加载已保存报表",
+      "报表可导出"
+    ],
+    "passes": false
+  },
+  {
+    "id": "VIZ-003",
+    "category": "functional",
+    "priority": "low",
+    "description": "图表联动功能",
+    "steps": [
+      "实现图表点击事件",
+      "点击图表筛选数据",
+      "跳转到明细页面",
+      "多图表联动"
+    ],
+    "acceptance_criteria": [
+      "点击图表元素可筛选",
+      "可跳转到明细",
+      "多图表联动正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "AUTH-001",
+    "category": "functional",
+    "priority": "low",
+    "description": "用户认证功能",
+    "steps": [
+      "设计 User 模型",
+      "实现登录 API",
+      "实现 JWT 认证",
+      "前端登录页面",
+      "路由守卫",
+      "登录状态持久化"
+    ],
+    "acceptance_criteria": [
+      "可登录系统",
+      "未登录跳转登录页",
+      "登录状态保持"
+    ],
+    "passes": false
+  },
+  {
+    "id": "AUTH-002",
+    "category": "functional",
+    "priority": "low",
+    "description": "权限管理",
+    "steps": [
+      "设计角色权限模型",
+      "实现权限中间件",
+      "管理员/普通用户角色",
+      "功能权限控制",
+      "数据权限控制"
+    ],
+    "acceptance_criteria": [
+      "不同角色有不同权限",
+      "无权限时提示",
+      "权限控制生效"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOG-001",
+    "category": "functional",
+    "priority": "low",
+    "description": "操作日志",
+    "steps": [
+      "创建日志中间件",
+      "记录增删改操作",
+      "记录操作人",
+      "记录操作时间",
+      "日志查询页面"
+    ],
+    "acceptance_criteria": [
+      "所有操作被记录",
+      "可查询操作日志",
+      "日志信息完整"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-001",
+    "category": "ui",
+    "priority": "medium",
+    "description": "响应式布局优化",
+    "steps": [
+      "PC端布局优化",
+      "移动端布局适配",
+      "导航栏响应式",
+      "表格移动端适配",
+      "表单移动端适配"
+    ],
+    "acceptance_criteria": [
+      "PC端显示正常",
+      "移动端显示正常",
+      "导航栏自适应",
+      "表格在小屏可滚动"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-002",
+    "category": "ui",
+    "priority": "medium",
+    "description": "深色/浅色模式完善",
+    "steps": [
+      "完善所有组件深色模式",
+      "主题切换动画",
+      "记住用户偏好",
+      "系统主题跟随"
+    ],
+    "acceptance_criteria": [
+      "所有页面深色模式正常",
+      "切换流畅",
+      "偏好被记住"
+    ],
+    "passes": false
   }
 ]
