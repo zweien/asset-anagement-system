@@ -40,7 +40,50 @@
    - 删除废弃的 tailwind.config.js 文件
 
 ### 下一步
-- [ ] CORE-004: 自定义字段配置 API - CRUD
+- [ ] CORE-005: 字段配置前端管理页面
+
+## 2026-02-15 - 会话 3 (编码代理)
+
+### 完成的工作
+- [x] CORE-004: 自定义字段配置 API - CRUD
+
+### 实现细节
+**CORE-004 字段配置 API**
+- 创建 `src/services/field.service.ts` - 业务逻辑层
+- 创建 `src/controllers/field.controller.ts` - 控制器层
+- 创建 `src/routes/fields.ts` - 路由定义
+- 更新 `src/routes/index.ts` - 主路由入口
+- 更新 `src/index.ts` - 应用入口
+
+### API 端点
+| 方法 | 路径 | 功能 |
+|------|------|------|
+| GET | /api/fields | 获取所有字段配置 |
+| GET | /api/fields/:id | 获取单个字段配置 |
+| POST | /api/fields | 创建字段配置 |
+| PUT | /api/fields/:id | 更新字段配置 |
+| DELETE | /api/fields/:id | 删除字段配置 |
+| PUT | /api/fields/reorder | 重新排序 |
+
+### 支持的字段类型
+- TEXT - 单行文本
+- NUMBER - 数字
+- DATE - 日期
+- SELECT - 下拉单选
+- MULTISELECT - 多选
+- TEXTAREA - 多行文本
+
+### 测试验证
+- ✅ POST /api/fields 创建成功
+- ✅ GET /api/fields 返回列表
+- ✅ PUT /api/fields/:id 更新成功
+- ✅ DELETE /api/fields/:id 删除成功
+- ✅ 无效类型返回错误信息
+
+### 当前状态
+- 进度: 4/28 功能通过 (14%)
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
 
 ### 项目结构
 ```

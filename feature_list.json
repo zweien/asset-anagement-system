@@ -81,7 +81,7 @@
       "DELETE /api/fields/:id 删除字段配置",
       "字段类型验证正确"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CORE-005",
