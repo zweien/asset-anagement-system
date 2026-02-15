@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import fieldsRouter from './fields'
+import assetsRouter from './assets'
 
 const router = Router()
 
@@ -14,5 +15,8 @@ router.get('/health', (req, res) => {
 
 // 字段配置路由
 router.use('/fields', fieldsRouter)
+
+// 资产路由
+router.use('/assets', assetsRouter)
 
 export default router

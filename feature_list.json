@@ -127,7 +127,7 @@
       "DELETE /api/assets/:id 删除资产",
       "动态字段值存储正确"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-002",
