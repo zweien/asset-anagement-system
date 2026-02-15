@@ -2,7 +2,7 @@
 
 ## 基础信息
 
-- **Base URL**: `http://localhost:3000/api`
+- **Base URL**: `http://localhost:3002/api`
 - **认证方式**: 无 (后续支持 JWT)
 - **Content-Type**: `application/json`
 

@@ -279,7 +279,7 @@ flowchart TB
 
         subgraph Services["服务"]
             FE[前端静态文件]
-            BE[Node.js :3000]
+            BE[Node.js :3002]
         end
 
         subgraph Data["数据"]

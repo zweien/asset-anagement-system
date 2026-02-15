@@ -55,8 +55,8 @@ start_client() {
 # 启动所有服务
 start() {
     log_info "启动所有服务..."
-    log_info "后端: http://localhost:3000"
-    log_info "前端: http://localhost:5173 (待实现)"
+    log_info "后端: http://localhost:3002"
+    log_info "前端: http://localhost:5173"
     log_warning "请分别运行 './init.sh server' 和 './init.sh client' 启动服务"
 }
 
