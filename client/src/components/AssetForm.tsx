@@ -172,6 +172,77 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }))
   }
 
+  // 渲染系统字段输入（根据字段配置的类型和选项）
+  const renderSystemFieldInput = (fieldName: string, value: string, onChange: (v: string) => void) => {
+    const field = getSystemFieldConfig(fieldName)
+    if (!field) {
+      // 默认使用文本输入
+      return (
+        <Input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )
+    }
+
+    switch (field.type) {
+      case 'SELECT':
+        let options: string[] = []
+        try {
+          options = field.options ? JSON.parse(field.options) : []
+        } catch {
+          options = field.options?.split(',').map((o) => o.trim()) || []
+        }
+        return (
+          <Select value={value} onValueChange={onChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="请选择" />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
+      case 'TEXTAREA':
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            rows={3}
+          />
+        )
+      case 'NUMBER':
+        return (
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        )
+      case 'DATE':
+        return (
+          <Input
+            type="date"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        )
+      default:
+        return (
+          <Input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        )
+    }
+  }
+
   const renderFieldInput = (field: FieldConfig) => {
     const value = formData.data[field.name]
 
@@ -286,19 +357,13 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
           </div>
         )}
 
-        {/* 基础字段 - 使用字段配置中的标签和必填状态 */}
+        {/* 基础字段 - 使用字段配置中的标签、类型和选项 */}
         <div className="space-y-2">
           <Label htmlFor="name">
             {getSystemFieldConfig('name')?.label || '资产名称'}
             {getSystemFieldConfig('name')?.required && <span className="text-destructive"> *</span>}
           </Label>
-          <Input
-            id="name"
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder={`请输入${getSystemFieldConfig('name')?.label || '资产名称'}`}
-          />
+          {renderSystemFieldInput('name', formData.name, (v) => setFormData((prev) => ({ ...prev, name: v })))}
         </div>
 
         <div className="space-y-2">
@@ -306,13 +371,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             {getSystemFieldConfig('code')?.label || '资产编号'}
             {getSystemFieldConfig('code')?.required && <span className="text-destructive"> *</span>}
           </Label>
-          <Input
-            id="code"
-            type="text"
-            value={formData.code}
-            onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
-            placeholder={`请输入${getSystemFieldConfig('code')?.label || '资产编号'}（可选）`}
-          />
+          {renderSystemFieldInput('code', formData.code, (v) => setFormData((prev) => ({ ...prev, code: v })))}
         </div>
 
         <div className="space-y-2">
@@ -320,21 +379,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             {getSystemFieldConfig('status')?.label || '状态'}
             {getSystemFieldConfig('status')?.required && <span className="text-destructive"> *</span>}
           </Label>
-          <Select
-            value={formData.status}
-            onValueChange={(v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus }))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {renderSystemFieldInput('status', formData.status, (v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus })))}
         </div>
 
         {/* 动态字段 - 只显示可见字段 */}
