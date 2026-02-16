@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { getStoredUser, removeToken, removeUser, hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
+import { showSuccess } from '../../lib/toast'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -169,7 +170,7 @@ export function Header() {
         setOldPassword('')
         setNewPassword('')
         setConfirmPassword('')
-        alert('密码修改成功')
+        showSuccess('密码修改成功')
       } else {
         setPasswordError(response.error || '密码修改失败')
       }

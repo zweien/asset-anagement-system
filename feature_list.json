@@ -963,7 +963,7 @@
       "Toast 自动消失",
       "支持多个 Toast 队列"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-002",

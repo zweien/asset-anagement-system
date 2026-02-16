@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock } from 'lucide-react'
 import { fieldApi, FIELD_TYPES } from '../lib/api'
 import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto } from '../lib/api'
+import { showSuccess, showError, showWarning } from '../lib/toast'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -257,7 +258,7 @@ export function Settings() {
   // 删除字段
   const handleDelete = async (field: FieldConfig) => {
     if (field.isSystem) {
-      alert('系统字段不可删除')
+      showWarning('系统字段不可删除')
       return
     }
     if (!confirm(`确定要删除字段 "${field.label}" 吗？此操作不可恢复。`)) {
@@ -266,12 +267,13 @@ export function Settings() {
     try {
       const response: any = await fieldApi.delete(field.id)
       if (response?.success) {
+        showSuccess('字段删除成功')
         loadFields()
       } else {
-        alert(response?.error || '删除失败')
+        showError('删除失败', response?.error || '未知错误')
       }
     } catch (err: any) {
-      alert(err.message || '删除失败')
+      showError('删除失败', err.message || '未知错误')
     }
   }
 

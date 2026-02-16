@@ -8,6 +8,7 @@ import {
   type CreateUserDto,
   type UpdateUserDto,
 } from '../lib/api'
+import { showSuccess, showError } from '../lib/toast'
 import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw, Check, XCircle } from 'lucide-react'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
@@ -230,12 +231,13 @@ export function UserManagement() {
     try {
       const response: any = await userApi.updateRole(user.id, newRole)
       if (response?.success) {
+        showSuccess('角色更新成功')
         loadUsers()
       } else {
-        alert(response?.error || '角色更新失败')
+        showError('角色更新失败', response?.error || '未知错误')
       }
     } catch (err: any) {
-      alert(err.message || '角色更新失败')
+      showError('角色更新失败', err.message || '未知错误')
     }
   }
 
@@ -244,12 +246,13 @@ export function UserManagement() {
     try {
       const response: any = await userApi.updateStatus(user.id, !user.active)
       if (response?.success) {
+        showSuccess(user.active ? '用户已禁用' : '用户已启用')
         loadUsers()
       } else {
-        alert(response?.error || '状态更新失败')
+        showError('状态更新失败', response?.error || '未知错误')
       }
     } catch (err: any) {
-      alert(err.message || '状态更新失败')
+      showError('状态更新失败', err.message || '未知错误')
     }
   }
 
@@ -295,12 +298,13 @@ export function UserManagement() {
     try {
       const response: any = await userApi.delete(user.id)
       if (response?.success) {
+        showSuccess('用户删除成功')
         loadUsers()
       } else {
-        alert(response?.error || '删除失败')
+        showError('删除失败', response?.error || '未知错误')
       }
     } catch (err: any) {
-      alert(err.message || '删除失败')
+      showError('删除失败', err.message || '未知错误')
     }
   }
 

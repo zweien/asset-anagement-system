@@ -3,6 +3,7 @@ import { Modal } from './ui/Modal'
 import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, CreateAssetDto, UpdateAssetDto, AssetStatus } from '../lib/api'
 import { ImageUploader } from './ImageUploader'
+import { showSuccess, showError } from '../lib/toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -148,13 +149,18 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       }
 
       if (result.success) {
+        showSuccess(isEditMode ? '资产更新成功' : '资产创建成功')
         onSuccess()
         onClose()
       } else {
-        setError((result as any).error || '保存失败')
+        const errorMsg = (result as any).error || '保存失败'
+        setError(errorMsg)
+        showError('保存失败', errorMsg)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存失败')
+      const errorMsg = err instanceof Error ? err.message : '保存失败'
+      setError(errorMsg)
+      showError('保存失败', errorMsg)
     } finally {
       setLoading(false)
     }
