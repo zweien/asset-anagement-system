@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { UserService, CreateUserDto, UpdateUserDto } from '../services/user.service'
 import { LogService } from '../services/log.service'
+import { validatePasswordStrength } from '../services/auth.service'
 
 // 统一响应格式
 const sendSuccess = <T>(res: Response, data: T, message?: string) => {
@@ -72,8 +73,11 @@ export const UserController = {
       if (!data.password) {
         return sendError(res, '密码为必填字段')
       }
-      if (data.password.length < 6) {
-        return sendError(res, '密码长度至少为6位')
+
+      // 密码复杂度验证
+      const passwordValidation = validatePasswordStrength(data.password)
+      if (!passwordValidation.valid) {
+        return sendError(res, `密码不符合要求: ${passwordValidation.errors.join(', ')}`)
       }
 
       const result = await UserService.create(data)
@@ -275,8 +279,11 @@ export const UserController = {
       if (!password) {
         return sendError(res, '密码为必填字段')
       }
-      if (password.length < 6) {
-        return sendError(res, '密码长度至少为6位')
+
+      // 密码复杂度验证
+      const passwordValidation = validatePasswordStrength(password)
+      if (!passwordValidation.valid) {
+        return sendError(res, `密码不符合要求: ${passwordValidation.errors.join(', ')}`)
       }
 
       // 获取用户信息用于日志记录

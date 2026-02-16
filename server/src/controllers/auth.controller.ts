@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { AuthService, LoginDto, RegisterDto } from '../services/auth.service'
+import { AuthService, LoginDto, RegisterDto, validatePasswordStrength } from '../services/auth.service'
 
 export const AuthController = {
   // 用户登录
@@ -35,8 +35,13 @@ export const AuthController = {
         return res.status(400).json({ success: false, error: '请输入用户名和密码' })
       }
 
-      if (password.length < 6) {
-        return res.status(400).json({ success: false, error: '密码长度至少6位' })
+      // 密码复杂度验证
+      const passwordValidation = validatePasswordStrength(password)
+      if (!passwordValidation.valid) {
+        return res.status(400).json({
+          success: false,
+          error: `密码不符合要求: ${passwordValidation.errors.join(', ')}`
+        })
       }
 
       const result = await AuthService.register({ username, password, name, email })
@@ -89,8 +94,13 @@ export const AuthController = {
         return res.status(400).json({ success: false, error: '请输入原密码和新密码' })
       }
 
-      if (newPassword.length < 6) {
-        return res.status(400).json({ success: false, error: '新密码长度至少6位' })
+      // 密码复杂度验证
+      const passwordValidation = validatePasswordStrength(newPassword)
+      if (!passwordValidation.valid) {
+        return res.status(400).json({
+          success: false,
+          error: `密码不符合要求: ${passwordValidation.errors.join(', ')}`
+        })
       }
 
       const result = await AuthService.changePassword(userId, oldPassword, newPassword)

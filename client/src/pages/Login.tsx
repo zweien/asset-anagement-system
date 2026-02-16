@@ -2,6 +2,29 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { authApi, setToken, setUser } from '../lib/api'
 
+// 密码复杂度验证函数
+function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (password.length < 8) {
+    errors.push('至少8位')
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push('包含小写字母')
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push('包含大写字母')
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push('包含数字')
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  }
+}
+
 export function Login() {
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
@@ -27,6 +50,13 @@ export function Login() {
           password: formData.password,
         })
       } else {
+        // 注册时验证密码复杂度
+        const passwordValidation = validatePassword(formData.password)
+        if (!passwordValidation.valid) {
+          setError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
+          setLoading(false)
+          return
+        }
         response = await authApi.register({
           username: formData.username,
           password: formData.password,
@@ -94,10 +124,15 @@ export function Login() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="请输入密码"
+                placeholder={isLogin ? "请输入密码" : "请输入密码（至少8位，包含大小写字母和数字）"}
                 required
-                minLength={6}
+                minLength={isLogin ? 1 : 8}
               />
+              {!isLogin && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  密码要求：至少8位，包含大写字母、小写字母和数字
+                </p>
+              )}
             </div>
 
             {!isLogin && (

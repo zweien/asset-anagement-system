@@ -10,10 +10,13 @@ import {
   FileText,
   LogOut,
   User,
-  Users
+  Users,
+  KeyRound,
+  Check,
+  XCircle
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
-import { getStoredUser, removeToken, removeUser, hasPermission, USER_ROLE_LABELS, type UserRole } from '../../lib/api'
+import { getStoredUser, removeToken, removeUser, hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -30,8 +33,67 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+
+// 密码复杂度验证函数
+function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (password.length < 8) {
+    errors.push('至少8位')
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push('包含小写字母')
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push('包含大写字母')
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push('包含数字')
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  }
+}
+
+// 密码要求组件
+function PasswordRequirements({ password }: { password: string }) {
+  const requirements = [
+    { label: '至少8位', valid: password.length >= 8 },
+    { label: '包含小写字母', valid: /[a-z]/.test(password) },
+    { label: '包含大写字母', valid: /[A-Z]/.test(password) },
+    { label: '包含数字', valid: /[0-9]/.test(password) },
+  ]
+
+  return (
+    <div className="mt-2 space-y-1">
+      {requirements.map((req, index) => (
+        <div key={index} className="flex items-center gap-1.5 text-xs">
+          {req.valid ? (
+            <Check className="w-3 h-3 text-green-500" />
+          ) : (
+            <XCircle className="w-3 h-3 text-gray-400" />
+          )}
+          <span className={req.valid ? 'text-green-600' : 'text-muted-foreground'}>
+            {req.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 interface NavItem {
   path: string
@@ -55,6 +117,12 @@ export function Header() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
   const user = getStoredUser()
 
   // 根据用户权限动态生成导航项
@@ -70,6 +138,46 @@ export function Header() {
     removeToken()
     removeUser()
     navigate('/login')
+  }
+
+  // 修改密码
+  const handleChangePassword = async () => {
+    setPasswordError('')
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('请填写所有密码字段')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('两次输入的新密码不一致')
+      return
+    }
+
+    // 密码复杂度验证
+    const passwordValidation = validatePassword(newPassword)
+    if (!passwordValidation.valid) {
+      setPasswordError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
+      return
+    }
+
+    try {
+      setPasswordSubmitting(true)
+      const response = await authApi.changePassword(oldPassword, newPassword)
+      if (response.success) {
+        setShowChangePasswordModal(false)
+        setOldPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        alert('密码修改成功')
+      } else {
+        setPasswordError(response.error || '密码修改失败')
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || '密码修改失败')
+    } finally {
+      setPasswordSubmitting(false)
+    }
   }
 
   return (
@@ -135,6 +243,11 @@ export function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowChangePasswordModal(true)}>
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  修改密码
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} variant="destructive">
                   <LogOut className="w-4 h-4 mr-2" />
                   退出登录
@@ -180,6 +293,67 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* 修改密码弹窗 */}
+      <Dialog open={showChangePasswordModal} onOpenChange={setShowChangePasswordModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>修改密码</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {passwordError && (
+              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {passwordError}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="old-password">原密码 <span className="text-destructive">*</span></Label>
+              <Input
+                id="old-password"
+                type="password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="请输入原密码"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="header-new-password">新密码 <span className="text-destructive">*</span></Label>
+              <Input
+                id="header-new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="请输入新密码"
+              />
+              {newPassword && <PasswordRequirements password={newPassword} />}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">确认新密码 <span className="text-destructive">*</span></Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="请再次输入新密码"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowChangePasswordModal(false)
+              setOldPassword('')
+              setNewPassword('')
+              setConfirmPassword('')
+              setPasswordError('')
+            }}>
+              取消
+            </Button>
+            <Button onClick={handleChangePassword} disabled={passwordSubmitting}>
+              {passwordSubmitting ? '修改中...' : '确认修改'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   )
 }

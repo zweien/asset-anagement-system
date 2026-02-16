@@ -8,7 +8,7 @@ import {
   type CreateUserDto,
   type UpdateUserDto,
 } from '../lib/api'
-import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw } from 'lucide-react'
+import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw, Check, XCircle } from 'lucide-react'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +36,56 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+
+// 密码复杂度验证函数
+function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (password.length < 8) {
+    errors.push('至少8位')
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push('包含小写字母')
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push('包含大写字母')
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push('包含数字')
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  }
+}
+
+// 密码要求组件
+function PasswordRequirements({ password }: { password: string }) {
+  const requirements = [
+    { label: '至少8位', valid: password.length >= 8 },
+    { label: '包含小写字母', valid: /[a-z]/.test(password) },
+    { label: '包含大写字母', valid: /[A-Z]/.test(password) },
+    { label: '包含数字', valid: /[0-9]/.test(password) },
+  ]
+
+  return (
+    <div className="mt-2 space-y-1">
+      {requirements.map((req, index) => (
+        <div key={index} className="flex items-center gap-1.5 text-xs">
+          {req.valid ? (
+            <Check className="w-3 h-3 text-green-500" />
+          ) : (
+            <XCircle className="w-3 h-3 text-gray-400" />
+          )}
+          <span className={req.valid ? 'text-green-600' : 'text-muted-foreground'}>
+            {req.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function UserManagement() {
   // 列表数据
@@ -118,8 +168,11 @@ export function UserManagement() {
       setFormError('密码为必填字段')
       return
     }
-    if (formData.password.length < 6) {
-      setFormError('密码长度至少为6位')
+
+    // 密码复杂度验证
+    const passwordValidation = validatePassword(formData.password)
+    if (!passwordValidation.valid) {
+      setFormError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
       return
     }
 
@@ -207,8 +260,11 @@ export function UserManagement() {
       setFormError('密码为必填字段')
       return
     }
-    if (newPassword.length < 6) {
-      setFormError('密码长度至少为6位')
+
+    // 密码复杂度验证
+    const passwordValidation = validatePassword(newPassword)
+    if (!passwordValidation.valid) {
+      setFormError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
       return
     }
 
@@ -520,8 +576,9 @@ export function UserManagement() {
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="请输入密码（至少6位）"
+                placeholder="请输入密码"
               />
+              {formData.password && <PasswordRequirements password={formData.password} />}
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">姓名</Label>
@@ -665,8 +722,9 @@ export function UserManagement() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="请输入新密码（至少6位）"
+                placeholder="请输入新密码"
               />
+              {newPassword && <PasswordRequirements password={newPassword} />}
             </div>
           </div>
           <DialogFooter>
