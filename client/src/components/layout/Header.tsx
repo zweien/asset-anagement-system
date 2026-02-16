@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import {
   LayoutDashboard,
@@ -7,21 +7,47 @@ import {
   Database,
   BarChart3,
   Menu,
-  X
+  X,
+  FileText,
+  LogOut,
+  User,
+  Users
 } from 'lucide-react'
 import { useState } from 'react'
+import { getStoredUser, removeToken, removeUser } from '../../lib/api'
 
-const navItems = [
+// 基础导航项（所有用户可见）
+const baseNavItems = [
   { path: '/', label: '仪表盘', icon: LayoutDashboard },
   { path: '/assets', label: '资产管理', icon: Package },
   { path: '/import', label: '数据导入', icon: Database },
   { path: '/reports', label: '统计报表', icon: BarChart3 },
+  { path: '/logs', label: '操作日志', icon: FileText },
   { path: '/settings', label: '系统设置', icon: Settings },
+]
+
+// 管理员专属导航项
+const adminNavItems = [
+  { path: '/users', label: '用户管理', icon: Users },
 ]
 
 export function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const user = getStoredUser()
+
+  // 根据用户角色动态生成导航项
+  const navItems = user?.role === 'ADMIN'
+    ? [...baseNavItems, ...adminNavItems]
+    : baseNavItems
+
+  const handleLogout = () => {
+    removeToken()
+    removeUser()
+    navigate('/login')
+  }
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -60,6 +86,41 @@ export function Header() {
           {/* Right side */}
           <div className="flex items-center gap-4">
             <ThemeToggle />
+
+            {/* User menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {user?.name || user?.username || '用户'}
+                </span>
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user?.name || user?.username}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {user?.role === 'ADMIN' ? '管理员' : '普通用户'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    退出登录
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <button

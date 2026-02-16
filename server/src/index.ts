@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { config } from 'dotenv'
 import routes from './routes'
+import { AuthService } from './services/auth.service'
 
 config()
 
@@ -30,10 +31,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 })
 
 // 启动服务器
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`)
   console.log(`📍 Fields API: http://localhost:${PORT}/api/fields`)
+
+  // 创建默认管理员账户
+  await AuthService.createDefaultAdmin()
 })
 
 export default app

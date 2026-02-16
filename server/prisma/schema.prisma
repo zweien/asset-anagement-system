@@ -109,3 +109,21 @@ model User {
 
   @@map("users")
 }
+
+// 报表模板表
+model ReportTemplate {
+  id          String   @id @default(uuid())
+  name        String                   // 报表名称
+  description String?                  // 描述
+  chartType   String                   // 图表类型: bar, pie, line
+  dimension   String                   // 数据维度: status, categoryId, createdAt, 或动态字段名
+  filters     String?                  // 筛选条件 (JSON)
+  dateRange   String?                  // 日期范围: all, today, week, month, year, custom
+  customStartDate String?              // 自定义开始日期
+  customEndDate   String?              // 自定义结束日期
+  isDefault   Boolean  @default(false) // 是否为默认报表
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("report_templates")
+}

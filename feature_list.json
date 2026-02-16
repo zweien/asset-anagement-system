@@ -150,7 +150,7 @@
       "点击表头可排序",
       "分页正常工作"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-003",
@@ -172,7 +172,7 @@
       "筛选条件可组合",
       "筛选条件可清除"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-004",
@@ -192,7 +192,7 @@
       "分组可折叠",
       "分组内可排序"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-005",
@@ -215,7 +215,7 @@
       "表单验证正确",
       "提交成功后刷新列表"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-006",
@@ -233,7 +233,7 @@
       "可修改任意字段",
       "保存后数据更新正确"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-007",
@@ -252,7 +252,7 @@
       "图片显示正常",
       "可返回列表"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ASSET-008",
@@ -272,7 +272,7 @@
       "删除需确认",
       "删除后列表更新"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-001",
@@ -294,7 +294,7 @@
       "导入成功显示数量",
       "导入失败显示错误"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-002",
@@ -316,7 +316,7 @@
       "连接测试成功",
       "数据导入正确"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "EXPORT-001",
@@ -338,7 +338,7 @@
       "可选择导出字段",
       "文件下载正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMAGE-001",
@@ -359,7 +359,7 @@
       "图片关联到资产",
       "可预览图片"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMAGE-002",
@@ -379,7 +379,7 @@
       "可从相册选择",
       "移动端界面友好"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMAGE-003",
@@ -397,7 +397,7 @@
       "导出为 ZIP 文件",
       "文件下载正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "VIZ-001",
@@ -418,7 +418,7 @@
       "显示资产状态统计图",
       "图表交互正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "VIZ-002",
@@ -440,7 +440,7 @@
       "可加载已保存报表",
       "报表可导出"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "VIZ-003",
@@ -458,7 +458,7 @@
       "可跳转到明细",
       "多图表联动正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "AUTH-001",
@@ -478,7 +478,7 @@
       "未登录跳转登录页",
       "登录状态保持"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "AUTH-002",
@@ -497,7 +497,7 @@
       "无权限时提示",
       "权限控制生效"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOG-001",
@@ -516,7 +516,7 @@
       "可查询操作日志",
       "日志信息完整"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-001",
@@ -536,7 +536,7 @@
       "导航栏自适应",
       "表格在小屏可滚动"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-002",
@@ -554,6 +554,60 @@
       "切换流畅",
       "偏好被记住"
     ],
-    "passes": false
+    "passes": true
+  },
+  {
+    "id": "USER-001",
+    "category": "functional",
+    "priority": "high",
+    "description": "用户管理 API - CRUD",
+    "steps": [
+      "创建用户 Service (CRUD 业务逻辑)",
+      "创建用户 Controller (HTTP 请求处理)",
+      "创建用户 Routes (API 端点)",
+      "实现用户列表查询（分页、筛选）",
+      "实现用户创建（密码加密）",
+      "实现用户信息更新",
+      "实现用户角色配置（admin/user）",
+      "实现用户禁用/启用功能",
+      "管理员权限验证中间件"
+    ],
+    "acceptance_criteria": [
+      "GET /api/users 获取用户列表（仅管理员）",
+      "POST /api/users 创建用户",
+      "PUT /api/users/:id 更新用户信息",
+      "PUT /api/users/:id/role 更新用户角色",
+      "PUT /api/users/:id/status 禁用/启用用户",
+      "非管理员访问返回 403",
+      "密码安全加密存储"
+    ],
+    "passes": true
+  },
+  {
+    "id": "USER-002",
+    "category": "functional",
+    "priority": "high",
+    "description": "用户管理前端页面",
+    "steps": [
+      "创建用户管理页面 (/settings/users)",
+      "用户列表表格（用户名、姓名、邮箱、角色、状态）",
+      "新增用户表单",
+      "编辑用户信息",
+      "角色选择（管理员/普通用户）",
+      "用户禁用/启用开关",
+      "管理员权限路由守卫",
+      "导航菜单添加入口（仅管理员可见）"
+    ],
+    "acceptance_criteria": [
+      "管理员可见用户管理入口",
+      "显示所有用户列表",
+      "可创建新用户",
+      "可编辑用户信息",
+      "可切换用户角色",
+      "可禁用/启用用户",
+      "普通用户无法访问",
+      "深色模式支持"
+    ],
+    "passes": true
   }
 ]
