@@ -3,6 +3,17 @@ import { Modal } from './ui/Modal'
 import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, AssetStatus, CreateAssetDto, UpdateAssetDto } from '../lib/api'
 import { ImageUploader } from './ImageUploader'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const API_BASE = 'http://localhost:3002/api'
 
@@ -44,6 +55,9 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
   const [images, setImages] = useState<ImageInfo[]>([])
 
   const isEditMode = !!asset
+
+  // 过滤出可见的字段
+  const visibleFields = fields.filter(f => f.visible !== false)
 
   // 加载图片
   const loadImages = async () => {
@@ -99,7 +113,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }
 
     // 验证必填字段
-    for (const field of fields) {
+    for (const field of visibleFields) {
       if (field.required) {
         const value = formData.data[field.name]
         if (value === undefined || value === null || value === '') {
@@ -154,84 +168,90 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     switch (field.type) {
       case 'TEXT':
         return (
-          <input
+          <Input
             type="text"
             value={value || ''}
             onChange={(e) => updateDataField(field.name, e.target.value)}
             placeholder={`请输入${field.label}`}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         )
       case 'TEXTAREA':
         return (
-          <textarea
+          <Textarea
             value={value || ''}
             onChange={(e) => updateDataField(field.name, e.target.value)}
             placeholder={`请输入${field.label}`}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
           />
         )
       case 'NUMBER':
         return (
-          <input
+          <Input
             type="number"
             value={value || ''}
             onChange={(e) => updateDataField(field.name, e.target.value ? Number(e.target.value) : '')}
             placeholder={`请输入${field.label}`}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         )
       case 'DATE':
         return (
-          <input
+          <Input
             type="date"
             value={value || ''}
             onChange={(e) => updateDataField(field.name, e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         )
       case 'SELECT':
-        const options = field.options?.split(',').map((o) => o.trim()) || []
+        let options: string[] = []
+        try {
+          options = field.options ? JSON.parse(field.options) : []
+        } catch {
+          options = field.options?.split(',').map((o) => o.trim()) || []
+        }
         return (
-          <select
+          <Select
             value={value || ''}
-            onChange={(e) => updateDataField(field.name, e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            onValueChange={(v) => updateDataField(field.name, v)}
           >
-            <option value="">请选择</option>
-            {options.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="请选择" />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )
       case 'MULTISELECT':
-        const multiOptions = field.options?.split(',').map((o) => o.trim()) || []
+        let multiOptions: string[] = []
+        try {
+          multiOptions = field.options ? JSON.parse(field.options) : []
+        } catch {
+          multiOptions = field.options?.split(',').map((o) => o.trim()) || []
+        }
         const selectedValues: string[] = Array.isArray(value) ? value : value ? [value] : []
         return (
           <div className="flex flex-wrap gap-2">
             {multiOptions.map((opt) => {
               const isSelected = selectedValues.includes(opt)
               return (
-                <button
+                <Button
                   key={opt}
                   type="button"
+                  variant={isSelected ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => {
                     const newValues = isSelected
                       ? selectedValues.filter((v) => v !== opt)
                       : [...selectedValues, opt]
                     updateDataField(field.name, newValues)
                   }}
-                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                    isSelected
-                      ? 'bg-primary-100 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-200'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-400'
-                  }`}
                 >
                   {opt}
-                </button>
+                </Button>
               )
             })}
           </div>
@@ -251,70 +271,72 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       <div className="space-y-4">
         {/* 错误提示 */}
         {error && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
             {error}
           </div>
         )}
 
         {/* 基础字段 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            资产名称 <span className="text-red-500">*</span>
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="name">
+            资产名称 <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="name"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             placeholder="请输入资产名称"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">资产编号</label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="code">资产编号</Label>
+          <Input
+            id="code"
             type="text"
             value={formData.code}
             onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
             placeholder="请输入资产编号（可选）"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">状态</label>
-          <select
+        <div className="space-y-2">
+          <Label htmlFor="status">状态</Label>
+          <Select
             value={formData.status}
-            onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as AssetStatus }))}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            onValueChange={(v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus }))}
           >
-            {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* 动态字段 */}
-        {fields
+        {/* 动态字段 - 只显示可见字段 */}
+        {visibleFields
           .sort((a, b) => a.order - b.order)
           .map((field) => (
-            <div key={field.id}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <div key={field.id} className="space-y-2">
+              <Label>
                 {field.label}
-                {field.required && <span className="text-red-500"> *</span>}
-              </label>
+                {field.required && <span className="text-destructive"> *</span>}
+              </Label>
               {renderFieldInput(field)}
             </div>
           ))}
 
         {/* 图片上传 (仅编辑模式) */}
         {isEditMode && asset && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              资产图片
-            </label>
+          <div className="space-y-2">
+            <Label>资产图片</Label>
             <ImageUploader
               assetId={asset.id}
               images={images}
@@ -324,20 +346,13 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
         )}
 
         {/* 操作按钮 */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={onClose}>
             取消
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
-          >
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading}>
             {loading ? '保存中...' : isEditMode ? '保存修改' : '创建资产'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
