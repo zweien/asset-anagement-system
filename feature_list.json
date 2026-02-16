@@ -888,5 +888,99 @@
     ],
     "passes": true,
     "notes": "由于服务层直接实例化PrismaClient，单元测试覆盖纯函数逻辑。集成测试（需要测试数据库）可作为后续优化项。"
+  },
+  {
+    "id": "SEC-003",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "输入验证中间件",
+    "steps": [
+      "安装 zod 验证库",
+      "创建通用验证中间件",
+      "为资产 API 添加验证",
+      "为用户 API 添加验证",
+      "为认证 API 添加验证"
+    ],
+    "acceptance_criteria": [
+      "无效输入返回 400 错误",
+      "验证错误信息清晰",
+      "所有 API 端点有输入验证"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-004",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "XSS 防护",
+    "steps": [
+      "安装 xss 或 DOMPurify 库",
+      "创建 XSS 清理工具函数",
+      "应用到用户输入字段",
+      "应用到资产动态字段"
+    ],
+    "acceptance_criteria": [
+      "脚本标签被过滤",
+      "危险字符被转义",
+      "正常内容不受影响"
+    ],
+    "passes": false
+  },
+  {
+    "id": "TEST-003",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "E2E 测试 - 主流程",
+    "steps": [
+      "配置 Playwright 测试环境",
+      "编写登录流程测试",
+      "编写资产管理测试（增删改查）",
+      "编写数据导入测试",
+      "编写数据导出测试"
+    ],
+    "acceptance_criteria": [
+      "登录流程测试通过",
+      "资产 CRUD 测试通过",
+      "导入导出测试通过",
+      "测试报告生成"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-001",
+    "category": "ui",
+    "priority": "medium",
+    "description": "Toast 通知组件",
+    "steps": [
+      "安装 sonner 或自定义 Toast 组件",
+      "创建 Toast Provider",
+      "在操作成功时显示成功提示",
+      "在操作失败时显示错误提示"
+    ],
+    "acceptance_criteria": [
+      "成功操作显示绿色 Toast",
+      "错误操作显示红色 Toast",
+      "Toast 自动消失",
+      "支持多个 Toast 队列"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-002",
+    "category": "ui",
+    "priority": "medium",
+    "description": "骨架屏加载",
+    "steps": [
+      "创建 Skeleton 组件",
+      "在资产列表页添加骨架屏",
+      "在详情页添加骨架屏",
+      "在设置页添加骨架屏"
+    ],
+    "acceptance_criteria": [
+      "数据加载时显示骨架屏",
+      "骨架屏样式与内容匹配",
+      "加载完成后平滑过渡"
+    ],
+    "passes": false
   }
 ]
