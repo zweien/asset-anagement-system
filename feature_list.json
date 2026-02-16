@@ -1053,7 +1053,7 @@
       "所有文本可翻译",
       "语言偏好持久化"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CODE-001",

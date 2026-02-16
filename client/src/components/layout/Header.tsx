@@ -19,6 +19,7 @@ import { useState, useMemo } from 'react'
 import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
 import { showSuccess } from '../../lib/toast'
 import { useAuthStore } from '@/stores/authStore'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -220,6 +221,7 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             <ThemeToggle />
 
             {/* User menu */}
