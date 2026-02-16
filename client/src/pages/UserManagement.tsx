@@ -9,6 +9,7 @@ import {
   type UpdateUserDto,
 } from '../lib/api'
 import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw } from 'lucide-react'
+import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -281,6 +282,18 @@ export function UserManagement() {
           添加用户
         </Button>
       </div>
+
+      {/* 使用说明 */}
+      <PageInstructions
+        title="用户管理说明"
+        instructions={[
+          '管理员可以创建、编辑和删除用户',
+          '点击角色下拉框可以直接修改用户角色',
+          '点击状态按钮可以启用或禁用用户',
+          '使用搜索框和筛选条件可以快速查找用户',
+          '重置密码功能可以为用户设置新密码'
+        ]}
+      />
 
       {/* 筛选条件 */}
       <Card>

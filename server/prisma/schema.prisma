@@ -17,6 +17,8 @@ model FieldConfig {
   label       String                   // 显示名称
   type        String                   // 字段类型: TEXT, NUMBER, DATE, SELECT, MULTISELECT, TEXTAREA
   required    Boolean  @default(false) // 是否必填
+  isSystem    Boolean  @default(false) // 是否系统字段（系统字段不可删除）
+  visible     Boolean  @default(true)  // 是否在表单和表格中显示
   options     String?                  // 选项配置 (JSON 格式，用于下拉选择/多选)
   defaultValue String?                 // 默认值
   validation  String?                  // 验证规则 (JSON 格式)

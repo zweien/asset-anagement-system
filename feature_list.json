@@ -759,5 +759,43 @@
     ],
     "passes": true,
     "notes": "已完成核心页面重构：Header（使用 Button、DropdownMenu、Sheet、Avatar）、Dashboard（使用 Card、Button）、Assets（使用 Button、Input、Select、Table、Badge、Card、Dialog、DropdownMenu）"
+  },
+  {
+    "id": "SHADCN-004",
+    "category": "ui",
+    "priority": "medium",
+    "description": "Settings 页面重构 - shadcn/ui + 系统字段区分",
+    "steps": [
+      "重构 Settings 页面使用 shadcn/ui 组件",
+      "修复浅色主题显示问题",
+      "添加 isSystem 字段区分系统字段和自定义字段",
+      "系统字段不可删除，自定义字段可完全配置",
+      "添加 visible 字段控制字段是否显示在表单和表格中"
+    ],
+    "acceptance_criteria": [
+      "浅色模式正常显示",
+      "系统字段标记明显且不可删除",
+      "自定义字段可删除",
+      "字段可见性控制生效"
+    ],
+    "passes": true
+  },
+  {
+    "id": "UI-005",
+    "category": "ui",
+    "priority": "low",
+    "description": "页面使用说明组件",
+    "steps": [
+      "创建 PageInstructions 可复用组件",
+      "支持显示/隐藏切换",
+      "记录用户偏好到 localStorage",
+      "在主要页面添加使用说明"
+    ],
+    "acceptance_criteria": [
+      "各页面可配置使用说明",
+      "可切换显示/隐藏",
+      "用户偏好被记住"
+    ],
+    "passes": true
   }
 ]

@@ -3,6 +3,7 @@ import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Database, S
 import { fieldApi, dbImportApi, type TableInfo, type DBConnectionConfig } from '../lib/api'
 import type { FieldConfig } from '../lib/api'
 import api from '../lib/api'
+import { PageInstructions } from '@/components/PageInstructions'
 
 interface ParsedData {
   headers: string[]
@@ -212,9 +213,21 @@ export function Import() {
     <div className="space-y-6">
       {/* 头部 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">数据导入</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">从 Excel 文件或数据库导入资产数据</p>
+        <h1 className="text-2xl font-bold text-foreground">数据导入</h1>
+        <p className="mt-1 text-muted-foreground">从 Excel 文件或数据库导入资产数据</p>
       </div>
+
+      {/* 使用说明 */}
+      <PageInstructions
+        title="数据导入说明"
+        instructions={[
+          '支持 Excel 文件导入和数据库导入两种方式',
+          'Excel 导入：上传 .xlsx 文件后进行字段映射，然后执行导入',
+          '数据库导入：配置数据库连接后选择表进行导入',
+          '可以先下载模板，按模板格式填写数据后再导入',
+          '导入前请确保字段映射正确，避免数据错误'
+        ]}
+      />
 
       {/* 导入类型选择 */}
       <div className="flex border-b border-gray-200 dark:border-gray-700">

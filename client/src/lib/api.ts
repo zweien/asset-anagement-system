@@ -48,6 +48,8 @@ export interface FieldConfig {
   label: string
   type: FieldType
   required: boolean
+  isSystem: boolean
+  visible: boolean
   options: string | null
   defaultValue: string | null
   validation: string | null
@@ -73,6 +75,8 @@ export interface CreateFieldDto {
   label: string
   type: FieldType
   required?: boolean
+  isSystem?: boolean
+  visible?: boolean
   options?: string
   defaultValue?: string
   validation?: string
@@ -84,6 +88,8 @@ export interface UpdateFieldDto {
   label?: string
   type?: FieldType
   required?: boolean
+  isSystem?: boolean
+  visible?: boolean
   options?: string
   defaultValue?: string
   validation?: string

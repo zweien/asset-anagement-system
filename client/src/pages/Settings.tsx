@@ -1,22 +1,54 @@
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, GripVertical, Save, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff } from 'lucide-react'
 import { fieldApi, FIELD_TYPES } from '../lib/api'
 import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto } from '../lib/api'
+import { PageInstructions } from '@/components/PageInstructions'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 
 // 字段表单组件
 function FieldForm({
   field,
   onSave,
   onCancel,
+  isSystem,
 }: {
   field?: FieldConfig | null
-  onSave: (data: CreateFieldDto | UpdateFieldDto) => void
+  onSave: (data: CreateFieldDto | UpdateFieldDto) => Promise<void>
   onCancel: () => void
+  isSystem?: boolean
 }) {
   const [name, setName] = useState(field?.name || '')
   const [label, setLabel] = useState(field?.label || '')
   const [type, setType] = useState<FieldType>(field?.type || 'TEXT')
   const [required, setRequired] = useState(field?.required || false)
+  const [visible, setVisible] = useState(field?.visible ?? true)
   const [options, setOptions] = useState(() => {
     if (field?.options) {
       try {
@@ -44,6 +76,7 @@ function FieldForm({
         label,
         type,
         required,
+        visible,
       }
 
       if (needsOptions && options.trim()) {
@@ -64,103 +97,99 @@ function FieldForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+          {error}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            字段名称 (英文标识)
-          </label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="name">字段名称 (英文标识)</Label>
+          <Input
+            id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder="serial_number"
             required
             disabled={isEdit}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            显示名称 (中文)
-          </label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="label">显示名称 (中文)</Label>
+          <Input
+            id="label"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder="序列号"
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            字段类型
-          </label>
-          <select
+        <div className="space-y-2">
+          <Label htmlFor="type">字段类型</Label>
+          <Select
             value={type}
-            onChange={(e) => setType(e.target.value as FieldType)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            onValueChange={(v) => setType(v as FieldType)}
           >
-            {FIELD_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {FIELD_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="flex items-center">
-          <label className="flex items-center space-x-2 cursor-pointer">
+        <div className="flex items-center gap-6 pt-6">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={required}
               onChange={(e) => setRequired(e.target.checked)}
-              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              className="w-4 h-4 accent-primary"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">必填字段</span>
+            <span className="text-sm text-muted-foreground">必填字段</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={visible}
+              onChange={(e) => setVisible(e.target.checked)}
+              className="w-4 h-4 accent-primary"
+            />
+            <span className="text-sm text-muted-foreground">显示字段</span>
           </label>
         </div>
       </div>
 
       {needsOptions && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            选项 (每行一个)
-          </label>
-          <textarea
+        <div className="space-y-2">
+          <Label htmlFor="options">选项 (每行一个)</Label>
+          <Textarea
+            id="options"
             value={options}
             onChange={(e) => setOptions(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             rows={3}
             placeholder="在用&#10;闲置&#10;维修"
           />
         </div>
       )}
 
-      {error && (
-        <div className="text-sm text-red-600 dark:text-red-400">{error}</div>
-      )}
-
-      <div className="flex justify-end space-x-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <X className="w-4 h-4 inline mr-1" />
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          <X className="w-4 h-4 mr-1" />
           取消
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
-        >
-          <Save className="w-4 h-4 inline mr-1" />
+        </Button>
+        <Button type="submit" disabled={loading}>
+          <Save className="w-4 h-4 mr-1" />
           {loading ? '保存中...' : '保存'}
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -178,8 +207,8 @@ export function Settings() {
   const loadFields = async () => {
     try {
       setLoading(true)
-      const response = await fieldApi.getAll()
-      if (response.success) {
+      const response: any = await fieldApi.getAll()
+      if (response?.success) {
         setFields(response.data)
       }
     } catch (err) {
@@ -195,31 +224,45 @@ export function Settings() {
 
   // 添加字段
   const handleAdd = async (data: CreateFieldDto) => {
-    const response = await fieldApi.create(data)
-    if (response.success) {
+    const response: any = await fieldApi.create(data)
+    if (response?.success) {
       setShowAddForm(false)
       loadFields()
+    } else {
+      throw new Error(response?.error || '创建失败')
     }
   }
 
   // 更新字段
   const handleUpdate = async (data: UpdateFieldDto) => {
     if (!editingField) return
-    const response = await fieldApi.update(editingField.id, data)
-    if (response.success) {
+    const response: any = await fieldApi.update(editingField.id, data)
+    if (response?.success) {
       setEditingField(null)
       loadFields()
+    } else {
+      throw new Error(response?.error || '更新失败')
     }
   }
 
   // 删除字段
-  const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个字段吗？')) return
+  const handleDelete = async (field: FieldConfig) => {
+    if (field.isSystem) {
+      alert('系统字段不可删除')
+      return
+    }
+    if (!confirm(`确定要删除字段 "${field.label}" 吗？此操作不可恢复。`)) {
+      return
+    }
     try {
-      await fieldApi.delete(id)
-      loadFields()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '删除失败')
+      const response: any = await fieldApi.delete(field.id)
+      if (response?.success) {
+        loadFields()
+      } else {
+        alert(response?.error || '删除失败')
+      }
+    } catch (err: any) {
+      alert(err.message || '删除失败')
     }
   }
 
@@ -230,131 +273,160 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">系统设置</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          管理自定义字段配置
-        </p>
+      {/* 头部 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">系统设置</h1>
+          <p className="mt-1 text-muted-foreground">管理自定义字段配置</p>
+        </div>
       </div>
 
+      {/* 使用说明 */}
+      <PageInstructions
+        title="字段配置说明"
+        instructions={[
+          '系统字段（带有盾牌标识）是预设的必填字段，不可删除，但可修改名称和配置',
+          '自定义字段可以完全自由配置和删除',
+          '隐藏的字段不会在资产表单和列表中显示',
+          '字段顺序决定了在表单中的显示顺序（暂未实现拖拽排序）',
+          '下拉选择和多选类型的字段需要配置选项列表'
+        ]}
+      />
+
       {error && (
-        <div className="p-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
+        <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg">
           {error}
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">自定义字段</h2>
-        <button
-          onClick={() => setShowAddForm(true)}
-          disabled={showAddForm}
-          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
-        >
-          <Plus className="w-4 h-4 inline mr-1" />
-          添加字段
-        </button>
-      </div>
-
-      {/* 添加字段表单 */}
-      {showAddForm && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            添加新字段
-          </h3>
-          <FieldForm onSave={handleAdd} onCancel={() => setShowAddForm(false)} />
-        </div>
-      )}
-
       {/* 字段列表 */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            加载中...
-          </div>
-        ) : fields.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            暂无字段配置，点击上方"添加字段"开始配置
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  排序
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  字段名称
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  显示名称
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  类型
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  必填
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {fields.map((field) => (
-                <tr key={field.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3">
-                    <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-                  </td>
-                  <td className="px-4 py-3 text-sm font-mono text-gray-900 dark:text-white">
-                    {field.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {editingField?.id === field.id ? (
-                      <FieldForm
-                        field={field}
-                        onSave={handleUpdate}
-                        onCancel={() => setEditingField(null)}
-                      />
-                    ) : (
-                      field.label
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                      {getTypeLabel(field.type as FieldType)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {field.required ? (
-                      <span className="text-green-600 dark:text-green-400">是</span>
-                    ) : (
-                      <span className="text-gray-400">否</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => setEditingField(field)}
-                        className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
-                        title="编辑"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(field.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                        title="删除"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between py-4">
+          <CardTitle className="text-lg">字段配置</CardTitle>
+          <Button onClick={() => setShowAddForm(true)} disabled={showAddForm}>
+            <Plus className="w-4 h-4 mr-2" />
+            添加字段
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8 text-center text-muted-foreground">
+              加载中...
+            </div>
+          ) : fields.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              暂无字段配置，点击上方"添加字段"开始配置
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10"></TableHead>
+                  <TableHead>字段类型</TableHead>
+                  <TableHead>字段名称</TableHead>
+                  <TableHead>显示名称</TableHead>
+                  <TableHead>数据类型</TableHead>
+                  <TableHead>必填</TableHead>
+                  <TableHead>显示</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fields.map((field) => (
+                  <TableRow key={field.id}>
+                    <TableCell>
+                      <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                    </TableCell>
+                    <TableCell>
+                      {field.isSystem ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <Shield className="w-3 h-3" />
+                          系统
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">自定义</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {field.name}
+                    </TableCell>
+                    <TableCell>
+                      {editingField?.id === field.id ? (
+                        <div className="py-2">
+                          <FieldForm
+                            field={field}
+                            onSave={handleUpdate}
+                            onCancel={() => setEditingField(null)}
+                            isSystem={field.isSystem}
+                          />
+                        </div>
+                      ) : (
+                        field.label
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {getTypeLabel(field.type as FieldType)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {field.required ? (
+                        <span className="text-green-600">是</span>
+                      ) : (
+                        <span className="text-muted-foreground">否</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {field.visible ? (
+                        <Eye className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {editingField?.id !== field.id && (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => setEditingField(field)}
+                            title="编辑"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => handleDelete(field)}
+                            title="删除"
+                            disabled={field.isSystem}
+                            className={field.isSystem ? 'opacity-50' : 'hover:text-destructive'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 添加字段弹窗 */}
+      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>添加新字段</DialogTitle>
+          </DialogHeader>
+          <FieldForm
+            onSave={handleAdd}
+            onCancel={() => setShowAddForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

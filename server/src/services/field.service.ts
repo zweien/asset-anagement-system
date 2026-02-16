@@ -21,6 +21,8 @@ export interface CreateFieldDto {
   label: string
   type: string
   required?: boolean
+  isSystem?: boolean
+  visible?: boolean
   options?: string // JSON 字符串
   defaultValue?: string
   validation?: string // JSON 字符串
@@ -33,6 +35,8 @@ export interface UpdateFieldDto {
   label?: string
   type?: string
   required?: boolean
+  isSystem?: boolean
+  visible?: boolean
   options?: string
   defaultValue?: string
   validation?: string
@@ -120,6 +124,8 @@ export const FieldService = {
           label: data.label,
           type: data.type,
           required: data.required ?? false,
+          isSystem: data.isSystem ?? false,
+          visible: data.visible ?? true,
           options: data.options,
           defaultValue: data.defaultValue,
           validation: data.validation,
@@ -171,6 +177,8 @@ export const FieldService = {
           label: data.label,
           type: data.type,
           required: data.required,
+          isSystem: data.isSystem,
+          visible: data.visible,
           options: data.options,
           defaultValue: data.defaultValue,
           validation: data.validation,
@@ -189,6 +197,11 @@ export const FieldService = {
     const existing = await prisma.fieldConfig.findUnique({ where: { id } })
     if (!existing) {
       return { success: false, error: '字段配置不存在' }
+    }
+
+    // 系统字段不可删除
+    if (existing.isSystem) {
+      return { success: false, error: '系统字段不可删除' }
     }
 
     try {

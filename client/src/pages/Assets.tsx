@@ -15,6 +15,7 @@ import { assetApi, fieldApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, AssetStatus, FieldType, GroupedAssets } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
+import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -785,6 +786,18 @@ export function Assets() {
           新增资产
         </Button>
       </div>
+
+      {/* 使用说明 */}
+      <PageInstructions
+        title="资产管理说明"
+        instructions={[
+          '点击"新增资产"按钮可以添加新的资产记录',
+          '支持列表视图和分组视图两种显示方式',
+          '使用搜索框可以快速查找资产',
+          '点击表头可以排序，使用列设置可以显示/隐藏列',
+          '操作列提供查看详情、编辑、添加照片和删除功能'
+        ]}
+      />
 
       {/* 工具栏 */}
       <Card>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Package, Database, TrendingUp, AlertCircle } from 'lucide-react'
 import { assetApi, logApi } from '../lib/api'
+import { PageInstructions } from '@/components/PageInstructions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -85,6 +86,16 @@ export function Dashboard() {
           欢迎使用资产录入管理系统
         </p>
       </div>
+
+      {/* 使用说明 */}
+      <PageInstructions
+        title="仪表盘使用说明"
+        instructions={[
+          '查看资产总数、本月新增、导入记录和闲置资产等统计数据',
+          '通过快速操作卡片可以快速跳转到常用功能页面',
+          '点击统计数据卡片可以查看更多详细信息（暂未实现）'
+        ]}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
