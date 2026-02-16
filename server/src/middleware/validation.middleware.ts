@@ -16,9 +16,9 @@ export function validate(schema: ZodSchema, source: 'body' | 'params' | 'query' 
       next()
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
+        const errors = error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
         }))
         return res.status(400).json({
           success: false,
@@ -45,9 +45,9 @@ export function validateAll(validations: Array<{ schema: ZodSchema; source: 'bod
       next()
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
+        const errors = error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
         }))
         return res.status(400).json({
           success: false,
@@ -97,14 +97,10 @@ export const emailSchema = z
   .or(z.literal(''))
 
 // 角色验证
-export const roleSchema = z.enum(['ADMIN', 'EDITOR', 'USER'], {
-  errorMap: () => ({ message: '无效的角色类型' }),
-})
+export const roleSchema = z.enum(['ADMIN', 'EDITOR', 'USER'], '无效的角色类型')
 
 // 资产状态验证
-export const assetStatusSchema = z.enum(['ACTIVE', 'IDLE', 'DAMAGED', 'SCRAPPED'], {
-  errorMap: () => ({ message: '无效的资产状态' }),
-})
+export const assetStatusSchema = z.enum(['ACTIVE', 'IDLE', 'DAMAGED', 'SCRAPPED'], '无效的资产状态')
 
 // 日期字符串验证
 export const dateStringSchema = z

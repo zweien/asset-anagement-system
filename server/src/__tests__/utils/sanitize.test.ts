@@ -92,8 +92,9 @@ describe('XSS Sanitization', () => {
         tags: ['<script>xss</script>', 'safe-tag'],
       }
       const result = sanitizeDynamicData(data)
-      expect(result.tags[0]).not.toContain('<script>')
-      expect(result.tags[1]).toBe('safe-tag')
+      const tags = result.tags as string[]
+      expect(tags[0]).not.toContain('<script>')
+      expect(tags[1]).toBe('safe-tag')
     })
   })
 

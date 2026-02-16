@@ -54,7 +54,7 @@ export const createAssetSchema = z.object({
   code: z.string().max(50, '资产编号最多 50 个字符').optional(),
   categoryId: z.string().optional(),
   status: assetStatusSchema.optional(),
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const updateAssetSchema = z.object({
@@ -62,7 +62,7 @@ export const updateAssetSchema = z.object({
   code: z.string().max(50, '资产编号最多 50 个字符').optional(),
   categoryId: z.string().optional(),
   status: assetStatusSchema.optional(),
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const assetQuerySchema = z.object({
@@ -83,9 +83,7 @@ export const batchDeleteSchema = z.object({
 
 // ==================== 字段配置相关 ====================
 
-export const fieldTypeSchema = z.enum(['TEXT', 'TEXTAREA', 'NUMBER', 'DATE', 'SELECT', 'MULTISELECT'], {
-  errorMap: () => ({ message: '无效的字段类型' }),
-})
+export const fieldTypeSchema = z.enum(['TEXT', 'TEXTAREA', 'NUMBER', 'DATE', 'SELECT', 'MULTISELECT'], '无效的字段类型')
 
 export const createFieldConfigSchema = z.object({
   name: z.string().min(1, '字段名称不能为空').max(50, '字段名称最多 50 个字符'),
@@ -114,6 +112,6 @@ export const updateFieldConfigSchema = z.object({
 // ==================== 导入相关 ====================
 
 export const importExecuteSchema = z.object({
-  mappings: z.record(z.string()),
-  data: z.array(z.record(z.unknown())),
+  mappings: z.record(z.string(), z.string()),
+  data: z.array(z.record(z.string(), z.unknown())),
 })

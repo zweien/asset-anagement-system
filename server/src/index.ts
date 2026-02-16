@@ -2,9 +2,11 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import { config } from 'dotenv'
+import swaggerUi from 'swagger-ui-express'
 import routes from './routes'
 import { AuthService } from './services/auth.service'
 import { xssSanitize } from './middleware/xss.middleware'
+import { swaggerSpec } from './config/swagger'
 
 config()
 
@@ -25,6 +27,12 @@ app.use(xssSanitize)
 // API 路由
 app.use('/api', routes)
 
+// Swagger API 文档
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: '资产管理系统 API 文档',
+}))
+
 // 404 处理
 app.use((_req, res) => {
   res.status(404).json({ success: false, error: 'Not Found' })
@@ -40,6 +48,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 app.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`)
+  console.log(`📍 API Docs: http://localhost:${PORT}/api-docs`)
   console.log(`📍 Fields API: http://localhost:${PORT}/api/fields`)
 
   // 创建默认管理员账户

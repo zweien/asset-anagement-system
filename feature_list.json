@@ -982,5 +982,113 @@
       "加载完成后平滑过渡"
     ],
     "passes": true
+  },
+  {
+    "id": "API-001",
+    "category": "infrastructure",
+    "priority": "medium",
+    "description": "API 文档 - Swagger/OpenAPI",
+    "steps": [
+      "安装 swagger-ui-express 和 swagger-jsdoc",
+      "创建 Swagger 配置文件",
+      "为 API 路由添加 JSDoc 注释",
+      "创建 /api-docs 端点"
+    ],
+    "acceptance_criteria": [
+      "访问 /api-docs 显示 Swagger UI",
+      "所有 API 端点有文档",
+      "支持在线测试 API"
+    ],
+    "passes": true
+  },
+  {
+    "id": "PERF-002",
+    "category": "infrastructure",
+    "priority": "medium",
+    "description": "前端路由懒加载",
+    "steps": [
+      "使用 React.lazy 包装页面组件",
+      "添加 Suspense 和加载组件",
+      "配置 Vite 代码分割",
+      "测试首屏加载时间"
+    ],
+    "acceptance_criteria": [
+      "首屏只加载必要代码",
+      "路由切换时懒加载",
+      "打包后生成多个 chunk"
+    ],
+    "passes": false
+  },
+  {
+    "id": "BACKUP-001",
+    "category": "functional",
+    "priority": "medium",
+    "description": "数据备份功能",
+    "steps": [
+      "创建备份 API（导出 SQLite 文件）",
+      "创建备份下载端点",
+      "添加手动备份按钮",
+      "添加备份恢复功能"
+    ],
+    "acceptance_criteria": [
+      "可手动触发备份",
+      "可下载备份文件",
+      "可从备份恢复数据"
+    ],
+    "passes": false
+  },
+  {
+    "id": "I18N-001",
+    "category": "infrastructure",
+    "priority": "low",
+    "description": "国际化支持",
+    "steps": [
+      "安装 i18next 和 react-i18next",
+      "创建中英文语言文件",
+      "添加语言切换组件",
+      "应用翻译到页面"
+    ],
+    "acceptance_criteria": [
+      "支持中英文切换",
+      "所有文本可翻译",
+      "语言偏好持久化"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CODE-001",
+    "category": "infrastructure",
+    "priority": "medium",
+    "description": "前端状态管理 - Zustand",
+    "steps": [
+      "安装 Zustand 库",
+      "创建用户状态 store",
+      "创建权限状态 store",
+      "重构组件使用 store"
+    ],
+    "acceptance_criteria": [
+      "用户状态全局管理",
+      "减少 localStorage 直接访问",
+      "状态更新响应式"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOG-002",
+    "category": "infrastructure",
+    "priority": "medium",
+    "description": "日志系统优化 - Winston",
+    "steps": [
+      "安装 Winston 日志库",
+      "配置日志分级（error/warn/info/debug）",
+      "配置日志文件输出",
+      "添加日志中间件"
+    ],
+    "acceptance_criteria": [
+      "日志按级别分类",
+      "日志写入文件",
+      "支持日志轮转"
+    ],
+    "passes": false
   }
 ]
