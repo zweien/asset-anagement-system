@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { authApi, setToken, setUser } from '../lib/api'
+import { authApi } from '../lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 // 密码复杂度验证函数
 function validatePassword(password: string): { valid: boolean; errors: string[] } {
@@ -37,6 +38,9 @@ export function Login() {
     email: '',
   })
 
+  // 使用 Zustand store
+  const { setAuth } = useAuthStore()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -66,8 +70,7 @@ export function Login() {
       }
 
       if (response.success && response.data) {
-        setToken(response.data.token)
-        setUser(response.data.user)
+        setAuth(response.data.token, response.data.user)
         navigate('/')
       } else {
         setError(response.error || '操作失败')

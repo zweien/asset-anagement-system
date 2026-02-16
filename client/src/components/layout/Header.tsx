@@ -16,8 +16,9 @@ import {
   XCircle
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
-import { getStoredUser, removeToken, removeUser, hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
+import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
 import { showSuccess } from '../../lib/toast'
+import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -124,7 +125,9 @@ export function Header() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [passwordSubmitting, setPasswordSubmitting] = useState(false)
-  const user = getStoredUser()
+
+  // 使用 Zustand store
+  const { user, logout } = useAuthStore()
 
   // 根据用户权限动态生成导航项
   const navItems = useMemo(() => {
@@ -136,8 +139,7 @@ export function Header() {
   }, [user])
 
   const handleLogout = () => {
-    removeToken()
-    removeUser()
+    logout()
     navigate('/login')
   }
 

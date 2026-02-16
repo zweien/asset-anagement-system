@@ -1071,7 +1071,7 @@
       "减少 localStorage 直接访问",
       "状态更新响应式"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOG-002",
