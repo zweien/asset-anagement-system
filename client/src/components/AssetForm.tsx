@@ -56,8 +56,18 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
 
   const isEditMode = !!asset
 
-  // 过滤出可见的字段
-  const visibleFields = fields.filter(f => f.visible !== false)
+  // 系统字段名称列表
+  const systemFieldNames = ['name', 'code', 'status']
+
+  // 获取系统字段的配置（从字段配置中获取标签和必填状态）
+  const getSystemFieldConfig = (fieldName: string) => {
+    return fields.find(f => f.name === fieldName)
+  }
+
+  // 过滤出可见的自定义字段（排除系统字段，因为系统字段单独渲染）
+  const visibleFields = fields.filter(f =>
+    f.visible !== false && !systemFieldNames.includes(f.name)
+  )
 
   // 加载图片
   const loadImages = async () => {
@@ -276,33 +286,40 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
           </div>
         )}
 
-        {/* 基础字段 */}
+        {/* 基础字段 - 使用字段配置中的标签和必填状态 */}
         <div className="space-y-2">
           <Label htmlFor="name">
-            资产名称 <span className="text-destructive">*</span>
+            {getSystemFieldConfig('name')?.label || '资产名称'}
+            {getSystemFieldConfig('name')?.required && <span className="text-destructive"> *</span>}
           </Label>
           <Input
             id="name"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="请输入资产名称"
+            placeholder={`请输入${getSystemFieldConfig('name')?.label || '资产名称'}`}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="code">资产编号</Label>
+          <Label htmlFor="code">
+            {getSystemFieldConfig('code')?.label || '资产编号'}
+            {getSystemFieldConfig('code')?.required && <span className="text-destructive"> *</span>}
+          </Label>
           <Input
             id="code"
             type="text"
             value={formData.code}
             onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
-            placeholder="请输入资产编号（可选）"
+            placeholder={`请输入${getSystemFieldConfig('code')?.label || '资产编号'}（可选）`}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status">状态</Label>
+          <Label htmlFor="status">
+            {getSystemFieldConfig('status')?.label || '状态'}
+            {getSystemFieldConfig('status')?.required && <span className="text-destructive"> *</span>}
+          </Label>
           <Select
             value={formData.status}
             onValueChange={(v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus }))}

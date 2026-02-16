@@ -603,15 +603,21 @@ export function Assets() {
     loadData()
   }
 
-  // 基础列定义
+  // 获取系统字段的标签（从字段配置中获取，保持一致）
+  const getFieldLabel = (fieldName: string, defaultLabel: string) => {
+    const field = fields.find(f => f.name === fieldName)
+    return field?.label || defaultLabel
+  }
+
+  // 基础列定义 - 系统字段使用字段配置中的标签
   const baseColumns = useMemo(() => [
     columnHelper.accessor('code', {
-      header: '资产编号',
+      header: getFieldLabel('code', '资产编号'),
       cell: (info) => info.getValue() || '-',
       size: 120,
     }),
     columnHelper.accessor('name', {
-      header: '资产名称',
+      header: getFieldLabel('name', '资产名称'),
       cell: (info) => (
         <button
           onClick={() => navigate(`/assets/${info.row.original.id}`)}
@@ -628,7 +634,7 @@ export function Assets() {
       size: 120,
     }),
     columnHelper.accessor('status', {
-      header: '状态',
+      header: getFieldLabel('status', '状态'),
       cell: (info) => {
         const status = info.getValue() as AssetStatus
         const statusStyles: Record<AssetStatus, string> = {
@@ -650,11 +656,16 @@ export function Assets() {
       cell: (info) => new Date(info.getValue()).toLocaleDateString('zh-CN'),
       size: 120,
     }),
-  ], [navigate])
+  ], [navigate, fields])
 
-  // 动态字段列
+  // 动态字段列 - 过滤掉系统字段（name, code, status 已在 baseColumns 中定义）
   const dynamicColumns = useMemo(() => {
-    return fields.map((field) =>
+    // 系统字段名称列表
+    const systemFieldNames = ['name', 'code', 'status']
+    // 过滤掉系统字段和不可见字段
+    const customFields = fields.filter(f => !systemFieldNames.includes(f.name) && f.visible !== false)
+
+    return customFields.map((field) =>
       columnHelper.accessor(
         (row) => {
           try {
