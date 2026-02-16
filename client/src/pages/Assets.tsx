@@ -235,7 +235,7 @@ function ColumnFilterDropdown({
   isOpen,
   anchorRef,
   columnName,
-  columnId,
+  columnId: _columnId,
   fieldType,
   fieldForColumn,
   operators,

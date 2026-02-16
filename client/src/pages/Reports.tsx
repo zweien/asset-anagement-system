@@ -13,7 +13,6 @@ import {
   Cell,
   LineChart,
   Line,
-  Legend,
 } from 'recharts'
 import { assetApi, reportApi, ASSET_STATUS_LABELS, fieldApi } from '../lib/api'
 import type { AssetStatus, ReportTemplate, ReportDataItem, CreateReportTemplateDto, FieldConfig, ChartType } from '../lib/api'
@@ -375,11 +374,11 @@ export function Reports() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ label, percent }) => `${label} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                onClick={(_, index) => handleCustomChartClick(customChartData[index])}
+                onClick={(_: any, index: number) => handleCustomChartClick(customChartData[index])}
                 className="cursor-pointer"
               >
                 {chartData.map((entry, index) => (
@@ -412,7 +411,7 @@ export function Reports() {
                 name="数量"
                 stroke="#3b82f6"
                 strokeWidth={2}
-                onClick={(data) => {
+                onClick={(data: any) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -443,7 +442,7 @@ export function Reports() {
                 name="数量"
                 fill="#3b82f6"
                 radius={[4, 4, 0, 0]}
-                onClick={(data) => {
+                onClick={(data: any) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -504,11 +503,11 @@ export function Reports() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  onClick={(_, index) => handleStatusChartClick(statusData[index])}
+                  onClick={(_: any, index: number) => handleStatusChartClick(statusData[index])}
                   className="cursor-pointer"
                 >
                   {statusData.map((entry, index) => (
@@ -547,7 +546,7 @@ export function Reports() {
                   name="新增数量"
                   fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                  onClick={(data) => {
+                  onClick={(data: any) => {
                     if (data && data.index !== undefined) {
                       handleMonthlyChartClick(monthlyData[data.index])
                     }

@@ -71,7 +71,7 @@ function FieldForm({
     setLoading(true)
 
     try {
-      const data: CreateFieldDto | UpdateFieldDto = {
+      const data: CreateFieldDto = {
         name,
         label,
         type,
@@ -83,7 +83,7 @@ function FieldForm({
         data.options = JSON.stringify(
           options
             .split('\n')
-            .map((o) => o.trim())
+            .map((o: string) => o.trim())
             .filter(Boolean)
         )
       }
@@ -233,8 +233,8 @@ export function Settings() {
   }, [])
 
   // 添加字段
-  const handleAdd = async (data: CreateFieldDto) => {
-    const response: any = await fieldApi.create(data)
+  const handleAdd = async (data: CreateFieldDto | UpdateFieldDto) => {
+    const response: any = await fieldApi.create(data as CreateFieldDto)
     if (response?.success) {
       setShowAddForm(false)
       loadFields()

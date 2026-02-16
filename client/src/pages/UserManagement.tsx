@@ -9,11 +9,11 @@ import {
   type UpdateUserDto,
 } from '../lib/api'
 import { showSuccess, showError } from '../lib/toast'
-import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw, Check, XCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Key, UserCheck, UserX, Search, RotateCcw, Check, XCircle } from 'lucide-react'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,

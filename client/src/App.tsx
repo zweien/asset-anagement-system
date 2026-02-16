@@ -1,13 +1,22 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { Layout } from './components/layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { EditorRoute } from './components/PermissionRoute'
-import { Dashboard, Assets, Import, Reports, Settings, UserManagement } from './pages'
-import { AssetDetail } from './pages/AssetDetail'
-import { Logs } from './pages/Logs'
-import { Login } from './pages/Login'
+import { PageLoader } from './components/ui/PageLoader'
+
+// 懒加载页面组件
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
+const Assets = lazy(() => import('./pages/Assets').then(m => ({ default: m.Assets })))
+const AssetDetail = lazy(() => import('./pages/AssetDetail').then(m => ({ default: m.AssetDetail })))
+const Import = lazy(() => import('./pages/Import').then(m => ({ default: m.Import })))
+const Reports = lazy(() => import('./pages/Reports').then(m => ({ default: m.Reports })))
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })))
+const UserManagement = lazy(() => import('./pages/UserManagement').then(m => ({ default: m.UserManagement })))
+const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })))
+const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })))
 
 function App() {
   return (
@@ -27,7 +36,14 @@ function App() {
       />
       <Routes>
         {/* 登录页 - 不需要认证 */}
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <Login />
+            </Suspense>
+          }
+        />
 
         {/* 需要认证的路由 */}
         <Route
@@ -38,17 +54,47 @@ function App() {
           }
         >
           {/* 所有认证用户可访问 */}
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/assets" element={<Assets />} />
-          <Route path="/assets/:id" element={<AssetDetail />} />
-          <Route path="/reports" element={<Reports />} />
+          <Route
+            path="/"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <Dashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/assets"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <Assets />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/assets/:id"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <AssetDetail />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <Reports />
+              </Suspense>
+            }
+          />
 
           {/* 录入员及以上权限 */}
           <Route
             path="/import"
             element={
               <EditorRoute>
-                <Import />
+                <Suspense fallback={<PageLoader />}>
+                  <Import />
+                </Suspense>
               </EditorRoute>
             }
           />
@@ -56,7 +102,9 @@ function App() {
             path="/settings"
             element={
               <EditorRoute>
-                <Settings />
+                <Suspense fallback={<PageLoader />}>
+                  <Settings />
+                </Suspense>
               </EditorRoute>
             }
           />
@@ -64,7 +112,9 @@ function App() {
             path="/logs"
             element={
               <EditorRoute>
-                <Logs />
+                <Suspense fallback={<PageLoader />}>
+                  <Logs />
+                </Suspense>
               </EditorRoute>
             }
           />
@@ -74,7 +124,9 @@ function App() {
             path="/users"
             element={
               <AdminRoute>
-                <UserManagement />
+                <Suspense fallback={<PageLoader />}>
+                  <UserManagement />
+                </Suspense>
               </AdminRoute>
             }
           />

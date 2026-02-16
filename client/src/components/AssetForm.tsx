@@ -134,17 +134,22 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     setError('')
 
     try {
-      const payload: CreateAssetDto | UpdateAssetDto = {
-        name: formData.name,
-        code: formData.code || undefined,
-        status: formData.status,
-        data: formData.data,
-      }
-
       let result
       if (isEditMode && asset) {
+        const payload: UpdateAssetDto = {
+          name: formData.name,
+          code: formData.code || undefined,
+          status: formData.status,
+          data: formData.data,
+        }
         result = await assetApi.update(asset.id, payload)
       } else {
+        const payload: CreateAssetDto = {
+          name: formData.name,
+          code: formData.code || undefined,
+          status: formData.status,
+          data: formData.data,
+        }
         result = await assetApi.create(payload)
       }
 

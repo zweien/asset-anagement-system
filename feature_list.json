@@ -1017,7 +1017,7 @@
       "路由切换时懒加载",
       "打包后生成多个 chunk"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BACKUP-001",

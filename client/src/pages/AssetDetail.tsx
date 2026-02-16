@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Trash2, Calendar, Tag, Image as ImageIcon, X, Save, Camera } from 'lucide-react'
-import { assetApi, ASSET_STATUS_LABELS, FIELD_TYPES } from '../lib/api'
-import type { Asset, AssetStatus, FieldConfig, FieldType } from '../lib/api'
+import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
+import type { Asset, AssetStatus, FieldConfig } from '../lib/api'
 import { fieldApi } from '../lib/api'
 import { ImageUploader } from '../components/ImageUploader'
 
@@ -238,7 +238,7 @@ export function AssetDetail() {
     const colors: Record<AssetStatus, string> = {
       ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       IDLE: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      MAINTENANCE: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      DAMAGED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       SCRAPPED: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
     }
     return colors[status]

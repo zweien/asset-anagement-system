@@ -1,8 +1,8 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 
 const API_BASE_URL = 'http://localhost:3002/api'
 
-const api = axios.create({
+const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ const api = axios.create({
 })
 
 // 请求拦截器 - 自动添加 Token
-api.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -22,7 +22,7 @@ api.interceptors.request.use(
 )
 
 // 响应拦截器 - 统一处理错误
-api.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => response.data,
   (error) => {
     // 401 错误时清除登录状态
@@ -39,6 +39,19 @@ api.interceptors.response.use(
   }
 )
 
+// 封装 API 请求方法，返回正确的类型
+const api = {
+  get: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    axiosInstance.get(url, config) as Promise<T>,
+  post: <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    axiosInstance.post(url, data, config) as Promise<T>,
+  put: <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    axiosInstance.put(url, data, config) as Promise<T>,
+  delete: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    axiosInstance.delete(url, config) as Promise<T>,
+}
+
+export { axiosInstance }
 export default api
 
 // 字段配置类型

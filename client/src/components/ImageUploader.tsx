@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Upload, X, Image as ImageIcon, Camera } from 'lucide-react'
+import { Upload, X, Camera } from 'lucide-react'
 
 interface ImageInfo {
   id: string
