@@ -6,6 +6,9 @@ const router = Router()
 // GET /api/assets - 获取资产列表（分页）
 router.get('/', AssetController.getAll)
 
+// GET /api/assets/grouped - 分组查询
+router.get('/grouped', AssetController.getGrouped)
+
 // GET /api/assets/:id - 获取单个资产
 router.get('/:id', AssetController.getById)
 

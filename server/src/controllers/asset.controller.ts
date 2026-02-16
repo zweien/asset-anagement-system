@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { AssetService, CreateAssetDto, UpdateAssetDto, AssetQueryParams } from '../services/asset.service'
+import { LogService } from '../services/log.service'
 
 // 统一响应格式
 const sendSuccess = <T>(res: Response, data: T, message?: string) => {
@@ -23,6 +24,7 @@ export const AssetController = {
         status: req.query.status as string,
         sortBy: (req.query.sortBy as string) || 'createdAt',
         sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc',
+        filters: req.query.filters as string,
       }
 
       const result = await AssetService.getAll(params)
@@ -70,6 +72,16 @@ export const AssetController = {
         return sendError(res, result.error!)
       }
 
+      // 记录操作日志
+      await LogService.create({
+        action: 'CREATE',
+        entityType: 'Asset',
+        entityId: result.data!.id,
+        newValue: result.data,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      })
+
       sendSuccess(res, result.data, '资产创建成功')
     } catch (error) {
       sendError(res, '创建资产失败', 500)
@@ -82,11 +94,25 @@ export const AssetController = {
       const { id } = req.params
       const data: UpdateAssetDto = req.body
 
+      // 获取旧值用于日志
+      const oldAsset = await AssetService.getById(id)
+
       const result = await AssetService.update(id, data)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      await LogService.create({
+        action: 'UPDATE',
+        entityType: 'Asset',
+        entityId: id,
+        oldValue: oldAsset,
+        newValue: result.data,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      })
 
       sendSuccess(res, result.data, '资产更新成功')
     } catch (error) {
@@ -99,11 +125,24 @@ export const AssetController = {
     try {
       const { id } = req.params
 
+      // 获取旧值用于日志
+      const oldAsset = await AssetService.getById(id)
+
       const result = await AssetService.delete(id)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      await LogService.create({
+        action: 'DELETE',
+        entityType: 'Asset',
+        entityId: id,
+        oldValue: oldAsset,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      })
 
       sendSuccess(res, null, '资产删除成功')
     } catch (error) {
@@ -126,9 +165,38 @@ export const AssetController = {
         return sendError(res, result.error!)
       }
 
+      // 记录批量删除日志
+      await LogService.create({
+        action: 'DELETE',
+        entityType: 'Asset',
+        newValue: { count: result.count, ids },
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      })
+
       sendSuccess(res, { count: result.count }, `成功删除 ${result.count} 条资产`)
     } catch (error) {
       sendError(res, '批量删除失败', 500)
+    }
+  },
+
+  // GET /api/assets/grouped - 分组查询
+  async getGrouped(req: Request, res: Response) {
+    try {
+      const groupBy = (req.query.groupBy as string) || 'status'
+      const params: AssetQueryParams = {
+        pageSize: parseInt(req.query.pageSize as string) || 50,
+      }
+
+      const result = await AssetService.getGrouped(groupBy, params)
+
+      if (!result.success) {
+        return sendError(res, result.error!)
+      }
+
+      sendSuccess(res, result.data)
+    } catch (error) {
+      sendError(res, '分组查询失败', 500)
     }
   },
 }
