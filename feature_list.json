@@ -849,7 +849,7 @@
       "日志查询性能提升",
       "用户查询性能提升"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-001",
