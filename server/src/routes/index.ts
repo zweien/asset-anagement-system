@@ -9,6 +9,7 @@ import dbImportRouter from './db-import'
 import reportRouter from './report'
 import authRouter from './auth'
 import usersRouter from './users'
+import backupRouter from './backup'
 
 const router = Router()
 
@@ -50,5 +51,8 @@ router.use('/auth', authRouter)
 
 // 用户管理路由（仅管理员）
 router.use('/users', usersRouter)
+
+// 备份路由（仅管理员）
+router.use('/backup', backupRouter)
 
 export default router
