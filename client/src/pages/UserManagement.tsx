@@ -11,7 +11,6 @@ import {
 import { Plus, Pencil, Trash2, Key, UserCheck, UserX, X, Search, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -259,15 +258,6 @@ export function UserManagement() {
     })
   }
 
-  const getRoleBadgeVariant = (role: UserRole): "default" | "secondary" | "destructive" | "outline" => {
-    switch (role) {
-      case 'ADMIN': return 'destructive'
-      case 'USER': return 'default'
-      case 'VIEWER': return 'secondary'
-      default: return 'secondary'
-    }
-  }
-
   const openEditModal = (user: UserListItem) => {
     setSelectedUser(user)
     setEditFormData({
@@ -389,9 +379,7 @@ export function UserManagement() {
                         onValueChange={(v) => handleRoleChange(user, v as UserRole)}
                       >
                         <SelectTrigger className="w-24 h-8">
-                          <Badge variant={getRoleBadgeVariant(user.role)} className="cursor-pointer">
-                            {USER_ROLE_LABELS[user.role]}
-                          </Badge>
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(USER_ROLE_LABELS).map(([value, label]) => (
