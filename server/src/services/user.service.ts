@@ -185,7 +185,7 @@ export const UserService = {
           username: data.username,
           password: hashedPassword,
           name: data.name,
-          email: data.email,
+          email: data.email || null,
           role: data.role || UserRole.USER,
         },
       })
