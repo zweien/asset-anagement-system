@@ -6,7 +6,9 @@ import swaggerUi from 'swagger-ui-express'
 import routes from './routes'
 import { AuthService } from './services/auth.service'
 import { xssSanitize } from './middleware/xss.middleware'
+import { requestLogger, errorLogger } from './middleware/logger.middleware'
 import { swaggerSpec } from './config/swagger'
+import logger from './utils/logger'
 
 config()
 
@@ -20,6 +22,9 @@ app.use(helmet({
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// 请求日志中间件
+app.use(requestLogger)
 
 // XSS 防护中间件
 app.use(xssSanitize)
@@ -38,18 +43,21 @@ app.use((_req, res) => {
   res.status(404).json({ success: false, error: 'Not Found' })
 })
 
+// 错误日志中间件
+app.use(errorLogger)
+
 // 错误处理
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Error:', err.message)
+  logger.error(`Unhandled error: ${err.message}`, { stack: err.stack })
   res.status(500).json({ success: false, error: 'Internal Server Error', message: err.message })
 })
 
 // 启动服务器
 app.listen(PORT, async () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`)
-  console.log(`📍 Health check: http://localhost:${PORT}/api/health`)
-  console.log(`📍 API Docs: http://localhost:${PORT}/api-docs`)
-  console.log(`📍 Fields API: http://localhost:${PORT}/api/fields`)
+  logger.info(`🚀 Server is running on http://localhost:${PORT}`)
+  logger.info(`📍 Health check: http://localhost:${PORT}/api/health`)
+  logger.info(`📍 API Docs: http://localhost:${PORT}/api-docs`)
+  logger.info(`📍 Fields API: http://localhost:${PORT}/api/fields`)
 
   // 创建默认管理员账户
   await AuthService.createDefaultAdmin()

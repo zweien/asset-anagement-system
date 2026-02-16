@@ -1089,6 +1089,6 @@
       "日志写入文件",
       "支持日志轮转"
     ],
-    "passes": false
+    "passes": true
   }
 ]
