@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Package, Database, TrendingUp, AlertCircle } from 'lucide-react'
 import { assetApi, logApi } from '../lib/api'
 import { PageInstructions } from '@/components/PageInstructions'
+import { DashboardSkeleton } from '@/components/ui/SkeletonLoaders'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -98,30 +99,34 @@ export function Dashboard() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statItems.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.label}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+      {loading ? (
+        <DashboardSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {statItems.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <Card key={stat.label}>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {stat.value}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {loading ? '...' : stat.value}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       {/* Quick Actions */}
       <Card>

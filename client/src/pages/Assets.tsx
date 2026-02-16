@@ -16,6 +16,7 @@ import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRol
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
 import { PageInstructions } from '@/components/PageInstructions'
+import { TableSkeleton } from '@/components/ui/SkeletonLoaders'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -1216,8 +1217,8 @@ export function Assets() {
         <div className="space-y-4">
           {loading ? (
             <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
-                加载中...
+              <CardContent className="p-6">
+                <TableSkeleton rows={5} columns={4} />
               </CardContent>
             </Card>
           ) : !groupedData || groupedData.groups.length === 0 ? (
@@ -1477,11 +1478,15 @@ export function Assets() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                    加载中...
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {columns.map((_, j) => (
+                      <TableCell key={j}>
+                        <div className="h-4 bg-muted rounded animate-pulse" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
               ) : assets.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
