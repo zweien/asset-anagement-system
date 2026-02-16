@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import {
   LayoutDashboard,
@@ -100,23 +101,24 @@ function PasswordRequirements({ password }: { password: string }) {
 
 interface NavItem {
   path: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ className?: string }>
   requiredPermission?: 'asset:create' | 'field:manage' | 'import:execute' | 'user:manage'
 }
 
 // 所有导航项定义
 const allNavItems: NavItem[] = [
-  { path: '/', label: '仪表盘', icon: LayoutDashboard },
-  { path: '/assets', label: '资产管理', icon: Package },
-  { path: '/import', label: '数据导入', icon: Database, requiredPermission: 'import:execute' },
-  { path: '/reports', label: '统计报表', icon: BarChart3 },
-  { path: '/logs', label: '操作日志', icon: FileText, requiredPermission: 'asset:create' },
-  { path: '/settings', label: '系统设置', icon: Settings, requiredPermission: 'field:manage' },
-  { path: '/users', label: '用户管理', icon: Users, requiredPermission: 'user:manage' },
+  { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { path: '/assets', labelKey: 'nav.assets', icon: Package },
+  { path: '/import', labelKey: 'nav.import', icon: Database, requiredPermission: 'import:execute' },
+  { path: '/reports', labelKey: 'nav.reports', icon: BarChart3 },
+  { path: '/logs', labelKey: 'nav.logs', icon: FileText, requiredPermission: 'asset:create' },
+  { path: '/settings', labelKey: 'nav.settings', icon: Settings, requiredPermission: 'field:manage' },
+  { path: '/users', labelKey: 'nav.users', icon: Users, requiredPermission: 'user:manage' },
 ]
 
 export function Header() {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -213,7 +215,7 @@ export function Header() {
                   )}
                 >
                   <Icon className="w-4 h-4" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               )
             })}
@@ -250,12 +252,12 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setShowChangePasswordModal(true)}>
                   <KeyRound className="w-4 h-4 mr-2" />
-                  修改密码
+                  {t('users.changePassword')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} variant="destructive">
                   <LogOut className="w-4 h-4 mr-2" />
-                  退出登录
+                  {t('nav.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -288,7 +290,7 @@ export function Header() {
                         )}
                       >
                         <Icon className="w-5 h-5" />
-                        {item.label}
+                        {t(item.labelKey)}
                       </Link>
                     )
                   })}
@@ -303,7 +305,7 @@ export function Header() {
       <Dialog open={showChangePasswordModal} onOpenChange={setShowChangePasswordModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>修改密码</DialogTitle>
+            <DialogTitle>{t('users.changePassword')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {passwordError && (

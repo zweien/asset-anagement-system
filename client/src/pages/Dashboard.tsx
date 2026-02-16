@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Package, Database, TrendingUp, AlertCircle } from 'lucide-react'
 import { assetApi, logApi } from '../lib/api'
 import { PageInstructions } from '@/components/PageInstructions'
@@ -15,6 +16,7 @@ interface Stats {
 }
 
 export function Dashboard() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<Stats>({
     totalAssets: 0,
     monthlyNew: 0,
@@ -71,30 +73,30 @@ export function Dashboard() {
   }
 
   const statItems = [
-    { label: '资产总数', value: stats.totalAssets, icon: Package, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-    { label: '本月新增', value: stats.monthlyNew, icon: TrendingUp, color: 'text-green-500', bgColor: 'bg-green-500/10' },
-    { label: '导入记录', value: stats.importRecords, icon: Database, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
-    { label: '闲置资产', value: stats.pending, icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
+    { label: t('dashboard.totalAssets'), value: stats.totalAssets, icon: Package, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
+    { label: t('dashboard.monthlyNew'), value: stats.monthlyNew, icon: TrendingUp, color: 'text-green-500', bgColor: 'bg-green-500/10' },
+    { label: t('dashboard.importRecords'), value: stats.importRecords, icon: Database, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    { label: t('dashboard.idleAssets'), value: stats.pending, icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
   ]
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-foreground">
-          仪表盘
+          {t('dashboard.title')}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          欢迎使用资产录入管理系统
+          {t('dashboard.subtitle')}
         </p>
       </div>
 
       {/* 使用说明 */}
       <PageInstructions
-        title="仪表盘使用说明"
+        title={t('dashboard.title')}
         instructions={[
-          '查看资产总数、本月新增、导入记录和闲置资产等统计数据',
-          '通过快速操作卡片可以快速跳转到常用功能页面',
-          '点击统计数据卡片可以查看更多详细信息（暂未实现）'
+          t('dashboard.totalAssets'),
+          t('dashboard.quickActions'),
+          t('dashboard.manageAssets'),
         ]}
       />
 
@@ -131,7 +133,7 @@ export function Dashboard() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>快速操作</CardTitle>
+          <CardTitle>{t('dashboard.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -142,7 +144,7 @@ export function Dashboard() {
             >
               <Link to="/assets">
                 <Package className="w-5 h-5 mr-3 text-primary" />
-                <span className="font-medium">管理资产</span>
+                <span className="font-medium">{t('dashboard.manageAssets')}</span>
               </Link>
             </Button>
             <Button
@@ -152,7 +154,7 @@ export function Dashboard() {
             >
               <Link to="/import">
                 <Database className="w-5 h-5 mr-3 text-primary" />
-                <span className="font-medium">导入数据</span>
+                <span className="font-medium">{t('dashboard.importData')}</span>
               </Link>
             </Button>
             <Button
@@ -162,7 +164,7 @@ export function Dashboard() {
             >
               <Link to="/settings">
                 <TrendingUp className="w-5 h-5 mr-3 text-primary" />
-                <span className="font-medium">配置字段</span>
+                <span className="font-medium">{t('dashboard.configureFields')}</span>
               </Link>
             </Button>
           </div>
