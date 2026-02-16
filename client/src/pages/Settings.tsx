@@ -20,7 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   Select,
@@ -32,28 +31,17 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 
-// 系统内置字段定义 - Asset 表的基础字段
-const SYSTEM_FIELDS: Array<{
-  name: string
-  label: string
-  type: FieldType
-  required: boolean
-  description: string
-}> = [
-  { name: 'name', label: '资产名称', type: 'TEXT', required: true, description: '资产的主要名称标识' },
-  { name: 'code', label: '资产编号', type: 'TEXT', required: false, description: '资产的唯一编号' },
-  { name: 'status', label: '状态', type: 'SELECT', required: true, description: '资产当前状态（在用/闲置/维修/报废）' },
-]
-
 // 字段表单组件
 function FieldForm({
   field,
   onSave,
   onCancel,
+  isSystem = false,
 }: {
   field?: FieldConfig | null
   onSave: (data: CreateFieldDto | UpdateFieldDto) => Promise<void>
   onCancel: () => void
+  isSystem?: boolean
 }) {
   const [name, setName] = useState(field?.name || '')
   const [label, setLabel] = useState(field?.label || '')
@@ -114,6 +102,14 @@ function FieldForm({
           {error}
         </div>
       )}
+
+      {isSystem && (
+        <div className="p-3 text-sm text-muted-foreground bg-muted rounded-lg flex items-center gap-2">
+          <Lock className="w-4 h-4" />
+          系统字段：可修改名称和配置，但不可删除
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">字段名称 (英文标识)</Label>
@@ -220,11 +216,9 @@ export function Settings() {
       setLoading(true)
       const response: any = await fieldApi.getAll()
       if (response?.success) {
-        // 过滤掉系统字段（如果数据库中有的话）
-        const customFields = response.data.filter(
-          (f: FieldConfig) => !SYSTEM_FIELDS.some(sf => sf.name === f.name)
-        )
-        setFields(customFields)
+        // 按 order 排序，系统字段在前
+        const sortedFields = response.data.sort((a: FieldConfig, b: FieldConfig) => a.order - b.order)
+        setFields(sortedFields)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败')
@@ -262,6 +256,10 @@ export function Settings() {
 
   // 删除字段
   const handleDelete = async (field: FieldConfig) => {
+    if (field.isSystem) {
+      alert('系统字段不可删除')
+      return
+    }
     if (!confirm(`确定要删除字段 "${field.label}" 吗？此操作不可恢复。`)) {
       return
     }
@@ -296,7 +294,7 @@ export function Settings() {
       <PageInstructions
         title="字段配置说明"
         instructions={[
-          '系统字段是数据库内置字段（资产名称、资产编号、状态），不可删除',
+          '系统字段（资产名称、资产编号、状态）是数据库内置字段，可修改名称和配置，但不可删除',
           '自定义字段可以完全自由配置和删除',
           '隐藏的字段不会在资产表单和列表中显示',
           '字段顺序决定了在表单中的显示顺序（暂未实现拖拽排序）',
@@ -324,6 +322,10 @@ export function Settings() {
             <div className="p-8 text-center text-muted-foreground">
               加载中...
             </div>
+          ) : fields.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              暂无字段配置，点击上方"添加字段"开始配置
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -339,27 +341,48 @@ export function Settings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* 系统内置字段 */}
-                {SYSTEM_FIELDS.map((field) => (
-                  <TableRow key={field.name} className="bg-muted/30">
+                {fields.map((field) => (
+                  <TableRow
+                    key={field.id}
+                    className={field.isSystem ? 'bg-muted/30' : ''}
+                  >
                     <TableCell>
-                      <Lock className="w-4 h-4 text-muted-foreground" />
+                      {field.isSystem ? (
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      ) : (
+                        <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="gap-1">
-                        <Shield className="w-3 h-3" />
-                        系统
-                      </Badge>
+                      {field.isSystem ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <Shield className="w-3 h-3" />
+                          系统
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">自定义</Badge>
+                      )}
                     </TableCell>
                     <TableCell className="font-mono text-sm">
                       {field.name}
                     </TableCell>
                     <TableCell>
-                      {field.label}
+                      {editingField?.id === field.id ? (
+                        <div className="py-2">
+                          <FieldForm
+                            field={field}
+                            onSave={handleUpdate}
+                            onCancel={() => setEditingField(null)}
+                            isSystem={field.isSystem}
+                          />
+                        </div>
+                      ) : (
+                        field.label
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {getTypeLabel(field.type)}
+                        {getTypeLabel(field.type as FieldType)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -370,93 +393,38 @@ export function Settings() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Eye className="w-4 h-4 text-green-600" />
+                      {field.visible ? (
+                        <Eye className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-muted-foreground" />
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-xs text-muted-foreground">
-                        {field.description}
-                      </span>
+                      {editingField?.id !== field.id && (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => setEditingField(field)}
+                            title="编辑"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => handleDelete(field)}
+                            title="删除"
+                            disabled={field.isSystem}
+                            className={field.isSystem ? 'opacity-50' : 'hover:text-destructive'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
-
-                {/* 自定义字段 */}
-                {fields.length === 0 && !loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                      暂无自定义字段，点击上方"添加字段"开始配置
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  fields.map((field) => (
-                    <TableRow key={field.id}>
-                      <TableCell>
-                        <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">自定义</Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {field.name}
-                      </TableCell>
-                      <TableCell>
-                        {editingField?.id === field.id ? (
-                          <div className="py-2">
-                            <FieldForm
-                              field={field}
-                              onSave={handleUpdate}
-                              onCancel={() => setEditingField(null)}
-                            />
-                          </div>
-                        ) : (
-                          field.label
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {getTypeLabel(field.type as FieldType)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {field.required ? (
-                          <span className="text-green-600">是</span>
-                        ) : (
-                          <span className="text-muted-foreground">否</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {field.visible ? (
-                          <Eye className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <EyeOff className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {editingField?.id !== field.id && (
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={() => setEditingField(field)}
-                              title="编辑"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={() => handleDelete(field)}
-                              title="删除"
-                              className="hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
               </TableBody>
             </Table>
           )}
