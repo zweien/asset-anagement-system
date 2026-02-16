@@ -11,8 +11,8 @@ import {
 } from '@tanstack/react-table'
 import type { SortingState, VisibilityState } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink } from 'lucide-react'
-import { assetApi, fieldApi, ASSET_STATUS_LABELS } from '../lib/api'
-import type { Asset, FieldConfig, AssetStatus, FieldType, GroupedAssets } from '../lib/api'
+import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser } from '../lib/api'
+import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
 import { PageInstructions } from '@/components/PageInstructions'
@@ -189,6 +189,29 @@ const SELECT_OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: 'isNotEmpty', label: '不为空' },
 ]
 
+// 解析选项配置，支持多种格式：
+// 1. JSON 字符串数组: ["A", "B", "C"]
+// 2. JSON 对象数组: [{"value":"A","label":"选项A"}]
+// 3. 逗号分隔字符串: "A,B,C"
+function parseOptions(optionsStr: string | null | undefined): string[] {
+  if (!optionsStr) return []
+  try {
+    const parsed = JSON.parse(optionsStr)
+    if (Array.isArray(parsed)) {
+      // 检查是否是对象数组格式
+      if (parsed.length > 0 && typeof parsed[0] === 'object') {
+        return parsed.map((opt: any) => opt.value || opt.name || opt)
+      }
+      // 简单字符串数组
+      return parsed.map((opt: string) => opt)
+    }
+  } catch {
+    // 逗号分隔的字符串
+    return optionsStr.split(',').map((o) => o.trim()).filter(Boolean)
+  }
+  return []
+}
+
 // 列筛选下拉菜单组件
 interface ColumnFilterDropdownProps {
   isOpen: boolean
@@ -233,19 +256,27 @@ function ColumnFilterDropdown({
       const viewportHeight = window.innerHeight
       const showAbove = rect.bottom + dropdownHeight > viewportHeight && rect.top > dropdownHeight
       setPosition({
-        top: showAbove ? rect.top + window.scrollY - dropdownHeight : rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: showAbove ? rect.top - dropdownHeight - 4 : rect.bottom + 4,
+        left: rect.left,
       })
     }
   }, [isOpen, anchorRef])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      // 检查是否点击在 radix-ui portal 内（如 SelectContent）
+      const isRadixPortal = target instanceof Element && (
+        target.closest('[data-slot="select-content"]') ||
+        target.closest('[data-radix-select-viewport]') ||
+        target.closest('[role="listbox"]')
+      )
       if (
+        !isRadixPortal &&
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
+        !dropdownRef.current.contains(target) &&
         anchorRef.current &&
-        !anchorRef.current.contains(event.target as Node)
+        !anchorRef.current.contains(target)
       ) {
         onClose()
       }
@@ -348,27 +379,14 @@ function ColumnFilterDropdown({
         />
       )}
 
-      {needsValueInput && fieldType === 'SELECT' && columnId === 'status' && (
-        <Select value={filterValue as string} onValueChange={setFilterValue}>
-          <SelectTrigger className="w-full mb-2">
-            <SelectValue placeholder="请选择" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
       {needsValueInput && fieldType === 'SELECT' && fieldForColumn?.options && (
         <Select value={filterValue as string} onValueChange={setFilterValue}>
           <SelectTrigger className="w-full mb-2">
             <SelectValue placeholder="请选择" />
           </SelectTrigger>
           <SelectContent>
-            {fieldForColumn.options.split(',').map((opt) => (
-              <SelectItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</SelectItem>
+            {parseOptions(fieldForColumn.options).map((opt) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -408,6 +426,12 @@ export function Assets() {
   const [uploadAsset, setUploadAsset] = useState<Asset | null>(null)
   const [dateRangeFilter, setDateRangeFilter] = useState<{ startDate?: string; endDate?: string }>({})
 
+  // 权限检查
+  const currentUser = getStoredUser()
+  const canCreate = hasPermission(currentUser?.role as UserRole, 'asset:create')
+  const canUpdate = hasPermission(currentUser?.role as UserRole, 'asset:update')
+  const canDelete = hasPermission(currentUser?.role as UserRole, 'asset:delete')
+
   // 分组视图状态
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list')
   const [groupBy, setGroupBy] = useState<string>('status')
@@ -429,7 +453,6 @@ export function Assets() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fields: fieldIds,
-          status: statusFilter || undefined,
           search: search || undefined,
         }),
       })
@@ -457,9 +480,7 @@ export function Assets() {
       const response = await fetch('http://localhost:3002/api/images/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: statusFilter || undefined,
-        }),
+        body: JSON.stringify({}),
       })
 
       if (!response.ok) {
@@ -552,7 +573,7 @@ export function Assets() {
 
   useEffect(() => {
     loadData()
-  }, [page, pageSize, sorting, statusFilter, search, dateRangeFilter])
+  }, [page, pageSize, sorting, search, dateRangeFilter, statusFilter])
 
   // 加载分组数据
   const loadGroupedData = async () => {
@@ -628,9 +649,9 @@ export function Assets() {
       ),
       size: 200,
     }),
-    columnHelper.accessor('category', {
-      header: '分类',
-      cell: (info) => info.getValue()?.name || '-',
+    columnHelper.accessor('createdAt', {
+      header: '创建时间',
+      cell: (info) => new Date(info.getValue()).toLocaleDateString('zh-CN'),
       size: 120,
     }),
     columnHelper.accessor('status', {
@@ -640,7 +661,7 @@ export function Assets() {
         const statusStyles: Record<AssetStatus, string> = {
           ACTIVE: 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400',
           IDLE: 'bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400',
-          MAINTENANCE: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+          DAMAGED: 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400',
           SCRAPPED: 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400',
         }
         return (
@@ -651,17 +672,12 @@ export function Assets() {
       },
       size: 100,
     }),
-    columnHelper.accessor('createdAt', {
-      header: '创建时间',
-      cell: (info) => new Date(info.getValue()).toLocaleDateString('zh-CN'),
-      size: 120,
-    }),
   ], [navigate, fields])
 
-  // 动态字段列 - 过滤掉系统字段（name, code, status 已在 baseColumns 中定义）
+  // 动态字段列 - 过滤掉系统字段（name, code 已在 baseColumns 中定义）
   const dynamicColumns = useMemo(() => {
     // 系统字段名称列表
-    const systemFieldNames = ['name', 'code', 'status']
+    const systemFieldNames = ['name', 'code']
     // 过滤掉系统字段和不可见字段
     const customFields = fields.filter(f => !systemFieldNames.includes(f.name) && f.visible !== false)
 
@@ -709,55 +725,61 @@ export function Assets() {
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={() => {
-              setUploadAsset(info.row.original)
-              setShowImageUpload(true)
-            }}
-            title="添加照片"
-          >
-            <Camera className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={() => {
-              setEditingAsset(info.row.original)
-              setShowAssetForm(true)
-            }}
-            title="编辑"
-          >
-            <Edit2 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={async () => {
-              if (confirm('确定要删除这个资产吗？')) {
-                try {
-                  const result: any = await assetApi.delete(info.row.original.id)
-                  if (result?.success) {
-                    loadData()
-                  } else {
-                    setError('删除失败')
+          {canUpdate && (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => {
+                setUploadAsset(info.row.original)
+                setShowImageUpload(true)
+              }}
+              title="添加照片"
+            >
+              <Camera className="w-4 h-4" />
+            </Button>
+          )}
+          {canUpdate && (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => {
+                setEditingAsset(info.row.original)
+                setShowAssetForm(true)
+              }}
+              title="编辑"
+            >
+              <Edit2 className="w-4 h-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={async () => {
+                if (confirm('确定要删除这个资产吗？')) {
+                  try {
+                    const result: any = await assetApi.delete(info.row.original.id)
+                    if (result?.success) {
+                      loadData()
+                    } else {
+                      setError('删除失败')
+                    }
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : '删除失败')
                   }
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : '删除失败')
                 }
-              }
-            }}
-            title="删除"
-            className="hover:text-destructive"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+              }}
+              title="删除"
+              className="hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       ),
       size: 120,
     }),
-  ], [baseColumns, dynamicColumns, navigate])
+  ], [baseColumns, dynamicColumns, navigate, canUpdate, canDelete])
 
   // 表格实例
   const table = useReactTable({
@@ -789,13 +811,15 @@ export function Assets() {
             共 {total} 条资产
           </p>
         </div>
-        <Button onClick={() => {
-          setEditingAsset(null)
-          setShowAssetForm(true)
-        }}>
-          <Plus className="w-4 h-4 mr-1" />
-          新增资产
-        </Button>
+        {canCreate && (
+          <Button onClick={() => {
+            setEditingAsset(null)
+            setShowAssetForm(true)
+          }}>
+            <Plus className="w-4 h-4 mr-1" />
+            新增资产
+          </Button>
+        )}
       </div>
 
       {/* 使用说明 */}
@@ -942,7 +966,6 @@ export function Assets() {
                   size="sm"
                   onClick={() => {
                     setFilters([])
-                    setStatusFilter('')
                     setPage(1)
                   }}
                 >
@@ -1006,7 +1029,7 @@ export function Assets() {
                   )}
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="全部" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1159,8 +1182,8 @@ export function Assets() {
                           <SelectValue placeholder="请选择" />
                         </SelectTrigger>
                         <SelectContent>
-                          {field.options.split(',').map((opt) => (
-                            <SelectItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</SelectItem>
+                          {parseOptions(field.options).map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1219,9 +1242,7 @@ export function Assets() {
                       )}
                     />
                     <span className="font-medium text-foreground">
-                      {groupBy === 'status'
-                        ? ASSET_STATUS_LABELS[group.key as AssetStatus] || group.label
-                        : group.label}
+                      {group.label}
                     </span>
                     <Badge variant="secondary">
                       {group.count}
@@ -1249,40 +1270,35 @@ export function Assets() {
                               {asset.code || '无编号'}
                             </p>
                           </div>
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              asset.status === 'ACTIVE' && "bg-green-500/10 text-green-600",
-                              asset.status === 'IDLE' && "bg-yellow-500/10 text-yellow-600",
-                              asset.status === 'MAINTENANCE' && "bg-blue-500/10 text-blue-600",
-                              asset.status === 'SCRAPPED' && "bg-gray-500/10 text-gray-600"
-                            )}
-                          >
-                            {ASSET_STATUS_LABELS[asset.status as AssetStatus]}
-                          </Badge>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="icon-xs" onClick={() => navigate(`/assets/${asset.id}`)} title="查看详情">
                             <ExternalLink className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon-xs" onClick={() => { setUploadAsset(asset); setShowImageUpload(true) }} title="添加照片">
-                            <Camera className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon-xs" onClick={() => { setEditingAsset(asset); setShowAssetForm(true) }} title="编辑">
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon-xs" onClick={async () => {
-                            if (confirm('确定要删除这个资产吗？')) {
-                              try {
-                                const result: any = await assetApi.delete(asset.id)
-                                if (result?.success) loadGroupedData()
-                              } catch (err) {
-                                setError(err instanceof Error ? err.message : '删除失败')
+                          {canUpdate && (
+                            <Button variant="ghost" size="icon-xs" onClick={() => { setUploadAsset(asset); setShowImageUpload(true) }} title="添加照片">
+                              <Camera className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canUpdate && (
+                            <Button variant="ghost" size="icon-xs" onClick={() => { setEditingAsset(asset); setShowAssetForm(true) }} title="编辑">
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button variant="ghost" size="icon-xs" onClick={async () => {
+                              if (confirm('确定要删除这个资产吗？')) {
+                                try {
+                                  const result: any = await assetApi.delete(asset.id)
+                                  if (result?.success) loadGroupedData()
+                                } catch (err) {
+                                  setError(err instanceof Error ? err.message : '删除失败')
+                                }
                               }
-                            }
-                          }} title="删除" className="hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                            }} title="删除" className="hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1307,15 +1323,14 @@ export function Assets() {
                     const fieldForColumn = fields.find(f => `field_${f.name}` === columnId)
 
                     const getFieldType = (): FieldType | null => {
-                      if (columnId === 'status') return 'SELECT'
                       if (columnId === 'createdAt') return 'DATE'
-                      if (columnId === 'name' || columnId === 'code' || columnId === 'category') return 'TEXT'
+                      if (columnId === 'name' || columnId === 'code') return 'TEXT'
                       return fieldForColumn?.type as FieldType || null
                     }
                     const fieldType = getFieldType()
 
                     const getColumnName = () => {
-                      if (columnId === 'status' || columnId === 'createdAt' || columnId === 'name' || columnId === 'code') return columnId
+                      if (columnId === 'createdAt' || columnId === 'name' || columnId === 'code') return columnId
                       return fieldForColumn?.name || ''
                     }
                     const columnName = getColumnName()
@@ -1335,9 +1350,7 @@ export function Assets() {
                       } else {
                         setActiveFilterColumn(columnId)
                         setColumnFilterOperator(existingFilter?.operator || (fieldType === 'TEXT' || fieldType === 'TEXTAREA' ? 'contains' : 'equals'))
-                        if (columnId === 'status' && statusFilter) {
-                          setColumnFilterValue(statusFilter)
-                        } else if (existingFilter?.value) {
+                        if (existingFilter?.value) {
                           setColumnFilterValue(existingFilter.value as any)
                         } else {
                           setColumnFilterValue('')
@@ -1349,37 +1362,27 @@ export function Assets() {
                       const newFilters = filters.filter(f => f.field !== columnName)
                       const needsValue = columnFilterOperator !== 'isEmpty' && columnFilterOperator !== 'isNotEmpty'
 
-                      if (columnId === 'status') {
-                        const newStatus = needsValue && columnFilterValue ? String(columnFilterValue) : ''
-                        setStatusFilter(newStatus)
-                      } else {
-                        if (!needsValue || columnFilterValue !== '' && columnFilterValue !== null) {
-                          newFilters.push({
-                            field: columnName,
-                            type: fieldType || 'TEXT',
-                            operator: columnFilterOperator,
-                            value: needsValue ? columnFilterValue : null
-                          })
-                        }
-                        setFilters(newFilters)
+                      if (!needsValue || columnFilterValue !== '' && columnFilterValue !== null) {
+                        newFilters.push({
+                          field: columnName,
+                          type: fieldType || 'TEXT',
+                          operator: columnFilterOperator,
+                          value: needsValue ? columnFilterValue : null
+                        })
                       }
+                      setFilters(newFilters)
 
                       setActiveFilterColumn(null)
                       setPage(1)
 
                       setTimeout(() => {
                         const filterObj: Record<string, any> = {}
-                        const filtersToUse = columnId === 'status' ? filters : newFilters
-                        filtersToUse.forEach((f) => {
+                        newFilters.forEach((f) => {
                           filterObj[f.field] = {
                             operator: f.operator,
                             value: f.value,
                           }
                         })
-
-                        const currentStatusFilter = columnId === 'status'
-                          ? (needsValue && columnFilterValue ? String(columnFilterValue) : '')
-                          : statusFilter
 
                         assetApi.getAll({
                           page: 1,
@@ -1387,7 +1390,6 @@ export function Assets() {
                           search: search || undefined,
                           sortBy: sorting[0]?.id,
                           sortOrder: sorting[0]?.desc ? 'desc' : 'asc',
-                          status: currentStatusFilter || undefined,
                           filters: Object.keys(filterObj).length > 0 ? JSON.stringify(filterObj) : undefined,
                         }).then((res: any) => {
                           if (res?.success) {
@@ -1399,12 +1401,8 @@ export function Assets() {
                     }
 
                     const clearColumnFilter = () => {
-                      if (columnId === 'status') {
-                        setStatusFilter('')
-                      } else {
-                        const newFilters = filters.filter(f => f.field !== columnName)
-                        setFilters(newFilters)
-                      }
+                      const newFilters = filters.filter(f => f.field !== columnName)
+                      setFilters(newFilters)
                       setActiveFilterColumn(null)
                       setColumnFilterValue('')
                       setPage(1)
@@ -1439,7 +1437,7 @@ export function Assets() {
                               size="icon-xs"
                               onClick={openColumnFilter}
                               className={cn(
-                                existingFilter || (columnId === 'status' && statusFilter)
+                                existingFilter
                                   ? "text-primary"
                                   : "text-muted-foreground"
                               )}

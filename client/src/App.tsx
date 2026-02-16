@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
+import { EditorRoute } from './components/PermissionRoute'
 import { Dashboard, Assets, Import, Reports, Settings, UserManagement } from './pages'
 import { AssetDetail } from './pages/AssetDetail'
 import { Logs } from './pages/Logs'
@@ -22,13 +23,37 @@ function App() {
             </ProtectedRoute>
           }
         >
+          {/* 所有认证用户可访问 */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/assets" element={<Assets />} />
           <Route path="/assets/:id" element={<AssetDetail />} />
-          <Route path="/import" element={<Import />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/logs" element={<Logs />} />
-          <Route path="/settings" element={<Settings />} />
+
+          {/* 录入员及以上权限 */}
+          <Route
+            path="/import"
+            element={
+              <EditorRoute>
+                <Import />
+              </EditorRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <EditorRoute>
+                <Settings />
+              </EditorRoute>
+            }
+          />
+          <Route
+            path="/logs"
+            element={
+              <EditorRoute>
+                <Logs />
+              </EditorRoute>
+            }
+          />
 
           {/* 管理员专属路由 */}
           <Route

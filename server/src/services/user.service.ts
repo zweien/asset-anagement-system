@@ -5,9 +5,9 @@ const prisma = new PrismaClient()
 
 // 用户角色枚举
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  VIEWER = 'VIEWER',
+  ADMIN = 'ADMIN',    // 管理员 - 所有权限
+  EDITOR = 'EDITOR',  // 录入员 - 资产CRUD、字段配置、导入导出、统计报表
+  USER = 'USER',      // 普通用户 - 资产查看、数据报表、数据导出
 }
 
 // 有效的角色

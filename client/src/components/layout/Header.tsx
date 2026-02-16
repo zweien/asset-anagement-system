@@ -12,8 +12,8 @@ import {
   User,
   Users
 } from 'lucide-react'
-import { useState } from 'react'
-import { getStoredUser, removeToken, removeUser } from '../../lib/api'
+import { useState, useMemo } from 'react'
+import { getStoredUser, removeToken, removeUser, hasPermission, USER_ROLE_LABELS, type UserRole } from '../../lib/api'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -33,19 +33,22 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
-// 基础导航项（所有用户可见）
-const baseNavItems = [
+interface NavItem {
+  path: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  requiredPermission?: 'asset:create' | 'field:manage' | 'import:execute' | 'user:manage'
+}
+
+// 所有导航项定义
+const allNavItems: NavItem[] = [
   { path: '/', label: '仪表盘', icon: LayoutDashboard },
   { path: '/assets', label: '资产管理', icon: Package },
-  { path: '/import', label: '数据导入', icon: Database },
+  { path: '/import', label: '数据导入', icon: Database, requiredPermission: 'import:execute' },
   { path: '/reports', label: '统计报表', icon: BarChart3 },
-  { path: '/logs', label: '操作日志', icon: FileText },
-  { path: '/settings', label: '系统设置', icon: Settings },
-]
-
-// 管理员专属导航项
-const adminNavItems = [
-  { path: '/users', label: '用户管理', icon: Users },
+  { path: '/logs', label: '操作日志', icon: FileText, requiredPermission: 'asset:create' },
+  { path: '/settings', label: '系统设置', icon: Settings, requiredPermission: 'field:manage' },
+  { path: '/users', label: '用户管理', icon: Users, requiredPermission: 'user:manage' },
 ]
 
 export function Header() {
@@ -54,10 +57,14 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const user = getStoredUser()
 
-  // 根据用户角色动态生成导航项
-  const navItems = user?.role === 'ADMIN'
-    ? [...baseNavItems, ...adminNavItems]
-    : baseNavItems
+  // 根据用户权限动态生成导航项
+  const navItems = useMemo(() => {
+    if (!user) return allNavItems.filter(item => !item.requiredPermission)
+    return allNavItems.filter(item => {
+      if (!item.requiredPermission) return true
+      return hasPermission(user.role as UserRole, item.requiredPermission)
+    })
+  }, [user])
 
   const handleLogout = () => {
     removeToken()
@@ -123,7 +130,7 @@ export function Header() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{user?.name || user?.username}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user?.role === 'ADMIN' ? '管理员' : '普通用户'}
+                      {user?.role ? USER_ROLE_LABELS[user.role as UserRole] : '未知角色'}
                     </p>
                   </div>
                 </DropdownMenuLabel>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Modal } from './ui/Modal'
 import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
-import type { Asset, FieldConfig, AssetStatus, CreateAssetDto, UpdateAssetDto } from '../lib/api'
+import type { Asset, FieldConfig, CreateAssetDto, UpdateAssetDto, AssetStatus } from '../lib/api'
 import { ImageUploader } from './ImageUploader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,7 +37,6 @@ interface AssetFormProps {
 interface FormData {
   name: string
   code: string
-  categoryId: string
   status: AssetStatus
   data: Record<string, any>
 }
@@ -48,8 +47,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
   const [formData, setFormData] = useState<FormData>({
     name: '',
     code: '',
-    categoryId: '',
-    status: 'IDLE',
+    status: 'IDLE' as AssetStatus,
     data: {},
   })
   const [images, setImages] = useState<ImageInfo[]>([])
@@ -95,8 +93,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       setFormData({
         name: asset.name,
         code: asset.code || '',
-        categoryId: asset.categoryId || '',
-        status: asset.status,
+        status: (asset.status || 'IDLE') as AssetStatus,
         data,
       })
       // 加载图片
@@ -107,8 +104,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       setFormData({
         name: '',
         code: '',
-        categoryId: '',
-        status: 'IDLE',
+        status: 'IDLE' as AssetStatus,
         data: {},
       })
       setImages([])
@@ -140,7 +136,6 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       const payload: CreateAssetDto | UpdateAssetDto = {
         name: formData.name,
         code: formData.code || undefined,
-        categoryId: formData.categoryId || undefined,
         status: formData.status,
         data: formData.data,
       }
@@ -172,6 +167,31 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }))
   }
 
+  // 解析选项配置，支持两种格式：
+  // 1. 简单字符串数组: ["在用", "闲置"]
+  // 2. 对象数组: [{"value":"ACTIVE","label":"在用"}]
+  const parseOptions = (optionsStr: string | null): Array<{ value: string; label: string }> => {
+    if (!optionsStr) return []
+    try {
+      const parsed = JSON.parse(optionsStr)
+      if (Array.isArray(parsed)) {
+        // 检查是否是对象数组格式
+        if (parsed.length > 0 && typeof parsed[0] === 'object') {
+          return parsed.map((opt: any) => ({
+            value: opt.value || opt.name || opt,
+            label: opt.label || opt.name || opt.value || opt,
+          }))
+        }
+        // 简单字符串数组
+        return parsed.map((opt: string) => ({ value: opt, label: opt }))
+      }
+    } catch {
+      // 逗号分隔的字符串
+      return optionsStr.split(',').map((o) => ({ value: o.trim(), label: o.trim() }))
+    }
+    return []
+  }
+
   // 渲染系统字段输入（根据字段配置的类型和选项）
   const renderSystemFieldInput = (fieldName: string, value: string, onChange: (v: string) => void) => {
     const field = getSystemFieldConfig(fieldName)
@@ -188,21 +208,20 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
 
     switch (field.type) {
       case 'SELECT':
-        let options: string[] = []
-        try {
-          options = field.options ? JSON.parse(field.options) : []
-        } catch {
-          options = field.options?.split(',').map((o) => o.trim()) || []
-        }
+        const options = parseOptions(field.options)
+        // 获取当前选中项的标签用于显示
+        const selectedOption = options.find(opt => opt.value === value)
         return (
           <Select value={value} onValueChange={onChange}>
             <SelectTrigger>
-              <SelectValue placeholder="请选择" />
+              <SelectValue placeholder="请选择">
+                {selectedOption?.label || value}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {options.map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  {opt}
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -283,55 +302,48 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
           />
         )
       case 'SELECT':
-        let options: string[] = []
-        try {
-          options = field.options ? JSON.parse(field.options) : []
-        } catch {
-          options = field.options?.split(',').map((o) => o.trim()) || []
-        }
+        const selectOptions = parseOptions(field.options)
+        const selectedSelectOption = selectOptions.find(opt => opt.value === value)
         return (
           <Select
             value={value || ''}
             onValueChange={(v) => updateDataField(field.name, v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="请选择" />
+              <SelectValue placeholder="请选择">
+                {selectedSelectOption?.label || value}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {options.map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  {opt}
+              {selectOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )
       case 'MULTISELECT':
-        let multiOptions: string[] = []
-        try {
-          multiOptions = field.options ? JSON.parse(field.options) : []
-        } catch {
-          multiOptions = field.options?.split(',').map((o) => o.trim()) || []
-        }
+        const multiOptions = parseOptions(field.options)
         const selectedValues: string[] = Array.isArray(value) ? value : value ? [value] : []
         return (
           <div className="flex flex-wrap gap-2">
             {multiOptions.map((opt) => {
-              const isSelected = selectedValues.includes(opt)
+              const isSelected = selectedValues.includes(opt.value)
               return (
                 <Button
-                  key={opt}
+                  key={opt.value}
                   type="button"
                   variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => {
                     const newValues = isSelected
-                      ? selectedValues.filter((v) => v !== opt)
-                      : [...selectedValues, opt]
+                      ? selectedValues.filter((v) => v !== opt.value)
+                      : [...selectedValues, opt.value]
                     updateDataField(field.name, newValues)
                   }}
                 >
-                  {opt}
+                  {opt.label}
                 </Button>
               )
             })}
@@ -374,12 +386,25 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
           {renderSystemFieldInput('code', formData.code, (v) => setFormData((prev) => ({ ...prev, code: v })))}
         </div>
 
+        {/* 状态字段 */}
         <div className="space-y-2">
           <Label htmlFor="status">
             {getSystemFieldConfig('status')?.label || '状态'}
             {getSystemFieldConfig('status')?.required && <span className="text-destructive"> *</span>}
           </Label>
-          {renderSystemFieldInput('status', formData.status, (v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus })))}
+          <Select
+            value={formData.status}
+            onValueChange={(v) => setFormData((prev) => ({ ...prev, status: v as AssetStatus }))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="请选择状态" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 动态字段 - 只显示可见字段 */}

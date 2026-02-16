@@ -6,12 +6,20 @@ const prisma = new PrismaClient()
 export enum AssetStatusEnum {
   ACTIVE = 'ACTIVE',
   IDLE = 'IDLE',
-  MAINTENANCE = 'MAINTENANCE',
+  DAMAGED = 'DAMAGED',
   SCRAPPED = 'SCRAPPED',
 }
 
 // 有效的资产状态
 const VALID_STATUSES = Object.values(AssetStatusEnum)
+
+// 资产状态中文标签
+const ASSET_STATUS_LABELS: Record<string, string> = {
+  ACTIVE: '在用',
+  IDLE: '闲置',
+  DAMAGED: '损坏',
+  SCRAPPED: '已报废',
+}
 
 // 创建资产 DTO
 export interface CreateAssetDto {
@@ -547,9 +555,14 @@ export const AssetService = {
       }[] = []
 
       for (const [key, assets] of Object.entries(groups)) {
+        // 如果是状态分组，使用中文标签
+        let label = key
+        if (groupBy === 'status' && ASSET_STATUS_LABELS[key]) {
+          label = ASSET_STATUS_LABELS[key]
+        }
         result.push({
           key,
-          label: key,
+          label,
           count: assets.length,
           assets: assets.slice(0, params.pageSize || 50), // 限制每组数量
         })

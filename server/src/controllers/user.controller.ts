@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { UserService, CreateUserDto, UpdateUserDto } from '../services/user.service'
+import { LogService } from '../services/log.service'
 
 // 统一响应格式
 const sendSuccess = <T>(res: Response, data: T, message?: string) => {
@@ -8,6 +9,17 @@ const sendSuccess = <T>(res: Response, data: T, message?: string) => {
 
 const sendError = (res: Response, error: string, statusCode = 400) => {
   res.status(statusCode).json({ success: false, error })
+}
+
+// 获取操作者信息
+const getOperatorInfo = (req: Request) => {
+  const user = (req as any).user
+  return {
+    userId: user?.id,
+    userName: user?.username || user?.name,
+    ip: req.ip || req.headers['x-forwarded-for'] as string,
+    userAgent: req.headers['user-agent'],
+  }
 }
 
 // 用户控制器
@@ -70,6 +82,24 @@ export const UserController = {
         return sendError(res, result.error!)
       }
 
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'CREATE',
+        entityType: 'User',
+        entityId: result.data!.id,
+        userId: operator.userId,
+        userName: operator.userName,
+        newValue: {
+          username: result.data!.username,
+          name: result.data!.name,
+          email: result.data!.email,
+          role: result.data!.role,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
+
       sendSuccess(res, result.data, '用户创建成功')
     } catch (error) {
       sendError(res, '创建用户失败', 500)
@@ -88,11 +118,39 @@ export const UserController = {
         return sendError(res, '不能禁用自己的账户', 400)
       }
 
+      // 获取更新前的用户信息用于日志记录
+      const oldUser = await UserService.getById(id)
+      if (!oldUser) {
+        return sendError(res, '用户不存在', 404)
+      }
+
       const result = await UserService.update(id, data)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: id,
+        userId: operator.userId,
+        userName: operator.userName,
+        oldValue: {
+          name: oldUser.name,
+          email: oldUser.email,
+          role: oldUser.role,
+        },
+        newValue: {
+          name: result.data!.name,
+          email: result.data!.email,
+          role: result.data!.role,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
 
       sendSuccess(res, result.data, '用户更新成功')
     } catch (error) {
@@ -116,11 +174,37 @@ export const UserController = {
         return sendError(res, '不能修改自己的角色', 400)
       }
 
+      // 获取更新前的用户信息用于日志记录
+      const oldUser = await UserService.getById(id)
+      if (!oldUser) {
+        return sendError(res, '用户不存在', 404)
+      }
+
       const result = await UserService.updateRole(id, role)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: id,
+        userId: operator.userId,
+        userName: operator.userName,
+        oldValue: {
+          username: oldUser.username,
+          role: oldUser.role,
+        },
+        newValue: {
+          username: result.data!.username,
+          role: result.data!.role,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
 
       sendSuccess(res, result.data, '角色更新成功')
     } catch (error) {
@@ -144,11 +228,37 @@ export const UserController = {
         return sendError(res, '不能禁用自己的账户', 400)
       }
 
+      // 获取更新前的用户信息用于日志记录
+      const oldUser = await UserService.getById(id)
+      if (!oldUser) {
+        return sendError(res, '用户不存在', 404)
+      }
+
       const result = await UserService.updateStatus(id, active)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: id,
+        userId: operator.userId,
+        userName: operator.userName,
+        oldValue: {
+          username: oldUser.username,
+          active: oldUser.active,
+        },
+        newValue: {
+          username: result.data!.username,
+          active: result.data!.active,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
 
       sendSuccess(res, result.data, result.message)
     } catch (error) {
@@ -169,11 +279,33 @@ export const UserController = {
         return sendError(res, '密码长度至少为6位')
       }
 
+      // 获取用户信息用于日志记录
+      const user = await UserService.getById(id)
+      if (!user) {
+        return sendError(res, '用户不存在', 404)
+      }
+
       const result = await UserService.resetPassword(id, password)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: id,
+        userId: operator.userId,
+        userName: operator.userName,
+        newValue: {
+          username: user.username,
+          action: '重置密码',
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
 
       sendSuccess(res, null, result.message)
     } catch (error) {
@@ -192,11 +324,35 @@ export const UserController = {
         return sendError(res, '不能删除自己的账户', 400)
       }
 
+      // 获取删除前的用户信息用于日志记录
+      const oldUser = await UserService.getById(id)
+      if (!oldUser) {
+        return sendError(res, '用户不存在', 404)
+      }
+
       const result = await UserService.delete(id)
 
       if (!result.success) {
         return sendError(res, result.error!)
       }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'DELETE',
+        entityType: 'User',
+        entityId: id,
+        userId: operator.userId,
+        userName: operator.userName,
+        oldValue: {
+          username: oldUser.username,
+          name: oldUser.name,
+          email: oldUser.email,
+          role: oldUser.role,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
 
       sendSuccess(res, null, result.message)
     } catch (error) {

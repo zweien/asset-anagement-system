@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { ImageController } from '../controllers/image.controller'
+import { authMiddleware, editorMiddleware } from '../middleware/auth.middleware'
 
 const router = Router()
 
@@ -20,19 +21,19 @@ const upload = multer({
   },
 })
 
-// 上传图片到指定资产
-router.post('/assets/:assetId/images', upload.single('image'), ImageController.upload)
+// 获取资产的所有图片 - 所有认证用户
+router.get('/assets/:assetId/images', authMiddleware, ImageController.getByAsset)
 
-// 获取资产的所有图片
-router.get('/assets/:assetId/images', ImageController.getByAsset)
+// 获取图片文件 - 所有认证用户
+router.get('/images/:id', authMiddleware, ImageController.serve)
 
-// 获取图片文件
-router.get('/images/:id', ImageController.serve)
+// 批量导出图片 - 所有认证用户
+router.post('/images/export', authMiddleware, ImageController.exportZip)
 
-// 删除图片
-router.delete('/images/:id', ImageController.delete)
+// 上传图片到指定资产 - 录入员及以上
+router.post('/assets/:assetId/images', authMiddleware, editorMiddleware, upload.single('image'), ImageController.upload)
 
-// 批量导出图片
-router.post('/images/export', ImageController.exportZip)
+// 删除图片 - 录入员及以上
+router.delete('/images/:id', authMiddleware, editorMiddleware, ImageController.delete)
 
 export default router

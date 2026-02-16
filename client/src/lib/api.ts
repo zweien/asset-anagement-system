@@ -120,13 +120,13 @@ export const fieldApi = {
 
 // ============ 资产相关类型 ============
 
-export type AssetStatus = 'ACTIVE' | 'IDLE' | 'MAINTENANCE' | 'SCRAPPED'
+export type AssetStatus = 'ACTIVE' | 'IDLE' | 'DAMAGED' | 'SCRAPPED'
 
 export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
   ACTIVE: '在用',
   IDLE: '闲置',
-  MAINTENANCE: '维修',
-  SCRAPPED: '报废',
+  DAMAGED: '损坏',
+  SCRAPPED: '已报废',
 }
 
 export interface Asset {
@@ -516,12 +516,67 @@ export const removeUser = () => {
 
 // ============ 用户管理相关类型 ============
 
-export type UserRole = 'ADMIN' | 'USER' | 'VIEWER'
+export type UserRole = 'ADMIN' | 'EDITOR' | 'USER'
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: '管理员',
+  EDITOR: '录入员',
   USER: '普通用户',
-  VIEWER: '访客',
+}
+
+// 权限定义
+export type Permission =
+  | 'asset:create'
+  | 'asset:read'
+  | 'asset:update'
+  | 'asset:delete'
+  | 'field:manage'
+  | 'import:execute'
+  | 'export:execute'
+  | 'report:view'
+  | 'user:manage'
+
+// 角色权限映射
+export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  ADMIN: [
+    'asset:create',
+    'asset:read',
+    'asset:update',
+    'asset:delete',
+    'field:manage',
+    'import:execute',
+    'export:execute',
+    'report:view',
+    'user:manage',
+  ],
+  EDITOR: [
+    'asset:create',
+    'asset:read',
+    'asset:update',
+    'asset:delete',
+    'field:manage',
+    'import:execute',
+    'export:execute',
+    'report:view',
+  ],
+  USER: [
+    'asset:read',
+    'export:execute',
+    'report:view',
+  ],
+}
+
+// 检查权限的辅助函数
+export function hasPermission(role: UserRole | undefined, permission: Permission): boolean {
+  if (!role) return false
+  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false
+}
+
+// 检查是否有任一权限
+export function hasAnyPermission(role: UserRole | undefined, permissions: Permission[]): boolean {
+  if (!role) return false
+  const rolePermissions = ROLE_PERMISSIONS[role] ?? []
+  return permissions.some(p => rolePermissions.includes(p))
 }
 
 export interface UserListItem {

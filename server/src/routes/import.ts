@@ -1,8 +1,12 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { ImportController } from '../controllers/import.controller'
+import { authMiddleware, editorMiddleware } from '../middleware/auth.middleware'
 
 const router = Router()
+
+// 所有路由需要认证和录入员权限
+router.use(authMiddleware, editorMiddleware)
 
 // 配置 multer 用于文件上传
 const upload = multer({

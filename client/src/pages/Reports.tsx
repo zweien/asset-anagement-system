@@ -23,7 +23,7 @@ const COLORS = ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#8b5cf6', '#ec4899'
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: '#22c55e',
   IDLE: '#eab308',
-  MAINTENANCE: '#3b82f6',
+  DAMAGED: '#ef4444',
   SCRAPPED: '#6b7280',
 }
 
@@ -97,7 +97,7 @@ export function Reports() {
       const statusCount: Record<string, number> = {
         ACTIVE: 0,
         IDLE: 0,
-        MAINTENANCE: 0,
+        DAMAGED: 0,
         SCRAPPED: 0,
       }
       allAssets.forEach((asset) => {

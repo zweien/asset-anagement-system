@@ -291,7 +291,8 @@ export function UserManagement() {
           '点击角色下拉框可以直接修改用户角色',
           '点击状态按钮可以启用或禁用用户',
           '使用搜索框和筛选条件可以快速查找用户',
-          '重置密码功能可以为用户设置新密码'
+          '重置密码功能可以为用户设置新密码',
+          '角色权限说明：管理员拥有所有权限；录入员可管理资产、配置字段、导入导出；普通用户仅可查看资产和数据报表'
         ]}
       />
 
@@ -556,6 +557,9 @@ export function UserManagement() {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                管理员：所有权限 | 录入员：资产CRUD、字段配置、导入导出、报表 | 普通用户：查看资产、报表、导出
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -623,6 +627,9 @@ export function UserManagement() {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                管理员：所有权限 | 录入员：资产CRUD、字段配置、导入导出、报表 | 普通用户：查看资产、报表、导出
+              </p>
             </div>
           </div>
           <DialogFooter>

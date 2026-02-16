@@ -52,7 +52,7 @@ model Asset {
   name        String                   // 资产名称
   code        String?  @unique         // 资产编号
   categoryId  String?                  // 分类ID
-  status      String   @default("ACTIVE") // 状态: ACTIVE, IDLE, MAINTENANCE, SCRAPPED
+  status      String   @default("ACTIVE") // 状态: ACTIVE(在用), IDLE(闲置), DAMAGED(损坏), SCRAPPED(已报废)
   data        String                   // 动态字段数据 (JSON 格式)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
