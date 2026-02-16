@@ -797,5 +797,95 @@
       "用户偏好被记住"
     ],
     "passes": true
+  },
+  {
+    "id": "SEC-001",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "JWT 密钥安全增强",
+    "steps": [
+      "在 .env 文件中添加 JWT_SECRET 配置",
+      "创建 .env.example 示例文件",
+      "添加启动时密钥检查（生产环境禁止默认密钥）",
+      "更新 auth.service.ts 读取环境变量"
+    ],
+    "acceptance_criteria": [
+      "JWT_SECRET 从环境变量读取",
+      "生产环境使用默认密钥时报错退出",
+      ".env.example 文件包含配置示例"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-002",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "密码安全策略增强",
+    "steps": [
+      "实现密码复杂度验证函数（大小写+数字，至少8位）",
+      "创建用户时验证密码复杂度",
+      "重置密码时验证密码复杂度",
+      "默认管理员使用随机生成的密码"
+    ],
+    "acceptance_criteria": [
+      "密码至少8位且包含大小写字母和数字",
+      "弱密码被拒绝并给出错误提示",
+      "默认管理员密码为随机生成"
+    ],
+    "passes": false
+  },
+  {
+    "id": "PERF-001",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "数据库索引优化",
+    "steps": [
+      "为 assets 表常用查询字段添加索引（name, status, categoryId, createdAt）",
+      "为 users 表添加索引（role, active）",
+      "为 operation_logs 表添加索引（action, entityType, userId, createdAt）"
+    ],
+    "acceptance_criteria": [
+      "资产列表查询性能提升",
+      "日志查询性能提升",
+      "用户查询性能提升"
+    ],
+    "passes": false
+  },
+  {
+    "id": "TEST-001",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "后端单元测试框架搭建",
+    "steps": [
+      "安装 Vitest 测试框架",
+      "配置测试脚本",
+      "创建测试目录结构",
+      "编写示例测试用例"
+    ],
+    "acceptance_criteria": [
+      "npm run test 可运行测试",
+      "测试框架配置正确",
+      "至少有一个测试用例通过"
+    ],
+    "passes": false
+  },
+  {
+    "id": "TEST-002",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "核心业务逻辑单元测试",
+    "steps": [
+      "编写资产服务测试用例（CRUD）",
+      "编写用户服务测试用例（CRUD）",
+      "编写认证服务测试用例（登录、注册）",
+      "达到 70%+ 代码覆盖率"
+    ],
+    "acceptance_criteria": [
+      "资产 CRUD 测试通过",
+      "用户 CRUD 测试通过",
+      "认证测试通过",
+      "代码覆盖率 ≥ 70%"
+    ],
+    "passes": false
   }
 ]

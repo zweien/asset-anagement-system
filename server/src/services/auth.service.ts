@@ -1,11 +1,68 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 const JWT_EXPIRES_IN = '7d'
+
+// 安全检查：生产环境不允许使用默认密钥
+const DEFAULT_SECRETS = [
+  'your-secret-key-change-in-production',
+  'your-super-secret-jwt-key-change-in-production-min-32-chars',
+]
+
+if (process.env.NODE_ENV === 'production' && DEFAULT_SECRETS.includes(JWT_SECRET)) {
+  console.error('❌ 安全错误: 生产环境必须设置自定义 JWT_SECRET 环境变量')
+  process.exit(1)
+}
+
+// 密码复杂度验证
+export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (password.length < 8) {
+    errors.push('密码长度至少8位')
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push('密码必须包含小写字母')
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push('密码必须包含大写字母')
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push('密码必须包含数字')
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  }
+}
+
+// 生成随机密码
+function generateRandomPassword(length: number = 12): string {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const numbers = '0123456789'
+  const allChars = lowercase + uppercase + numbers
+
+  let password = ''
+  // 确保包含各类字符
+  password += lowercase[Math.floor(Math.random() * lowercase.length)]
+  password += uppercase[Math.floor(Math.random() * uppercase.length)]
+  password += numbers[Math.floor(Math.random() * numbers.length)]
+
+  // 填充剩余长度
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)]
+  }
+
+  // 打乱顺序
+  return password.split('').sort(() => Math.random() - 0.5).join('')
+}
 
 export interface LoginDto {
   username: string
@@ -206,7 +263,9 @@ export const AuthService = {
     })
 
     if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash('admin123', 10)
+      // 生成随机密码
+      const randomPassword = generateRandomPassword(12)
+      const hashedPassword = await bcrypt.hash(randomPassword, 10)
       await prisma.user.create({
         data: {
           username: 'admin',
@@ -215,7 +274,12 @@ export const AuthService = {
           role: 'ADMIN',
         },
       })
-      console.log('默认管理员账户已创建: admin / admin123')
+      console.log('===========================================')
+      console.log('  默认管理员账户已创建')
+      console.log('  用户名: admin')
+      console.log(`  密码: ${randomPassword}`)
+      console.log('  ⚠️  请登录后立即修改密码！')
+      console.log('===========================================')
     }
   },
 }
