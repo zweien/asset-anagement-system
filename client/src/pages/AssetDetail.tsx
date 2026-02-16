@@ -53,12 +53,15 @@ export function AssetDetail() {
 
       if (assetRes.success) {
         setAsset(assetRes.data)
-        // 初始化编辑表单
+        // 初始化编辑表单 - data 可能是对象或 JSON 字符串
+        const assetData = typeof assetRes.data.data === 'string'
+          ? JSON.parse(assetRes.data.data || '{}')
+          : (assetRes.data.data || {})
         setEditForm({
           name: assetRes.data.name,
           code: assetRes.data.code || '',
           status: assetRes.data.status,
-          data: JSON.parse(assetRes.data.data || '{}'),
+          data: assetData,
         })
         // 加载图片
         const imagesRes = await fetch(`${API_BASE}/assets/${id}/images`)
@@ -120,11 +123,14 @@ export function AssetDetail() {
 
   const handleCancel = () => {
     if (asset) {
+      const assetData = typeof asset.data === 'string'
+        ? JSON.parse(asset.data || '{}')
+        : (asset.data || {})
       setEditForm({
         name: asset.name,
         code: asset.code || '',
         status: asset.status,
-        data: JSON.parse(asset.data || '{}'),
+        data: assetData,
       })
     }
     setIsEditing(false)
@@ -140,7 +146,7 @@ export function AssetDetail() {
   const getFieldValue = (fieldName: string): any => {
     if (!asset?.data) return null
     try {
-      const data = JSON.parse(asset.data)
+      const data = typeof asset.data === 'string' ? JSON.parse(asset.data) : asset.data
       return data[fieldName]
     } catch {
       return null
