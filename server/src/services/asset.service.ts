@@ -120,8 +120,10 @@ export const AssetService = {
           where.OR.push({ [fieldName]: null })
           where.OR.push({ [fieldName]: '' })
         } else if (operator === 'isNotEmpty') {
-          // SQLite 不支持 { not: { in: [null, ''] } }，使用 AND 条件
-          where[fieldName] = { not: null, not: '' }
+          // 使用 AND 条件：字段不为 null 且不为空字符串
+          where.AND = where.AND || []
+          where.AND.push({ [fieldName]: { not: null } })
+          where.AND.push({ [fieldName]: { not: '' } })
         } else if (operator === 'equals') {
           where[fieldName] = filterValue
         } else if (operator === 'notEquals') {

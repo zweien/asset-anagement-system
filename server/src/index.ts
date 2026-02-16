@@ -11,7 +11,9 @@ const app = express()
 const PORT = process.env.PORT || 3002
 
 // 中间件
-app.use(helmet())
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}))
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
