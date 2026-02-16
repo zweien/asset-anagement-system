@@ -1,4 +1,4 @@
-# 长运行代理框架 - Git 忽略规则
+# 资产录入管理系统 - Git 忽略规则
 
 # 依赖
 node_modules/
@@ -41,3 +41,28 @@ htmlcov/
 *.tmp
 *.temp
 .cache/
+
+# ========== 项目特定规则 ==========
+
+# 数据库文件
+*.db
+*.db-journal
+server/data/
+server/prisma/*.db
+
+# 上传文件
+server/uploads/
+
+# 测试文件
+*.test.js
+*.spec.js
+test-*.js
+test-*.cjs
+client/test-page*.cjs
+
+# Prisma
+server/prisma/migrations/*_*
+
+# 备份文件
+*.bak
+*.backup
