@@ -2,6 +2,48 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-16 - 会话 6 (企业级优化) - 续2
+
+### 完成的工作
+- [x] UX-001: Toast 通知组件
+- [x] UX-002: 骨架屏加载
+
+### 实现细节
+
+**UX-001 Toast 通知组件**
+- 安装 sonner 库
+- 在 App.tsx 添加 Toaster 组件
+- 创建 toast 工具函数 (showSuccess, showError, showWarning, showInfo)
+- 替换 alert() 调用为 Toast:
+  - AssetForm: 创建/更新成功
+  - Settings: 删除字段
+  - UserManagement: 角色/状态/删除
+  - Header: 密码修改成功
+
+**UX-002 骨架屏加载**
+- 创建 Skeleton 组件
+- 创建可复用骨架屏组件:
+  - TableSkeleton
+  - CardSkeleton
+  - StatCardSkeleton
+  - FormSkeleton
+  - DashboardSkeleton
+- 在 Assets 页面添加骨架屏
+- 在 Dashboard 页面添加骨架屏
+
+### 最终状态
+- 进度: 49/49 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5175
+- 单元测试: 84 passed
+- E2E 测试: 20 passed
+
+### Git 提交记录
+1. feat: add Toast notification component (UX-001)
+2. feat: add skeleton loading components (UX-002)
+
+---
+
 ## 2026-02-16 - 会话 6 (企业级优化) - 续
 
 ### 完成的工作
