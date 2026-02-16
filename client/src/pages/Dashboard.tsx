@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Package, Database, TrendingUp, AlertCircle } from 'lucide-react'
 import { assetApi, logApi } from '../lib/api'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface Stats {
   totalAssets: number
@@ -27,24 +30,29 @@ export function Dashboard() {
       setLoading(true)
 
       // 获取资产统计
-      const assetsRes = await assetApi.getAll({ pageSize: 1 })
+      const assetsRes: any = await assetApi.getAll({ pageSize: 1 })
       const totalAssets = assetsRes.data?.total || 0
 
       // 获取本月新增
       const now = new Date()
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const monthlyRes = await assetApi.getAll({
+      const monthlyRes: any = await assetApi.getAll({
         pageSize: 1,
-        startDate: firstDayOfMonth.toISOString()
+        filters: JSON.stringify({
+          createdAt: {
+            operator: 'gte',
+            value: firstDayOfMonth.toISOString()
+          }
+        })
       })
       const monthlyNew = monthlyRes.data?.total || 0
 
       // 获取导入记录数
-      const logsRes = await logApi.getAll({ action: 'IMPORT', pageSize: 1 })
+      const logsRes: any = await logApi.getAll({ action: 'IMPORT', pageSize: 1 })
       const importRecords = logsRes.data?.total || 0
 
       // 获取闲置资产数作为待处理
-      const idleRes = await assetApi.getAll({ status: 'IDLE', pageSize: 1 })
+      const idleRes: any = await assetApi.getAll({ status: 'IDLE', pageSize: 1 })
       const pending = idleRes.data?.total || 0
 
       setStats({
@@ -61,19 +69,19 @@ export function Dashboard() {
   }
 
   const statItems = [
-    { label: '资产总数', value: stats.totalAssets, icon: Package, color: 'bg-blue-500' },
-    { label: '本月新增', value: stats.monthlyNew, icon: TrendingUp, color: 'bg-green-500' },
-    { label: '导入记录', value: stats.importRecords, icon: Database, color: 'bg-purple-500' },
-    { label: '闲置资产', value: stats.pending, icon: AlertCircle, color: 'bg-orange-500' },
+    { label: '资产总数', value: stats.totalAssets, icon: Package, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
+    { label: '本月新增', value: stats.monthlyNew, icon: TrendingUp, color: 'text-green-500', bgColor: 'bg-green-500/10' },
+    { label: '导入记录', value: stats.importRecords, icon: Database, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    { label: '闲置资产', value: stats.pending, icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10' },
   ]
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           仪表盘
         </h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-muted-foreground">
           欢迎使用资产录入管理系统
         </p>
       </div>
@@ -83,63 +91,67 @@ export function Dashboard() {
         {statItems.map((stat) => {
           const Icon = stat.icon
           return (
-            <div
-              key={stat.label}
-              className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${stat.color}`}>
-                  <Icon className="w-6 h-6 text-white" />
+            <Card key={stat.label}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {stat.label}
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {loading ? '...' : stat.value}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {stat.label}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {loading ? '...' : stat.value}
-                  </p>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )
         })}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          快速操作
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <a
-            href="/assets"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Package className="w-5 h-5 text-primary-600" />
-            <span className="font-medium text-gray-900 dark:text-white">
-              管理资产
-            </span>
-          </a>
-          <a
-            href="/import"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Database className="w-5 h-5 text-primary-600" />
-            <span className="font-medium text-gray-900 dark:text-white">
-              导入数据
-            </span>
-          </a>
-          <a
-            href="/settings"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <TrendingUp className="w-5 h-5 text-primary-600" />
-            <span className="font-medium text-gray-900 dark:text-white">
-              配置字段
-            </span>
-          </a>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>快速操作</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              asChild
+              className="h-auto py-4 justify-start"
+            >
+              <Link to="/assets">
+                <Package className="w-5 h-5 mr-3 text-primary" />
+                <span className="font-medium">管理资产</span>
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="h-auto py-4 justify-start"
+            >
+              <Link to="/import">
+                <Database className="w-5 h-5 mr-3 text-primary" />
+                <span className="font-medium">导入数据</span>
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="h-auto py-4 justify-start"
+            >
+              <Link to="/settings">
+                <TrendingUp className="w-5 h-5 mr-3 text-primary" />
+                <span className="font-medium">配置字段</span>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

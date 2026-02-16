@@ -701,5 +701,63 @@
       "模板格式符合导入要求"
     ],
     "passes": true
+  },
+  {
+    "id": "SHADCN-001",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "shadcn/ui 基础集成",
+    "steps": [
+      "安装 shadcn/ui CLI 和依赖",
+      "配置 vite.config.ts 路径别名",
+      "创建 components.json 配置文件",
+      "配置 Tailwind CSS v4 主题变量",
+      "安装 cn 工具函数"
+    ],
+    "acceptance_criteria": [
+      "shadcn init 成功",
+      "组件可通过 @/components/ui 导入",
+      "CSS 变量主题正常工作"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SHADCN-002",
+    "category": "ui",
+    "priority": "high",
+    "description": "shadcn/ui 组件安装",
+    "steps": [
+      "安装基础组件：Button, Input, Select",
+      "安装布局组件：Card, Dialog, Sheet",
+      "安装数据组件：Table, Form, Label",
+      "安装反馈组件：Toast, Alert, Badge"
+    ],
+    "acceptance_criteria": [
+      "所有组件安装成功",
+      "组件可正常导入使用",
+      "样式显示正确"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SHADCN-003",
+    "category": "ui",
+    "priority": "medium",
+    "description": "页面组件重构",
+    "steps": [
+      "重构 Header 组件使用 shadcn/ui",
+      "重构 Dashboard 页面",
+      "重构 Assets 列表页面",
+      "重构 AssetDetail 页面",
+      "重构 表单组件",
+      "重构 其他页面"
+    ],
+    "acceptance_criteria": [
+      "所有页面使用 shadcn/ui 组件",
+      "深色模式正常工作",
+      "响应式布局正常"
+    ],
+    "passes": true,
+    "notes": "已完成核心页面重构：Header（使用 Button、DropdownMenu、Sheet、Avatar）、Dashboard（使用 Card、Button）、Assets（使用 Button、Input、Select、Table、Badge、Card、Dialog、DropdownMenu）"
   }
 ]

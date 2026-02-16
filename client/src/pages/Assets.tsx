@@ -15,6 +15,39 @@ import { assetApi, fieldApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, AssetStatus, FieldType, GroupedAssets } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 
 const API_BASE = 'http://localhost:3002/api'
 
@@ -38,7 +71,7 @@ interface ImageInfo {
 
 function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: ImageUploadModalProps) {
   const [images, setImages] = useState<ImageInfo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [_loading, setLoading] = useState(false)
 
   const loadImages = async () => {
     if (!assetId) return
@@ -62,23 +95,13 @@ function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: Im
     }
   }, [isOpen, assetId])
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            添加照片 - {assetName}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="p-6">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>添加照片 - {assetName}</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
           <ImageUploader
             assetId={assetId}
             images={images}
@@ -88,16 +111,11 @@ function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: Im
             }}
           />
         </div>
-        <div className="flex justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            完成
-          </button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>完成</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -170,10 +188,10 @@ const SELECT_OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: 'isNotEmpty', label: '不为空' },
 ]
 
-// 列筛选下拉菜单组件（使用 Portal 避免被父容器裁剪）
+// 列筛选下拉菜单组件
 interface ColumnFilterDropdownProps {
   isOpen: boolean
-  anchorRef: React.RefObject<HTMLButtonElement>
+  anchorRef: React.RefObject<HTMLButtonElement | null>
   columnName: string
   columnId: string
   fieldType: FieldType | null
@@ -207,16 +225,12 @@ function ColumnFilterDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ top: 0, left: 0 })
 
-  // 计算下拉菜单位置
   useEffect(() => {
     if (isOpen && anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect()
-      const dropdownHeight = 250 // 预估下拉菜单高度
+      const dropdownHeight = 250
       const viewportHeight = window.innerHeight
-
-      // 如果下方空间不足，显示在上方
       const showAbove = rect.bottom + dropdownHeight > viewportHeight && rect.top > dropdownHeight
-
       setPosition({
         top: showAbove ? rect.top + window.scrollY - dropdownHeight : rect.bottom + window.scrollY + 4,
         left: rect.left + window.scrollX,
@@ -224,7 +238,6 @@ function ColumnFilterDropdown({
     }
   }, [isOpen, anchorRef])
 
-  // 点击外部关闭
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -249,133 +262,120 @@ function ColumnFilterDropdown({
   const dropdown = (
     <div
       ref={dropdownRef}
-      className="fixed w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] p-3"
+      className="fixed w-64 bg-popover rounded-lg shadow-xl border z-[9999] p-3"
       style={{ top: position.top, left: position.left }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+      <div className="text-sm font-medium text-foreground mb-2">
         筛选: {columnName}
       </div>
 
-      {/* 操作符选择 */}
-      <select
-        value={filterOperator}
-        onChange={(e) => setFilterOperator(e.target.value as FilterOperator)}
-        className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-      >
-        {operators.map(op => (
-          <option key={op.value} value={op.value}>{op.label}</option>
-        ))}
-      </select>
+      <Select value={filterOperator} onValueChange={(v) => setFilterOperator(v as FilterOperator)}>
+        <SelectTrigger className="w-full mb-2">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {operators.map(op => (
+            <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      {/* 值输入 */}
       {needsValueInput && (fieldType === 'TEXT' || fieldType === 'TEXTAREA') && (
-        <input
-          type="text"
+        <Input
           placeholder="输入筛选值..."
           value={filterValue as string}
           onChange={(e) => setFilterValue(e.target.value)}
-          className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="mb-2"
         />
       )}
 
       {needsValueInput && fieldType === 'NUMBER' && filterOperator === 'between' && (
         <div className="flex items-center gap-2 mb-2">
-          <input
+          <Input
             type="number"
             placeholder="最小"
             value={(filterValue as any)?.min || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), min: e.target.value ? Number(e.target.value) : undefined })}
-            className="flex-1 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="flex-1"
           />
-          <span className="text-gray-500">-</span>
-          <input
+          <span className="text-muted-foreground">-</span>
+          <Input
             type="number"
             placeholder="最大"
             value={(filterValue as any)?.max || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), max: e.target.value ? Number(e.target.value) : undefined })}
-            className="flex-1 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="flex-1"
           />
         </div>
       )}
 
       {needsValueInput && fieldType === 'NUMBER' && filterOperator !== 'between' && (
-        <input
+        <Input
           type="number"
           placeholder="输入数值"
           value={filterValue as string}
           onChange={(e) => setFilterValue(e.target.value ? Number(e.target.value) : '')}
-          className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="mb-2"
         />
       )}
 
       {needsValueInput && fieldType === 'DATE' && filterOperator === 'between' && (
         <div className="flex items-center gap-2 mb-2">
-          <input
+          <Input
             type="date"
             value={(filterValue as any)?.startDate || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), startDate: e.target.value || undefined })}
-            className="flex-1 px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="flex-1 text-xs"
           />
-          <span className="text-gray-500">-</span>
-          <input
+          <span className="text-muted-foreground">-</span>
+          <Input
             type="date"
             value={(filterValue as any)?.endDate || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), endDate: e.target.value || undefined })}
-            className="flex-1 px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="flex-1 text-xs"
           />
         </div>
       )}
 
       {needsValueInput && fieldType === 'DATE' && filterOperator !== 'between' && (
-        <input
+        <Input
           type="date"
           value={filterValue as string}
           onChange={(e) => setFilterValue(e.target.value)}
-          className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="mb-2"
         />
       )}
 
       {needsValueInput && fieldType === 'SELECT' && columnId === 'status' && (
-        <select
-          value={filterValue as string}
-          onChange={(e) => setFilterValue(e.target.value)}
-          className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        >
-          <option value="">请选择</option>
-          {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+        <Select value={filterValue as string} onValueChange={setFilterValue}>
+          <SelectTrigger className="w-full mb-2">
+            <SelectValue placeholder="请选择" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
       {needsValueInput && fieldType === 'SELECT' && fieldForColumn?.options && (
-        <select
-          value={filterValue as string}
-          onChange={(e) => setFilterValue(e.target.value)}
-          className="w-full px-2 py-1.5 mb-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        >
-          <option value="">请选择</option>
-          {fieldForColumn.options.split(',').map((opt) => (
-            <option key={opt.trim()} value={opt.trim()}>{opt.trim()}</option>
-          ))}
-        </select>
+        <Select value={filterValue as string} onValueChange={setFilterValue}>
+          <SelectTrigger className="w-full mb-2">
+            <SelectValue placeholder="请选择" />
+          </SelectTrigger>
+          <SelectContent>
+            {fieldForColumn.options.split(',').map((opt) => (
+              <SelectItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
-      {/* 按钮组 */}
-      <div className="flex items-center gap-2 pt-1 border-t border-gray-200 dark:border-gray-600">
-        <button
-          onClick={onClear}
-          className="flex-1 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded"
-        >
-          清除
-        </button>
-        <button
-          onClick={onApply}
-          className="flex-1 px-2 py-1.5 text-sm text-white bg-primary-600 hover:bg-primary-700 rounded"
-        >
-          应用
-        </button>
+      <div className="flex items-center gap-2 pt-1 border-t">
+        <Button variant="outline" size="sm" className="flex-1" onClick={onClear}>清除</Button>
+        <Button size="sm" className="flex-1" onClick={onApply}>应用</Button>
       </div>
     </div>
   )
@@ -417,7 +417,6 @@ export function Assets() {
   const [activeFilterColumn, setActiveFilterColumn] = useState<string | null>(null)
   const [columnFilterOperator, setColumnFilterOperator] = useState<FilterOperator>('contains')
   const [columnFilterValue, setColumnFilterValue] = useState<string | number | { min?: number; max?: number; startDate?: string; endDate?: string }>('')
-  // 列头筛选按钮引用
   const filterButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
   // 导出数据
@@ -487,7 +486,6 @@ export function Assets() {
     try {
       setLoading(true)
 
-      // 构建筛选条件（新格式：包含 operator 和 value）
       const filterObj: Record<string, any> = {}
       filters.forEach((f) => {
         filterObj[f.field] = {
@@ -496,7 +494,6 @@ export function Assets() {
         }
       })
 
-      // 添加日期范围筛选
       if (dateRangeFilter.startDate || dateRangeFilter.endDate) {
         filterObj.createdAt = {
           operator: 'between',
@@ -507,7 +504,7 @@ export function Assets() {
         }
       }
 
-      const [assetsRes, fieldsRes] = await Promise.all([
+      const [assetsRes, fieldsRes]: any[] = await Promise.all([
         assetApi.getAll({
           page,
           pageSize,
@@ -520,11 +517,11 @@ export function Assets() {
         fieldApi.getAll(),
       ])
 
-      if (assetsRes.success) {
+      if (assetsRes?.success) {
         setAssets(assetsRes.data.data)
         setTotal(assetsRes.data.total)
       }
-      if (fieldsRes.success) {
+      if (fieldsRes?.success) {
         setFields(fieldsRes.data)
       }
     } catch (err) {
@@ -560,17 +557,16 @@ export function Assets() {
   const loadGroupedData = async () => {
     try {
       setLoading(true)
-      const [groupedRes, fieldsRes] = await Promise.all([
+      const [groupedRes, fieldsRes]: any[] = await Promise.all([
         assetApi.getGrouped(groupBy, 100),
         fieldApi.getAll(),
       ])
-      if (groupedRes.success) {
+      if (groupedRes?.success) {
         setGroupedData(groupedRes.data)
         setTotal(groupedRes.data.total)
-        // 默认展开所有分组
-        setExpandedGroups(new Set(groupedRes.data.groups.map(g => g.key)))
+        setExpandedGroups(new Set(groupedRes.data.groups.map((g: any) => g.key)))
       }
-      if (fieldsRes.success) {
+      if (fieldsRes?.success) {
         setFields(fieldsRes.data)
       }
     } catch (err) {
@@ -618,7 +614,7 @@ export function Assets() {
       cell: (info) => (
         <button
           onClick={() => navigate(`/assets/${info.row.original.id}`)}
-          className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-left"
+          className="font-medium text-primary hover:text-primary/80 text-left"
         >
           {info.getValue()}
         </button>
@@ -634,16 +630,16 @@ export function Assets() {
       header: '状态',
       cell: (info) => {
         const status = info.getValue() as AssetStatus
-        const colors: Record<AssetStatus, string> = {
-          ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-          IDLE: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-          MAINTENANCE: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-          SCRAPPED: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+        const statusStyles: Record<AssetStatus, string> = {
+          ACTIVE: 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400',
+          IDLE: 'bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400',
+          MAINTENANCE: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+          SCRAPPED: 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400',
         }
         return (
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status]}`}>
+          <Badge variant="secondary" className={statusStyles[status]}>
             {ASSET_STATUS_LABELS[status]}
-          </span>
+          </Badge>
         )
       },
       size: 100,
@@ -653,7 +649,7 @@ export function Assets() {
       cell: (info) => new Date(info.getValue()).toLocaleDateString('zh-CN'),
       size: 120,
     }),
-  ], [])
+  ], [navigate])
 
   // 动态字段列
   const dynamicColumns = useMemo(() => {
@@ -693,39 +689,44 @@ export function Assets() {
       header: '操作',
       cell: (info) => (
         <div className="flex items-center gap-1">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => navigate(`/assets/${info.row.original.id}`)}
-            className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
             title="查看详情"
           >
             <ExternalLink className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => {
               setUploadAsset(info.row.original)
               setShowImageUpload(true)
             }}
-            className="p-1 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
             title="添加照片"
           >
             <Camera className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => {
               setEditingAsset(info.row.original)
               setShowAssetForm(true)
             }}
-            className="p-1 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
             title="编辑"
           >
             <Edit2 className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={async () => {
               if (confirm('确定要删除这个资产吗？')) {
                 try {
-                  const result = await assetApi.delete(info.row.original.id)
-                  if (result.success) {
+                  const result: any = await assetApi.delete(info.row.original.id)
+                  if (result?.success) {
                     loadData()
                   } else {
                     setError('删除失败')
@@ -735,16 +736,16 @@ export function Assets() {
                 }
               }
             }}
-            className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
             title="删除"
+            className="hover:text-destructive"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       ),
       size: 120,
     }),
-  ], [baseColumns, dynamicColumns])
+  ], [baseColumns, dynamicColumns, navigate])
 
   // 表格实例
   const table = useReactTable({
@@ -771,542 +772,499 @@ export function Assets() {
       {/* 头部 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">资产管理</h1>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-foreground">资产管理</h1>
+          <p className="mt-1 text-muted-foreground">
             共 {total} 条资产
           </p>
         </div>
-        <button
-          onClick={() => {
-            setEditingAsset(null)
-            setShowAssetForm(true)
-          }}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          <Plus className="w-4 h-4 inline mr-1" />
+        <Button onClick={() => {
+          setEditingAsset(null)
+          setShowAssetForm(true)
+        }}>
+          <Plus className="w-4 h-4 mr-1" />
           新增资产
-        </button>
+        </Button>
       </div>
 
       {/* 工具栏 */}
-      <div className="flex items-center gap-4 bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
-        <div className="flex-1 flex items-center gap-2">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="搜索资产名称或编号..."
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* 视图切换 */}
-        <div className="flex items-center gap-1 border-r border-gray-200 dark:border-gray-700 pr-4">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
-            title="列表视图"
-          >
-            <List className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewMode('group')}
-            className={`p-2 rounded-lg ${viewMode === 'group' ? 'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
-            title="分组视图"
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* 分组字段选择 */}
-        {viewMode === 'group' && (
-          <select
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            <option value="status">按状态分组</option>
-            <option value="categoryId">按分类分组</option>
-            <option value="createdAt">按创建月份分组</option>
-            {fields.map((field) => (
-              <option key={field.id} value={field.name}>
-                按{field.label}分组
-              </option>
-            ))}
-          </select>
-        )}
-
-        <button
-          onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className={`px-4 py-2 flex items-center gap-1 rounded-lg transition-colors ${
-            showFilterPanel || filters.length > 0 || statusFilter
-              ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
-        >
-          <Filter className="w-4 h-4" />
-          筛选
-          {(filters.length > 0 || statusFilter) && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary-500 text-white rounded-full">
-              {filters.length + (statusFilter ? 1 : 0)}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={loadData}
-          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-        <div className="relative">
-          <button
-            onClick={() => setShowExportMenu(!showExportMenu)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
-          >
-            <Download className="w-4 h-4" />
-            导出
-          </button>
-          {showExportMenu && (
-            <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-              <button
-                onClick={() => handleExport('excel')}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg"
-              >
-                导出为 Excel
-              </button>
-              <button
-                onClick={() => handleExport('csv')}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                导出为 CSV
-              </button>
-              <button
-                onClick={handleExportImages}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-b-lg"
-              >
-                导出图片 ZIP
-              </button>
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex-1 flex items-center gap-2 min-w-[200px]">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="搜索资产名称或编号..."
+                className="flex-1"
+              />
+              <Button variant="secondary" size="icon" onClick={handleSearch}>
+                <Search className="w-4 h-4" />
+              </Button>
             </div>
-          )}
-        </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowColumnSelector(!showColumnSelector)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
-          >
-            {showColumnSelector ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            列设置
-          </button>
-          {showColumnSelector && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10 p-2">
-              {table.getAllColumns().map((column) => (
-                <label key={column.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={column.getIsVisible()}
-                    onChange={column.getToggleVisibilityHandler()}
-                    className="w-4 h-4 rounded"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
-                  </span>
-                </label>
-              ))}
+
+            {/* 视图切换 */}
+            <div className="flex items-center gap-1 border-l pl-4">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                title="列表视图"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'group' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('group')}
+                title="分组视图"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* 分组字段选择 */}
+            {viewMode === 'group' && (
+              <Select value={groupBy} onValueChange={setGroupBy}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="status">按状态分组</SelectItem>
+                  <SelectItem value="categoryId">按分类分组</SelectItem>
+                  <SelectItem value="createdAt">按创建月份分组</SelectItem>
+                  {fields.map((field) => (
+                    <SelectItem key={field.id} value={field.name}>
+                      按{field.label}分组
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            <Button
+              variant={showFilterPanel || filters.length > 0 || statusFilter ? 'default' : 'outline'}
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+            >
+              <Filter className="w-4 h-4 mr-1" />
+              筛选
+              {(filters.length > 0 || statusFilter) && (
+                <Badge variant="secondary" className="ml-1">
+                  {filters.length + (statusFilter ? 1 : 0)}
+                </Badge>
+              )}
+            </Button>
+
+            <Button variant="ghost" size="icon" onClick={loadData}>
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+
+            <DropdownMenu open={showExportMenu} onOpenChange={setShowExportMenu}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-1" />
+                  导出
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('excel')}>
+                  导出为 Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  导出为 CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportImages}>
+                  导出图片 ZIP
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu open={showColumnSelector} onOpenChange={setShowColumnSelector}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {showColumnSelector ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                  列设置
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48">
+                {table.getAllColumns().map((column) => (
+                  <label key={column.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={column.getIsVisible()}
+                      onChange={column.getToggleVisibilityHandler()}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-sm">
+                      {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
+                    </span>
+                  </label>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 筛选面板 */}
       {showFilterPanel && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-gray-900 dark:text-white">高级筛选</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setFilters([])
-                  setStatusFilter('')
-                  setPage(1)
-                }}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                清除全部
-              </button>
-              <button
-                onClick={() => {
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">高级筛选</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilters([])
+                    setStatusFilter('')
+                    setPage(1)
+                  }}
+                >
+                  清除全部
+                </Button>
+                <Button size="sm" onClick={() => {
                   setShowFilterPanel(false)
                   handleSearch()
-                }}
-                className="px-3 py-1 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700"
-              >
-                应用筛选
-              </button>
+                }}>
+                  应用筛选
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
+            {/* 已添加的筛选条件 */}
+            {filters.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {filters.map((filter, index) => {
+                  const field = fields.find(f => f.name === filter.field)
+                  const operatorLabel = [...TEXT_OPERATORS, ...NUMBER_OPERATORS, ...DATE_OPERATORS, ...SELECT_OPERATORS]
+                    .find(op => op.value === filter.operator)?.label || filter.operator
+                  let valueDisplay = ''
+                  if (filter.operator === 'isEmpty' || filter.operator === 'isNotEmpty') {
+                    valueDisplay = ''
+                  } else if (filter.operator === 'between') {
+                    const v = filter.value as { min?: number; max?: number; startDate?: string; endDate?: string }
+                    valueDisplay = `${v.min ?? v.startDate ?? ''} - ${v.max ?? v.endDate ?? ''}`
+                  } else if (Array.isArray(filter.value)) {
+                    valueDisplay = filter.value.join(', ')
+                  } else {
+                    valueDisplay = String(filter.value ?? '')
+                  }
+                  return (
+                    <Badge key={index} variant="secondary" className="gap-1 py-1 px-2">
+                      <span className="font-medium">{field?.label || filter.field}</span>
+                      <span className="text-muted-foreground">{operatorLabel}</span>
+                      {valueDisplay && <span>{valueDisplay}</span>}
+                      <button
+                        onClick={() => setFilters(filters.filter((_, i) => i !== index))}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )
+                })}
+              </div>
+            )}
 
-          {/* 已添加的筛选条件 */}
-          {filters.length > 0 && (
-            <div className="mb-4 flex flex-wrap gap-2">
-              {filters.map((filter, index) => {
-                const field = fields.find(f => f.name === filter.field)
-                const operatorLabel = [...TEXT_OPERATORS, ...NUMBER_OPERATORS, ...DATE_OPERATORS, ...SELECT_OPERATORS]
-                  .find(op => op.value === filter.operator)?.label || filter.operator
-                let valueDisplay = ''
-                if (filter.operator === 'isEmpty' || filter.operator === 'isNotEmpty') {
-                  valueDisplay = ''
-                } else if (filter.operator === 'between') {
-                  const v = filter.value as { min?: number; max?: number; startDate?: string; endDate?: string }
-                  valueDisplay = `${v.min ?? v.startDate ?? ''} - ${v.max ?? v.endDate ?? ''}`
-                } else if (Array.isArray(filter.value)) {
-                  valueDisplay = filter.value.join(', ')
-                } else {
-                  valueDisplay = String(filter.value ?? '')
+            {/* 添加筛选条件 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* 状态筛选 */}
+              <div className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">状态</span>
+                  {statusFilter && (
+                    <Button variant="ghost" size="sm" className="h-auto py-0.5 px-1 text-xs" onClick={() => setStatusFilter('')}>
+                      清除
+                    </Button>
+                  )}
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="全部" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">全部</SelectItem>
+                    {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 动态字段筛选 */}
+              {fields.map((field) => {
+                const existingFilter = filters.find(f => f.field === field.name)
+                const currentOperator = existingFilter?.operator || (field.type === 'TEXT' || field.type === 'TEXTAREA' ? 'contains' : 'equals')
+
+                const getOperators = () => {
+                  if (field.type === 'TEXT' || field.type === 'TEXTAREA') return TEXT_OPERATORS
+                  if (field.type === 'NUMBER') return NUMBER_OPERATORS
+                  if (field.type === 'DATE') return DATE_OPERATORS
+                  return SELECT_OPERATORS
                 }
+
+                const updateFilter = (operator: FilterOperator, value: any) => {
+                  const newFilters = filters.filter(f => f.field !== field.name)
+                  if (operator === 'isEmpty' || operator === 'isNotEmpty') {
+                    newFilters.push({ field: field.name, type: field.type as FieldType, operator, value: null })
+                  } else if (value !== undefined && value !== null && value !== '') {
+                    newFilters.push({ field: field.name, type: field.type as FieldType, operator, value })
+                  }
+                  setFilters(newFilters)
+                }
+
+                const operators = getOperators()
+                const needsValue = currentOperator !== 'isEmpty' && currentOperator !== 'isNotEmpty'
+
                 return (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-                  >
-                    <span className="font-medium">{field?.label || filter.field}</span>
-                    <span className="text-blue-600 dark:text-blue-400">{operatorLabel}</span>
-                    {valueDisplay && <span>{valueDisplay}</span>}
-                    <button
-                      onClick={() => {
-                        setFilters(filters.filter((_, i) => i !== index))
+                  <div key={field.id} className="border rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">{field.label}</span>
+                      {existingFilter && (
+                        <Button variant="ghost" size="sm" className="h-auto py-0.5 px-1 text-xs" onClick={() => setFilters(filters.filter(f => f.field !== field.name))}>
+                          清除
+                        </Button>
+                      )}
+                    </div>
+
+                    <Select
+                      value={currentOperator}
+                      onValueChange={(v) => {
+                        const newOperator = v as FilterOperator
+                        const existing = filters.find(f => f.field === field.name)
+                        updateFilter(newOperator, existing?.value)
                       }}
-                      className="ml-1 hover:text-red-500"
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
+                      <SelectTrigger className="h-8 text-xs mb-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operators.map(op => (
+                          <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {needsValue && (field.type === 'TEXT' || field.type === 'TEXTAREA') && (
+                      <Input
+                        placeholder={`输入${field.label}...`}
+                        value={(existingFilter?.value as string) || ''}
+                        onChange={(e) => updateFilter(currentOperator, e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                    )}
+
+                    {needsValue && field.type === 'NUMBER' && currentOperator === 'between' && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          placeholder="最小"
+                          value={(existingFilter?.value as any)?.min || ''}
+                          onChange={(e) => {
+                            const existing = existingFilter?.value as any || {}
+                            updateFilter(currentOperator, { ...existing, min: e.target.value ? Number(e.target.value) : undefined })
+                          }}
+                          className="h-8 text-sm flex-1"
+                        />
+                        <span className="text-muted-foreground text-xs">-</span>
+                        <Input
+                          type="number"
+                          placeholder="最大"
+                          value={(existingFilter?.value as any)?.max || ''}
+                          onChange={(e) => {
+                            const existing = existingFilter?.value as any || {}
+                            updateFilter(currentOperator, { ...existing, max: e.target.value ? Number(e.target.value) : undefined })
+                          }}
+                          className="h-8 text-sm flex-1"
+                        />
+                      </div>
+                    )}
+
+                    {needsValue && field.type === 'NUMBER' && currentOperator !== 'between' && (
+                      <Input
+                        type="number"
+                        placeholder="输入数值"
+                        value={existingFilter?.value as string || ''}
+                        onChange={(e) => updateFilter(currentOperator, e.target.value ? Number(e.target.value) : '')}
+                        className="h-8 text-sm"
+                      />
+                    )}
+
+                    {needsValue && field.type === 'DATE' && currentOperator === 'between' && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="date"
+                          value={(existingFilter?.value as any)?.startDate || ''}
+                          onChange={(e) => {
+                            const existing = existingFilter?.value as any || {}
+                            updateFilter(currentOperator, { ...existing, startDate: e.target.value || undefined })
+                          }}
+                          className="h-8 text-xs flex-1"
+                        />
+                        <span className="text-muted-foreground text-xs">-</span>
+                        <Input
+                          type="date"
+                          value={(existingFilter?.value as any)?.endDate || ''}
+                          onChange={(e) => {
+                            const existing = existingFilter?.value as any || {}
+                            updateFilter(currentOperator, { ...existing, endDate: e.target.value || undefined })
+                          }}
+                          className="h-8 text-xs flex-1"
+                        />
+                      </div>
+                    )}
+
+                    {needsValue && field.type === 'DATE' && currentOperator !== 'between' && (
+                      <Input
+                        type="date"
+                        value={existingFilter?.value as string || ''}
+                        onChange={(e) => updateFilter(currentOperator, e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                    )}
+
+                    {needsValue && (field.type === 'SELECT' || field.type === 'MULTISELECT') && field.options && (
+                      <Select
+                        value={existingFilter?.value as string || ''}
+                        onValueChange={(v) => updateFilter(currentOperator, v)}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="请选择" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.split(',').map((opt) => (
+                            <SelectItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    {!needsValue && (
+                      <p className="text-xs text-muted-foreground italic">
+                        已选择 "{operators.find(op => op.value === currentOperator)?.label}"
+                      </p>
+                    )}
+                  </div>
                 )
               })}
             </div>
-          )}
-
-          {/* 添加筛选条件 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* 状态筛选 */}
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">状态</span>
-                {statusFilter && (
-                  <button onClick={() => setStatusFilter('')} className="text-xs text-gray-500 hover:text-red-500">
-                    清除
-                  </button>
-                )}
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-              >
-                <option value="">全部</option>
-                {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 动态字段筛选 */}
-            {fields.map((field) => {
-              const existingFilter = filters.find(f => f.field === field.name)
-              const currentOperator = existingFilter?.operator || (field.type === 'TEXT' || field.type === 'TEXTAREA' ? 'contains' : 'equals')
-
-              const getOperators = () => {
-                if (field.type === 'TEXT' || field.type === 'TEXTAREA') return TEXT_OPERATORS
-                if (field.type === 'NUMBER') return NUMBER_OPERATORS
-                if (field.type === 'DATE') return DATE_OPERATORS
-                return SELECT_OPERATORS
-              }
-
-              const updateFilter = (operator: FilterOperator, value: any) => {
-                const newFilters = filters.filter(f => f.field !== field.name)
-                if (operator === 'isEmpty' || operator === 'isNotEmpty') {
-                  newFilters.push({ field: field.name, type: field.type as FieldType, operator, value: null })
-                } else if (value !== undefined && value !== null && value !== '') {
-                  newFilters.push({ field: field.name, type: field.type as FieldType, operator, value })
-                }
-                setFilters(newFilters)
-              }
-
-              const operators = getOperators()
-              const needsValue = currentOperator !== 'isEmpty' && currentOperator !== 'isNotEmpty'
-
-              return (
-                <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{field.label}</span>
-                    {existingFilter && (
-                      <button
-                        onClick={() => setFilters(filters.filter(f => f.field !== field.name))}
-                        className="text-xs text-gray-500 hover:text-red-500"
-                      >
-                        清除
-                      </button>
-                    )}
-                  </div>
-
-                  {/* 操作符选择 */}
-                  <select
-                    value={currentOperator}
-                    onChange={(e) => {
-                      const newOperator = e.target.value as FilterOperator
-                      const existing = filters.find(f => f.field === field.name)
-                      updateFilter(newOperator, existing?.value)
-                    }}
-                    className="w-full px-2 py-1 mb-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  >
-                    {operators.map(op => (
-                      <option key={op.value} value={op.value}>{op.label}</option>
-                    ))}
-                  </select>
-
-                  {/* 值输入 */}
-                  {needsValue && (field.type === 'TEXT' || field.type === 'TEXTAREA') && (
-                    <input
-                      type="text"
-                      placeholder={`输入${field.label}...`}
-                      value={(existingFilter?.value as string) || ''}
-                      onChange={(e) => updateFilter(currentOperator, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    />
-                  )}
-
-                  {needsValue && field.type === 'NUMBER' && currentOperator === 'between' && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        placeholder="最小"
-                        value={(existingFilter?.value as any)?.min || ''}
-                        onChange={(e) => {
-                          const existing = existingFilter?.value as any || {}
-                          updateFilter(currentOperator, { ...existing, min: e.target.value ? Number(e.target.value) : undefined })
-                        }}
-                        className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      />
-                      <span className="text-gray-500 text-xs">-</span>
-                      <input
-                        type="number"
-                        placeholder="最大"
-                        value={(existingFilter?.value as any)?.max || ''}
-                        onChange={(e) => {
-                          const existing = existingFilter?.value as any || {}
-                          updateFilter(currentOperator, { ...existing, max: e.target.value ? Number(e.target.value) : undefined })
-                        }}
-                        className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  )}
-
-                  {needsValue && field.type === 'NUMBER' && currentOperator !== 'between' && (
-                    <input
-                      type="number"
-                      placeholder="输入数值"
-                      value={existingFilter?.value as string || ''}
-                      onChange={(e) => updateFilter(currentOperator, e.target.value ? Number(e.target.value) : '')}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    />
-                  )}
-
-                  {needsValue && field.type === 'DATE' && currentOperator === 'between' && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="date"
-                        value={(existingFilter?.value as any)?.startDate || ''}
-                        onChange={(e) => {
-                          const existing = existingFilter?.value as any || {}
-                          updateFilter(currentOperator, { ...existing, startDate: e.target.value || undefined })
-                        }}
-                        className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      />
-                      <span className="text-gray-500 text-xs">-</span>
-                      <input
-                        type="date"
-                        value={(existingFilter?.value as any)?.endDate || ''}
-                        onChange={(e) => {
-                          const existing = existingFilter?.value as any || {}
-                          updateFilter(currentOperator, { ...existing, endDate: e.target.value || undefined })
-                        }}
-                        className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  )}
-
-                  {needsValue && field.type === 'DATE' && currentOperator !== 'between' && (
-                    <input
-                      type="date"
-                      value={existingFilter?.value as string || ''}
-                      onChange={(e) => updateFilter(currentOperator, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    />
-                  )}
-
-                  {needsValue && (field.type === 'SELECT' || field.type === 'MULTISELECT') && field.options && (
-                    <select
-                      value={existingFilter?.value as string || ''}
-                      onChange={(e) => updateFilter(currentOperator, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    >
-                      <option value="">请选择</option>
-                      {field.options.split(',').map((opt) => (
-                        <option key={opt.trim()} value={opt.trim()}>{opt.trim()}</option>
-                      ))}
-                    </select>
-                  )}
-
-                  {!needsValue && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                      已选择 "{operators.find(op => op.value === currentOperator)?.label}"
-                    </p>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* 错误提示 */}
       {error && (
-        <div className="p-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
-          {error}
-        </div>
+        <Card className="border-destructive bg-destructive/10">
+          <CardContent className="p-4 text-sm text-destructive">
+            {error}
+          </CardContent>
+        </Card>
       )}
 
       {/* 分组视图 */}
       {viewMode === 'group' && (
         <div className="space-y-4">
           {loading ? (
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-8 text-center text-gray-500">
-              加载中...
-            </div>
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                加载中...
+              </CardContent>
+            </Card>
           ) : !groupedData || groupedData.groups.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-8 text-center text-gray-500">
-              暂无资产数据
-            </div>
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                暂无资产数据
+              </CardContent>
+            </Card>
           ) : (
             groupedData.groups.map((group) => (
-              <div
-                key={group.key}
-                className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden"
-              >
+              <Card key={group.key}>
                 {/* 分组标题 */}
                 <button
                   onClick={() => toggleGroup(group.key)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-muted/50 hover:bg-muted transition-colors rounded-t-lg"
                 >
                   <div className="flex items-center gap-3">
                     <ChevronRightIcon
-                      className={`w-5 h-5 text-gray-500 transition-transform ${
-                        expandedGroups.has(group.key) ? 'rotate-90' : ''
-                      }`}
+                      className={cn(
+                        "w-5 h-5 text-muted-foreground transition-transform",
+                        expandedGroups.has(group.key) && "rotate-90"
+                      )}
                     />
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-foreground">
                       {groupBy === 'status'
                         ? ASSET_STATUS_LABELS[group.key as AssetStatus] || group.label
                         : group.label}
                     </span>
-                    <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200 rounded-full">
+                    <Badge variant="secondary">
                       {group.count}
-                    </span>
+                    </Badge>
                   </div>
                 </button>
 
                 {/* 分组内容 */}
                 {expandedGroups.has(group.key) && (
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y">
                     {group.assets.map((asset) => (
                       <div
                         key={asset.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="flex items-center justify-between px-4 py-3 hover:bg-muted/50"
                       >
                         <div className="flex items-center gap-4">
                           <div>
                             <button
                               onClick={() => navigate(`/assets/${asset.id}`)}
-                              className="font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400"
+                              className="font-medium text-foreground hover:text-primary"
                             >
                               {asset.name}
                             </button>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-muted-foreground">
                               {asset.code || '无编号'}
                             </p>
                           </div>
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              asset.status === 'ACTIVE'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : asset.status === 'IDLE'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : asset.status === 'MAINTENANCE'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                            }`}
+                          <Badge
+                            variant="secondary"
+                            className={cn(
+                              asset.status === 'ACTIVE' && "bg-green-500/10 text-green-600",
+                              asset.status === 'IDLE' && "bg-yellow-500/10 text-yellow-600",
+                              asset.status === 'MAINTENANCE' && "bg-blue-500/10 text-blue-600",
+                              asset.status === 'SCRAPPED' && "bg-gray-500/10 text-gray-600"
+                            )}
                           >
                             {ASSET_STATUS_LABELS[asset.status as AssetStatus]}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => navigate(`/assets/${asset.id}`)}
-                            className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                            title="查看详情"
-                          >
+                          <Button variant="ghost" size="icon-xs" onClick={() => navigate(`/assets/${asset.id}`)} title="查看详情">
                             <ExternalLink className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setUploadAsset(asset)
-                              setShowImageUpload(true)
-                            }}
-                            className="p-1 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
-                            title="添加照片"
-                          >
+                          </Button>
+                          <Button variant="ghost" size="icon-xs" onClick={() => { setUploadAsset(asset); setShowImageUpload(true) }} title="添加照片">
                             <Camera className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingAsset(asset)
-                              setShowAssetForm(true)
-                            }}
-                            className="p-1 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
-                            title="编辑"
-                          >
+                          </Button>
+                          <Button variant="ghost" size="icon-xs" onClick={() => { setEditingAsset(asset); setShowAssetForm(true) }} title="编辑">
                             <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (confirm('确定要删除这个资产吗？')) {
-                                try {
-                                  const result = await assetApi.delete(asset.id)
-                                  if (result.success) {
-                                    loadGroupedData()
-                                  }
-                                } catch (err) {
-                                  setError(err instanceof Error ? err.message : '删除失败')
-                                }
+                          </Button>
+                          <Button variant="ghost" size="icon-xs" onClick={async () => {
+                            if (confirm('确定要删除这个资产吗？')) {
+                              try {
+                                const result: any = await assetApi.delete(asset.id)
+                                if (result?.success) loadGroupedData()
+                              } catch (err) {
+                                setError(err instanceof Error ? err.message : '删除失败')
                               }
-                            }}
-                            className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                            title="删除"
-                          >
+                            }
+                          }} title="删除" className="hover:text-destructive">
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
+              </Card>
             ))
           )}
         </div>
@@ -1314,19 +1272,16 @@ export function Assets() {
 
       {/* 列表视图 - 表格 */}
       {viewMode === 'list' && (
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full" style={{ width: table.getTotalSize() }}>
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <Card>
+          <Table>
+            <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
+                <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
-                    // 获取列对应的字段信息
                     const columnId = header.column.id
                     const isActionsColumn = columnId === 'actions'
                     const fieldForColumn = fields.find(f => `field_${f.name}` === columnId)
 
-                    // 获取字段类型
                     const getFieldType = (): FieldType | null => {
                       if (columnId === 'status') return 'SELECT'
                       if (columnId === 'createdAt') return 'DATE'
@@ -1335,7 +1290,6 @@ export function Assets() {
                     }
                     const fieldType = getFieldType()
 
-                    // 获取当前列的筛选条件
                     const getColumnName = () => {
                       if (columnId === 'status' || columnId === 'createdAt' || columnId === 'name' || columnId === 'code') return columnId
                       return fieldForColumn?.name || ''
@@ -1343,7 +1297,6 @@ export function Assets() {
                     const columnName = getColumnName()
                     const existingFilter = filters.find(f => f.field === columnName)
 
-                    // 获取操作符列表
                     const getOperators = () => {
                       if (fieldType === 'TEXT' || fieldType === 'TEXTAREA') return TEXT_OPERATORS
                       if (fieldType === 'NUMBER') return NUMBER_OPERATORS
@@ -1351,7 +1304,6 @@ export function Assets() {
                       return SELECT_OPERATORS
                     }
 
-                    // 打开列筛选菜单
                     const openColumnFilter = (e: React.MouseEvent) => {
                       e.stopPropagation()
                       if (activeFilterColumn === columnId) {
@@ -1359,7 +1311,6 @@ export function Assets() {
                       } else {
                         setActiveFilterColumn(columnId)
                         setColumnFilterOperator(existingFilter?.operator || (fieldType === 'TEXT' || fieldType === 'TEXTAREA' ? 'contains' : 'equals'))
-                        // 对于状态列，从 statusFilter 获取当前值
                         if (columnId === 'status' && statusFilter) {
                           setColumnFilterValue(statusFilter)
                         } else if (existingFilter?.value) {
@@ -1370,17 +1321,14 @@ export function Assets() {
                       }
                     }
 
-                    // 应用列筛选
                     const applyColumnFilter = () => {
                       const newFilters = filters.filter(f => f.field !== columnName)
                       const needsValue = columnFilterOperator !== 'isEmpty' && columnFilterOperator !== 'isNotEmpty'
 
-                      // 状态列特殊处理
                       if (columnId === 'status') {
                         const newStatus = needsValue && columnFilterValue ? String(columnFilterValue) : ''
                         setStatusFilter(newStatus)
                       } else {
-                        // 其他列添加到 filters 数组
                         if (!needsValue || columnFilterValue !== '' && columnFilterValue !== null) {
                           newFilters.push({
                             field: columnName,
@@ -1395,7 +1343,6 @@ export function Assets() {
                       setActiveFilterColumn(null)
                       setPage(1)
 
-                      // 自动应用筛选
                       setTimeout(() => {
                         const filterObj: Record<string, any> = {}
                         const filtersToUse = columnId === 'status' ? filters : newFilters
@@ -1418,8 +1365,8 @@ export function Assets() {
                           sortOrder: sorting[0]?.desc ? 'desc' : 'asc',
                           status: currentStatusFilter || undefined,
                           filters: Object.keys(filterObj).length > 0 ? JSON.stringify(filterObj) : undefined,
-                        }).then(res => {
-                          if (res.success) {
+                        }).then((res: any) => {
+                          if (res?.success) {
                             setAssets(res.data.data)
                             setTotal(res.data.total)
                           }
@@ -1427,7 +1374,6 @@ export function Assets() {
                       }, 0)
                     }
 
-                    // 清除列筛选
                     const clearColumnFilter = () => {
                       if (columnId === 'status') {
                         setStatusFilter('')
@@ -1441,142 +1387,128 @@ export function Assets() {
                     }
 
                     const operators = fieldType ? getOperators() : []
-                    const needsValueInput = columnFilterOperator !== 'isEmpty' && columnFilterOperator !== 'isNotEmpty'
 
                     return (
-                    <th
-                      key={header.id}
-                      className="relative px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none"
-                      style={{ width: header.getSize() }}
-                    >
-                      <div className="flex items-center gap-1">
-                        <div
-                          className="flex items-center gap-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 flex-1"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          {header.column.getIsSorted() && (
-                            header.column.getIsSorted() === 'asc' ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )
+                      <TableHead
+                        key={header.id}
+                        className="relative select-none"
+                        style={{ width: header.getSize() }}
+                      >
+                        <div className="flex items-center gap-1">
+                          <div
+                            className="flex items-center gap-1 cursor-pointer hover:text-foreground flex-1"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {header.column.getIsSorted() && (
+                              header.column.getIsSorted() === 'asc' ? (
+                                <ChevronUp className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )
+                            )}
+                          </div>
+                          {!isActionsColumn && fieldType && (
+                            <Button
+                              ref={(el) => { filterButtonRefs.current[columnId] = el }}
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={openColumnFilter}
+                              className={cn(
+                                existingFilter || (columnId === 'status' && statusFilter)
+                                  ? "text-primary"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              <Filter className="w-3.5 h-3.5" />
+                            </Button>
                           )}
                         </div>
-                        {/* 筛选图标 */}
-                        {!isActionsColumn && fieldType && (
-                          <button
-                            ref={(el) => { filterButtonRefs.current[columnId] = el }}
-                            onClick={openColumnFilter}
-                            className={`p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 ${
-                              existingFilter || (columnId === 'status' && statusFilter)
-                                ? 'text-primary-600 dark:text-primary-400'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                            }`}
-                            title="筛选"
-                          >
-                            <Filter className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
 
-                      {/* 列筛选下拉菜单 - 使用 Portal 渲染 */}
-                      <ColumnFilterDropdown
-                        isOpen={activeFilterColumn === columnId}
-                        anchorRef={{ current: filterButtonRefs.current[columnId] || null }}
-                        columnName={typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : columnId}
-                        columnId={columnId}
-                        fieldType={fieldType}
-                        fieldForColumn={fieldForColumn}
-                        operators={operators}
-                        filterOperator={columnFilterOperator}
-                        setFilterOperator={setColumnFilterOperator}
-                        filterValue={columnFilterValue}
-                        setFilterValue={setColumnFilterValue}
-                        onApply={applyColumnFilter}
-                        onClear={clearColumnFilter}
-                        onClose={() => setActiveFilterColumn(null)}
-                      />
+                        <ColumnFilterDropdown
+                          isOpen={activeFilterColumn === columnId}
+                          anchorRef={{ current: filterButtonRefs.current[columnId] || null }}
+                          columnName={typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : columnId}
+                          columnId={columnId}
+                          fieldType={fieldType}
+                          fieldForColumn={fieldForColumn}
+                          operators={operators}
+                          filterOperator={columnFilterOperator}
+                          setFilterOperator={setColumnFilterOperator}
+                          filterValue={columnFilterValue}
+                          setFilterValue={setColumnFilterValue}
+                          onApply={applyColumnFilter}
+                          onClear={clearColumnFilter}
+                          onClose={() => setActiveFilterColumn(null)}
+                        />
 
-                      {/* 列宽调整手柄 */}
-                      <div
-                        className="absolute right-0 top-0 h-full w-1 bg-primary-500 cursor-col-resize opacity-0 hover:opacity-100"
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
-                      />
-                    </th>
+                        <div
+                          className="absolute right-0 top-0 h-full w-1 bg-primary cursor-col-resize opacity-0 hover:opacity-100"
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                        />
+                      </TableHead>
                     )
                   })}
-                </tr>
+                </TableRow>
               ))}
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            </TableHeader>
+            <TableBody>
               {loading ? (
-                <tr>
-                  <td colSpan={columns.length} className="px-4 py-12 text-center text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                     加载中...
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : assets.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length} className="px-4 py-12 text-center text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                     暂无资产数据
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
 
-        {/* 分页 */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span>每页</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value))
-                setPage(1)
-              }}
-              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
-            >
-              {[10, 20, 50, 100].map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-            <span>条</span>
+          {/* 分页 */}
+          <div className="flex items-center justify-between px-4 py-3 border-t">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>每页</span>
+              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
+                <SelectTrigger className="w-16 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 20, 50, 100].map((size) => (
+                    <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span>条</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                第 {page} / {totalPages} 页
+              </span>
+              <Button variant="outline" size="icon" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              第 {page} / {totalPages} 页
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-50"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-50"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+        </Card>
       )}
 
       {/* 资产表单 */}
