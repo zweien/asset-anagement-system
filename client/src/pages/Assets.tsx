@@ -10,10 +10,96 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table'
 import type { SortingState, VisibilityState } from '@tanstack/react-table'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink } from 'lucide-react'
 import { assetApi, fieldApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, AssetStatus, FieldType, GroupedAssets } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
+import { ImageUploader } from '../components/ImageUploader'
+
+const API_BASE = 'http://localhost:3002/api'
+
+// 图片上传模态框组件
+interface ImageUploadModalProps {
+  isOpen: boolean
+  onClose: () => void
+  assetId: string
+  assetName: string
+  onSuccess: () => void
+}
+
+interface ImageInfo {
+  id: string
+  filename: string
+  originalName: string
+  mimeType: string
+  size: number
+  createdAt: string
+}
+
+function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: ImageUploadModalProps) {
+  const [images, setImages] = useState<ImageInfo[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const loadImages = async () => {
+    if (!assetId) return
+    try {
+      setLoading(true)
+      const response = await fetch(`${API_BASE}/assets/${assetId}/images`)
+      const result = await response.json()
+      if (result.success) {
+        setImages(result.data)
+      }
+    } catch (err) {
+      console.error('加载图片失败:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen && assetId) {
+      loadImages()
+    }
+  }, [isOpen, assetId])
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            添加照片 - {assetName}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6">
+          <ImageUploader
+            assetId={assetId}
+            images={images}
+            onImagesChange={() => {
+              loadImages()
+              onSuccess()
+            }}
+          />
+        </div>
+        <div className="flex justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            完成
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const columnHelper = createColumnHelper<Asset>()
 
@@ -317,6 +403,8 @@ export function Assets() {
   const [showAssetForm, setShowAssetForm] = useState(false)
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [showImageUpload, setShowImageUpload] = useState(false)
+  const [uploadAsset, setUploadAsset] = useState<Asset | null>(null)
   const [dateRangeFilter, setDateRangeFilter] = useState<{ startDate?: string; endDate?: string }>({})
 
   // 分组视图状态
@@ -604,7 +692,24 @@ export function Assets() {
       id: 'actions',
       header: '操作',
       cell: (info) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => navigate(`/assets/${info.row.original.id}`)}
+            className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+            title="查看详情"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setUploadAsset(info.row.original)
+              setShowImageUpload(true)
+            }}
+            className="p-1 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
+            title="添加照片"
+          >
+            <Camera className="w-4 h-4" />
+          </button>
           <button
             onClick={() => {
               setEditingAsset(info.row.original)
@@ -637,7 +742,7 @@ export function Assets() {
           </button>
         </div>
       ),
-      size: 80,
+      size: 120,
     }),
   ], [baseColumns, dynamicColumns])
 
@@ -1150,7 +1255,24 @@ export function Assets() {
                             {ASSET_STATUS_LABELS[asset.status as AssetStatus]}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => navigate(`/assets/${asset.id}`)}
+                            className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                            title="查看详情"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setUploadAsset(asset)
+                              setShowImageUpload(true)
+                            }}
+                            className="p-1 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
+                            title="添加照片"
+                          >
+                            <Camera className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => {
                               setEditingAsset(asset)
@@ -1467,6 +1589,18 @@ export function Assets() {
         onSuccess={viewMode === 'group' ? loadGroupedData : loadData}
         asset={editingAsset}
         fields={fields}
+      />
+
+      {/* 图片上传模态框 */}
+      <ImageUploadModal
+        isOpen={showImageUpload}
+        onClose={() => {
+          setShowImageUpload(false)
+          setUploadAsset(null)
+        }}
+        assetId={uploadAsset?.id || ''}
+        assetName={uploadAsset?.name || ''}
+        onSuccess={viewMode === 'group' ? loadGroupedData : loadData}
       />
     </div>
   )
