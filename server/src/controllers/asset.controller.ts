@@ -60,6 +60,7 @@ export const AssetController = {
   async create(req: Request, res: Response) {
     try {
       const data: CreateAssetDto = req.body
+      const user = (req as any).user
 
       // 基本验证
       if (!data.name) {
@@ -77,6 +78,8 @@ export const AssetController = {
         action: 'CREATE',
         entityType: 'Asset',
         entityId: result.data!.id,
+        userId: user?.id,
+        userName: user?.name || user?.username,
         newValue: result.data,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
@@ -93,6 +96,7 @@ export const AssetController = {
     try {
       const { id } = req.params
       const data: UpdateAssetDto = req.body
+      const user = (req as any).user
 
       // 获取旧值用于日志
       const oldAsset = await AssetService.getById(id)
@@ -108,6 +112,8 @@ export const AssetController = {
         action: 'UPDATE',
         entityType: 'Asset',
         entityId: id,
+        userId: user?.id,
+        userName: user?.name || user?.username,
         oldValue: oldAsset,
         newValue: result.data,
         ip: req.ip,
@@ -124,6 +130,7 @@ export const AssetController = {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params
+      const user = (req as any).user
 
       // 获取旧值用于日志
       const oldAsset = await AssetService.getById(id)
@@ -139,6 +146,8 @@ export const AssetController = {
         action: 'DELETE',
         entityType: 'Asset',
         entityId: id,
+        userId: user?.id,
+        userName: user?.name || user?.username,
         oldValue: oldAsset,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
@@ -154,6 +163,7 @@ export const AssetController = {
   async batchDelete(req: Request, res: Response) {
     try {
       const { ids } = req.body
+      const user = (req as any).user
 
       if (!Array.isArray(ids) || ids.length === 0) {
         return sendError(res, 'ids 必须是非空数组')
@@ -169,6 +179,8 @@ export const AssetController = {
       await LogService.create({
         action: 'DELETE',
         entityType: 'Asset',
+        userId: user?.id,
+        userName: user?.name || user?.username,
         newValue: { count: result.count, ids },
         ip: req.ip,
         userAgent: req.headers['user-agent'],

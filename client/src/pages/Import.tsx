@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Database, Server, Table, RefreshCw } from 'lucide-react'
+import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Database, Server, Table, Download } from 'lucide-react'
 import { fieldApi, dbImportApi, type TableInfo, type DBConnectionConfig } from '../lib/api'
 import type { FieldConfig } from '../lib/api'
 import api from '../lib/api'
@@ -277,7 +277,16 @@ export function Import() {
           {/* Step 1: 上传文件 */}
           {step === 1 && (
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">上传 Excel 文件</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">上传 Excel 文件</h2>
+                <button
+                  onClick={() => window.open('http://localhost:3002/api/import/template', '_blank')}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-primary-600 dark:text-primary-400 border border-primary-600 dark:border-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                >
+                  <Download className="w-4 h-4" />
+                  下载模板
+                </button>
+              </div>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center cursor-pointer hover:border-primary-500 transition-colors"

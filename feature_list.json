@@ -645,5 +645,61 @@
       "用户管理页面功能完整"
     ],
     "passes": true
+  },
+  {
+    "id": "BUG-001",
+    "category": "bugfix",
+    "priority": "high",
+    "description": "资产详情页面编辑功能修复",
+    "steps": [
+      "修复资产详情页编辑按钮无法修改的问题",
+      "在详情页添加内联编辑功能",
+      "支持编辑基本信息和动态字段",
+      "支持图片管理"
+    ],
+    "acceptance_criteria": [
+      "点击编辑按钮可进入编辑模式",
+      "可修改资产基本信息",
+      "可修改动态字段值",
+      "保存后数据更新正确"
+    ],
+    "passes": true
+  },
+  {
+    "id": "BUG-002",
+    "category": "bugfix",
+    "priority": "high",
+    "description": "操作日志记录操作人",
+    "steps": [
+      "修改日志中间件获取当前登录用户",
+      "从JWT token解析用户ID",
+      "记录操作用户到日志表",
+      "前端显示操作人信息"
+    ],
+    "acceptance_criteria": [
+      "创建操作记录操作人",
+      "更新操作记录操作人",
+      "删除操作记录操作人",
+      "日志列表显示操作人"
+    ],
+    "passes": true
+  },
+  {
+    "id": "IMPORT-003",
+    "category": "functional",
+    "priority": "medium",
+    "description": "Excel导入模板下载",
+    "steps": [
+      "后端生成Excel模板API",
+      "模板包含所有字段配置列",
+      "前端添加下载模板按钮",
+      "模板包含示例数据行"
+    ],
+    "acceptance_criteria": [
+      "可下载Excel模板文件",
+      "模板包含正确的列标题",
+      "模板格式符合导入要求"
+    ],
+    "passes": true
   }
 ]

@@ -1,7 +1,11 @@
 import { Router } from 'express'
 import { AssetController } from '../controllers/asset.controller'
+import { optionalAuthMiddleware } from '../middleware/auth.middleware'
 
 const router = Router()
+
+// 使用可选认证中间件，获取用户信息用于日志记录
+router.use(optionalAuthMiddleware)
 
 // GET /api/assets - 获取资产列表（分页）
 router.get('/', AssetController.getAll)

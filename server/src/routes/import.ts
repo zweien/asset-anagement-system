@@ -23,6 +23,9 @@ const upload = multer({
   },
 })
 
+// 下载导入模板
+router.get('/template', ImportController.downloadTemplate)
+
 // 解析 Excel 文件
 router.post('/parse', upload.single('file'), ImportController.parse)
 
