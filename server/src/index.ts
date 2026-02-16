@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { config } from 'dotenv'
 import routes from './routes'
 import { AuthService } from './services/auth.service'
+import { xssSanitize } from './middleware/xss.middleware'
 
 config()
 
@@ -17,6 +18,9 @@ app.use(helmet({
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// XSS 防护中间件
+app.use(xssSanitize)
 
 // API 路由
 app.use('/api', routes)

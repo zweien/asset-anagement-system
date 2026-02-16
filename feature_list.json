@@ -924,7 +924,7 @@
       "危险字符被转义",
       "正常内容不受影响"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-003",
