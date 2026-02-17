@@ -1,5 +1,6 @@
 # Asset Management System
 
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/yourusername/asset-management-system/releases/tag/v1.0.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -7,7 +8,9 @@
 
 A modern, full-stack asset management system with dynamic field configuration, Excel import/export, and comprehensive reporting capabilities.
 
-[中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md)
+**🎉 Version 1.0.0 Released!** - First stable release with complete feature set.
+
+[中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
 ## ✨ Features
 
