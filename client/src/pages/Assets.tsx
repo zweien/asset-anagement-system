@@ -10,7 +10,7 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table'
-import type { SortingState, VisibilityState } from '@tanstack/react-table'
+import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink } from 'lucide-react'
 import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser } from '../lib/api'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
@@ -20,6 +20,7 @@ import { PageInstructions } from '@/components/PageInstructions'
 import { TableSkeleton } from '@/components/ui/SkeletonLoaders'
 import { EmptyAssets, EmptySearch } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -421,6 +422,7 @@ export function Assets() {
   const [search, setSearch] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [showColumnSelector, setShowColumnSelector] = useState(false)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [filters, setFilters] = useState<FilterCondition[]>([])
@@ -716,6 +718,28 @@ export function Assets() {
 
   // 所有列
   const columns = useMemo(() => [
+    // 选择列
+    columnHelper.display({
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllRowsSelected() ||
+            (table.getIsSomeRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
+          aria-label={t('common.selectAll')}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={t('common.selectRow')}
+        />
+      ),
+      size: 40,
+    }),
     ...baseColumns,
     ...dynamicColumns,
     columnHelper.display({
@@ -794,9 +818,12 @@ export function Assets() {
     state: {
       sorting,
       columnVisibility,
+      rowSelection,
     },
+    enableRowSelection: true,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -806,6 +833,33 @@ export function Assets() {
   })
 
   const totalPages = Math.ceil(total / pageSize)
+
+  // 获取选中的资产 ID
+  const selectedIds = Object.keys(rowSelection).filter(key => rowSelection[key])
+  const selectedCount = selectedIds.length
+
+  // 批量删除
+  const handleBatchDelete = async () => {
+    if (selectedCount === 0) return
+    if (!confirm(t('assets.confirmBatchDelete', { count: selectedCount }))) return
+
+    try {
+      const result = await assetApi.batchDelete(selectedIds)
+      if (result.success) {
+        setRowSelection({})
+        loadData()
+      } else {
+        setError(t('common.error'))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.error'))
+    }
+  }
+
+  // 清除选择
+  const clearSelection = () => {
+    setRowSelection({})
+  }
 
   return (
     <div className="space-y-4">
@@ -817,15 +871,40 @@ export function Assets() {
             {t('assets.totalCount', { count: total })}
           </p>
         </div>
-        {canCreate && (
-          <Button onClick={() => {
-            setEditingAsset(null)
-            setShowAssetForm(true)
-          }}>
-            <Plus className="w-4 h-4 mr-1" />
-            {t('assets.addAsset')}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* 批量操作 */}
+          {selectedCount > 0 && canDelete && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {t('assets.selectedCount', { count: selectedCount })}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearSelection}
+              >
+                {t('common.clearSelection')}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBatchDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {t('common.batchDelete')}
+              </Button>
+            </div>
+          )}
+          {canCreate && (
+            <Button onClick={() => {
+              setEditingAsset(null)
+              setShowAssetForm(true)
+            }}>
+              <Plus className="w-4 h-4 mr-1" />
+              {t('assets.addAsset')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 使用说明 */}
@@ -1532,7 +1611,7 @@ export function Assets() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{t('assets.perPage')}</span>
               <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
-                <SelectTrigger className="w-16 h-8">
+                <SelectTrigger className="w-20 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

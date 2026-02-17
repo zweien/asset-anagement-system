@@ -22,7 +22,11 @@
     "dark": "Dark",
     "system": "System",
     "zh-CN": "简体中文",
-    "en-US": "English"
+    "en-US": "English",
+    "selectAll": "Select all",
+    "selectRow": "Select row",
+    "clearSelection": "Clear selection",
+    "batchDelete": "Batch Delete"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -74,6 +78,7 @@
     "saveSuccess": "Asset saved successfully",
     "searchPlaceholder": "Search asset name or code...",
     "totalCount": "{{count}} assets total",
+    "selectedCount": "{{count}} selected",
     "listView": "List View",
     "groupView": "Group View",
     "groupByStatus": "Group by Status",
