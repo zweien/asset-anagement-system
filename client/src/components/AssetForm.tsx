@@ -177,7 +177,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }
   }
 
-  const updateDataField = (fieldName: string, value: unknown) => {
+  const updateDataField = (fieldName: string, value: string | number | string[] | null) => {
     setFormData((prev) => ({
       ...prev,
       data: { ...prev.data, [fieldName]: value },
@@ -281,14 +281,15 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
   }
 
   const renderFieldInput = (field: FieldConfig) => {
-    const value = formData.data[field.name]
+    const value = formData.data[field.name] as string | number | string[] | null | undefined
+    const strValue = value ?? ''
 
     switch (field.type) {
       case 'TEXT':
         return (
           <Input
             type="text"
-            value={value || ''}
+            value={strValue}
             onChange={(e) => updateDataField(field.name, e.target.value)}
             placeholder={`请输入${field.label}`}
           />
@@ -296,7 +297,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       case 'TEXTAREA':
         return (
           <Textarea
-            value={value || ''}
+            value={strValue}
             onChange={(e) => updateDataField(field.name, e.target.value)}
             placeholder={`请输入${field.label}`}
             rows={3}
@@ -306,8 +307,8 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
         return (
           <Input
             type="number"
-            value={value || ''}
-            onChange={(e) => updateDataField(field.name, e.target.value ? Number(e.target.value) : '')}
+            value={strValue}
+            onChange={(e) => updateDataField(field.name, e.target.value ? Number(e.target.value) : null)}
             placeholder={`请输入${field.label}`}
           />
         )
@@ -315,21 +316,22 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
         return (
           <Input
             type="date"
-            value={value || ''}
-            onChange={(e) => updateDataField(field.name, e.target.value)}
+            value={strValue}
+            onChange={(e) => updateDataField(field.name, e.target.value || null)}
           />
         )
       case 'SELECT': {
         const selectOptions = parseOptions(field.options)
-        const selectedSelectOption = selectOptions.find(opt => opt.value === value)
+        const selectValue = typeof value === 'string' ? value : typeof value === 'number' ? String(value) : ''
+        const selectedSelectOption = selectOptions.find(opt => opt.value === selectValue)
         return (
           <Select
-            value={value || ''}
+            value={selectValue}
             onValueChange={(v) => updateDataField(field.name, v)}
           >
             <SelectTrigger>
               <SelectValue placeholder="请选择">
-                {selectedSelectOption?.label || value}
+                {selectedSelectOption?.label || selectValue}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -344,7 +346,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       }
       case 'MULTISELECT': {
         const multiOptions = parseOptions(field.options)
-        const selectedValues: string[] = Array.isArray(value) ? value : value ? [value] : []
+        const selectedValues: string[] = Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : typeof value === 'string' && value ? [value] : []
         return (
           <div className="flex flex-wrap gap-2">
             {multiOptions.map((opt) => {

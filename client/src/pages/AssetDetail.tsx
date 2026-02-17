@@ -160,7 +160,7 @@ export function AssetDetail() {
   }
 
   const renderFieldInput = (field: FieldConfig) => {
-    const value = editForm.data[field.name] || ''
+    const value = (editForm.data[field.name] ?? '') as string | number | string[]
 
     switch (field.type) {
       case 'TEXT':
@@ -185,7 +185,7 @@ export function AssetDetail() {
         return (
           <input
             type="date"
-            value={value ? new Date(value).toISOString().split('T')[0] : ''}
+            value={value ? new Date(value as string).toISOString().split('T')[0] : ''}
             onChange={(e) => updateDataField(field.name, e.target.value || null)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />

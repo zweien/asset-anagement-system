@@ -22,9 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          cd client && npm install && cd ..
-          cd server && npm install && cd ..
+          npm ci
+          cd client && npm ci && cd ..
+          cd server && npm ci && cd ..
 
       - name: Lint frontend
         run: cd client && npm run lint
@@ -47,9 +47,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          cd client && npm install && cd ..
-          cd server && npm install && cd ..
+          npm ci
+          cd client && npm ci && cd ..
+          cd server && npm ci && cd ..
 
       - name: Generate Prisma client
         run: cd server && npm run db:generate
@@ -72,9 +72,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          cd client && npm install && cd ..
-          cd server && npm install && cd ..
+          npm ci
+          cd client && npm ci && cd ..
+          cd server && npm ci && cd ..
 
       - name: Generate Prisma client
         run: cd server && npm run db:generate

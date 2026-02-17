@@ -375,11 +375,13 @@ export function Reports() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                onClick={(_: unknown, index: number) => handleCustomChartClick(customChartData[index])}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={(_: any, index: number) => handleCustomChartClick(customChartData[index])}
                 className="cursor-pointer"
               >
                 {chartData.map((entry, index) => (
@@ -412,7 +414,8 @@ export function Reports() {
                 name={t('reports.count')}
                 stroke="#3b82f6"
                 strokeWidth={2}
-                onClick={(data: { index?: number }) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={(data: any) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -443,7 +446,8 @@ export function Reports() {
                 name={t('reports.count')}
                 fill="#3b82f6"
                 radius={[4, 4, 0, 0]}
-                onClick={(data: { index?: number }) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={(data: any) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -504,11 +508,13 @@ export function Reports() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  onClick={(_: unknown, index: number) => handleStatusChartClick(statusData[index])}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onClick={(_: any, index: number) => handleStatusChartClick(statusData[index])}
                   className="cursor-pointer"
                 >
                   {statusData.map((entry, index) => (
@@ -545,7 +551,8 @@ export function Reports() {
                   name={t('reports.newCount')}
                   fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                  onClick={(data: { index?: number }) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onClick={(data: any) => {
                     if (data && data.index !== undefined) {
                       handleMonthlyChartClick(monthlyData[data.index])
                     }

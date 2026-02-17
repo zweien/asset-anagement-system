@@ -1145,12 +1145,12 @@ export function Assets() {
                   return SELECT_OPERATORS_KEYS
                 }
 
-                const updateFilter = (operator: FilterOperator, value: string | number | { min?: number; max?: number; startDate?: string; endDate?: string } | null) => {
+                const updateFilter = (operator: FilterOperator, value: string | number | string[] | { min?: number; max?: number; startDate?: string; endDate?: string } | null | undefined) => {
                   const newFilters = filters.filter(f => f.field !== field.name)
                   if (operator === 'isEmpty' || operator === 'isNotEmpty') {
                     newFilters.push({ field: field.name, type: field.type as FieldType, operator, value: null })
                   } else if (value !== undefined && value !== null && value !== '') {
-                    newFilters.push({ field: field.name, type: field.type as FieldType, operator, value })
+                    newFilters.push({ field: field.name, type: field.type as FieldType, operator, value: value ?? null })
                   }
                   setFilters(newFilters)
                 }
@@ -1550,7 +1550,6 @@ export function Assets() {
                           isOpen={activeFilterColumn === columnId}
                           anchorRef={{ current: filterButtonRefs.current[columnId] || null }}
                           columnName={typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : columnId}
-                          columnId={columnId}
                           fieldType={fieldType}
                           fieldForColumn={fieldForColumn}
                           operators={operators}
