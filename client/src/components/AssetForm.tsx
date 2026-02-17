@@ -117,7 +117,8 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       setImages([])
     }
     setError('')
-  }, [asset, isOpen, loadImages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asset, isOpen])
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
