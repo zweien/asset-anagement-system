@@ -1,581 +1,432 @@
-# 资产录入管理系统 - 技术架构文档
+# System Architecture
 
-## 1. 系统概述
+This document provides a comprehensive overview of the Asset Management System's architecture, design decisions, and technical implementation details.
 
-### 1.1 项目信息
-- **项目名称**: 资产录入管理系统
-- **版本**: 1.0.0
-- **目标用户**: 单位内部资产管理人员
-- **数据量级**: 万级 (10,000+ 条记录)
+## Table of Contents
 
-### 1.2 核心功能
-- 资产数据的录入、查询、编辑、删除
-- 自定义字段配置
-- Excel / 数据库导入导出
-- 手机端拍照上传
-- 数据可视化统计
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Frontend Architecture](#frontend-architecture)
+- [Backend Architecture](#backend-architecture)
+- [Database Design](#database-design)
+- [Security](#security)
+- [Performance Considerations](#performance-considerations)
 
-### 1.3 系统架构图
+## Overview
+
+### Project Information
+
+| Item | Description |
+|------|-------------|
+| **Name** | Asset Management System |
+| **Version** | 1.0.0 |
+| **Target Users** | Enterprise asset managers |
+| **Scale** | 10,000+ records |
+
+### Core Features
+
+- Asset CRUD operations with dynamic fields
+- Custom field configuration without schema changes
+- Excel and database import/export
+- Photo capture and upload
+- Data visualization and reporting
+
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        客户端 (Browser)                          │
+│                        Client (Browser)                          │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  React + Vite + TailwindCSS                              │   │
-│  │  - React Router (路由)                                   │   │
-│  │  - TanStack Table (表格)                                 │   │
-│  │  - Axios (HTTP 客户端)                                   │   │
-│  │  - Lucide Icons (图标)                                   │   │
+│  │  React 19 + Vite + TailwindCSS v4                        │   │
+│  │  - React Router (Routing)                                │   │
+│  │  - TanStack Table (Data tables)                          │   │
+│  │  - Zustand (State management)                            │   │
+│  │  - Axios (HTTP client)                                   │   │
+│  │  - i18next (Internationalization)                        │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               │ HTTP/REST API
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      后端服务 (Node.js)                          │
+│                      Server (Node.js)                           │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  Express + TypeScript                                    │   │
-│  │  - Controllers (控制器层)                                │   │
-│  │  - Services (业务逻辑层)                                 │   │
-│  │  - Middleware (中间件)                                   │   │
+│  │  - Controllers (Request handling)                        │   │
+│  │  - Services (Business logic)                             │   │
+│  │  - Middleware (Auth, validation, logging)               │   │
 │  │  - Prisma Client (ORM)                                   │   │
+│  │  - Swagger (API documentation)                           │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┼───────────────┐
               ▼               ▼               ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│    SQLite       │ │   本地文件存储   │ │  外部数据库     │
+│    SQLite       │ │  Local Storage  │ │  External DB    │
 │  (assets.db)    │ │   (uploads/)    │ │ (MySQL/PG)      │
-│  - 资产数据     │ │   - 资产图片    │ │  - 数据导入源   │
-│  - 配置数据     │ │   - 导出文件    │ │                 │
-│  - 日志数据     │ │                 │ │                 │
+│  - Asset data   │ │   - Images      │ │  - Import source│
+│  - Users        │ │   - Backups     │ │                 │
+│  - Config       │ │                 │ │                 │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
 
----
+## Frontend Architecture
 
-## 2. 技术栈
+### Technology Stack
 
-### 2.1 后端技术栈
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19.x | UI framework |
+| TypeScript | 5.9.x | Type safety |
+| Vite | 7.x | Build tool |
+| TailwindCSS | 4.x | Styling |
+| shadcn/ui | latest | Component library |
+| Zustand | 5.x | State management |
+| React Router | 7.x | Routing |
+| TanStack Table | 8.x | Data tables |
+| Axios | 1.x | HTTP client |
+| i18next | 25.x | Internationalization |
+| Recharts | 3.x | Data visualization |
 
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Node.js | ≥18.0.0 | 运行环境 |
-| Express | 4.18.x | Web 框架 |
-| TypeScript | 5.3.x | 类型安全 |
-| Prisma | 5.7.x | ORM |
-| SQLite | 3.x | 数据库 |
-| Multer | 1.4.x | 文件上传 |
-| xlsx | 0.18.x | Excel 解析 |
-| archiver | 6.0.x | ZIP 压缩 |
-| helmet | 7.1.x | 安全中间件 |
-| cors | 2.8.x | 跨域支持 |
-
-### 2.2 前端技术栈
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| React | 19.x | UI 框架 |
-| Vite | 7.x | 构建工具 |
-| TypeScript | 5.x | 类型安全 |
-| TailwindCSS | 4.x | 样式框架 |
-| React Router | 7.x | 路由管理 |
-| TanStack Table | 8.x | 表格组件 |
-| Axios | 1.x | HTTP 客户端 |
-| Lucide React | latest | 图标库 |
-
----
-
-## 3. 数据库设计
-
-### 3.1 ER 图
+### Directory Structure
 
 ```
-┌──────────────────┐       ┌──────────────────┐
-│   FieldConfig    │       │     Category     │
-│──────────────────│       │──────────────────│
-│ id (PK)          │       │ id (PK)          │
-│ name             │       │ name             │
-│ label            │       │ parentId (FK)    │──┐
-│ type             │       │ description      │  │
-│ required         │       │ order            │  │
-│ options          │       └──────────────────┘  │
-│ defaultValue     │              ▲               │
-│ validation       │              │               │
-│ order            │              │               │
-└──────────────────┘       ┌─────┴──────────┐    │
-                           │                │    │
-                           │     Asset      │    │
-                           │────────────────│    │
-                           │ id (PK)        │    │
-                           │ name           │    │
-                           │ code (UNIQUE)  │    │
-                           │ categoryId(FK) │────┘
-                           │ status         │
-                           │ data (JSON)    │◄─────── 动态字段数据
-                           │ deletedAt      │
-                           └───────┬────────┘
-                                   │
-                           ┌───────┴────────┐
-                           │   AssetImage   │
-                           │────────────────│
-                           │ id (PK)        │
-                           │ assetId (FK)   │
-                           │ filename       │
-                           │ originalName   │
-                           │ mimeType       │
-                           │ size           │
-                           │ path           │
-                           └────────────────┘
-
-┌──────────────────┐       ┌──────────────────┐
-│  OperationLog    │       │      User        │
-│──────────────────│       │──────────────────│
-│ id (PK)          │       │ id (PK)          │
-│ action           │       │ username (UNIQUE)│
-│ entityType       │       │ password         │
-│ entityId         │       │ name             │
-│ userId           │       │ email (UNIQUE)   │
-│ userName         │       │ role             │
-│ oldValue (JSON)  │       │ active           │
-│ newValue (JSON)  │       └──────────────────┘
-│ ip               │
-│ userAgent        │
-└──────────────────┘
+client/src/
+├── components/           # Reusable UI components
+│   ├── layout/          # Layout components (Header, Sidebar)
+│   └── ui/              # shadcn/ui components
+├── pages/               # Route-level page components
+│   ├── Dashboard.tsx    # Main dashboard
+│   ├── Assets.tsx       # Asset management
+│   ├── Import.tsx       # Data import
+│   ├── Reports.tsx      # Statistics & reports
+│   ├── Settings.tsx     # Field configuration
+│   ├── UserManagement.tsx
+│   └── Logs.tsx         # Operation logs
+├── lib/                 # Core utilities
+│   ├── api.ts          # API client and types
+│   ├── utils.ts        # Utility functions
+│   └── toast.ts        # Toast notifications
+├── stores/              # Zustand stores
+│   ├── authStore.ts    # Authentication state
+│   └── permissionStore.ts
+├── hooks/               # Custom React hooks
+├── i18n/                # Internationalization
+│   ├── index.ts        # i18n configuration
+│   └── locales/        # Translation files
+│       ├── zh-CN.json
+│       └── en-US.json
+└── App.tsx              # Root component
 ```
 
-### 3.2 表结构详情
+### State Management
 
-#### FieldConfig (字段配置表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| name | String | 字段名称 (英文标识) |
-| label | String | 显示名称 (中文) |
-| type | String | 字段类型: TEXT, NUMBER, DATE, SELECT, MULTISELECT, TEXTAREA |
-| required | Boolean | 是否必填 |
-| options | String (JSON) | 选项配置 (下拉/多选) |
-| defaultValue | String | 默认值 |
-| validation | String (JSON) | 验证规则 |
-| order | Int | 排序 |
-| createdAt | DateTime | 创建时间 |
-| updatedAt | DateTime | 更新时间 |
+The application uses Zustand for global state management:
 
-#### Asset (资产表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| name | String | 资产名称 |
-| code | String (UNIQUE) | 资产编号 |
-| categoryId | String (FK) | 分类ID |
-| status | String | 状态: ACTIVE, IDLE, MAINTENANCE, SCRAPPED |
-| data | String (JSON) | 动态字段数据 |
-| deletedAt | DateTime | 软删除时间 |
-| createdAt | DateTime | 创建时间 |
-| updatedAt | DateTime | 更新时间 |
+| Store | Purpose |
+|-------|---------|
+| `authStore` | User authentication, login/logout, session management |
+| `permissionStore` | Role-based permissions, feature flags |
 
-#### Category (分类表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| name | String | 分类名称 |
-| parentId | String (FK) | 父分类ID (支持树形结构) |
-| description | String | 描述 |
-| order | Int | 排序 |
+Local component state is managed with React's `useState` and `useReducer`.
 
-#### AssetImage (资产图片表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| assetId | String (FK) | 资产ID |
-| filename | String | 存储文件名 |
-| originalName | String | 原始文件名 |
-| mimeType | String | MIME类型 |
-| size | Int | 文件大小 (bytes) |
-| path | String | 存储路径 |
+### Key Components
 
-#### OperationLog (操作日志表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| action | String | 操作类型: CREATE, UPDATE, DELETE, IMPORT, EXPORT |
-| entityType | String | 实体类型 |
-| entityId | String | 实体ID |
-| userId | String | 操作用户ID |
-| userName | String | 操作用户名 |
-| oldValue | String (JSON) | 旧值 |
-| newValue | String (JSON) | 新值 |
-| ip | String | IP地址 |
-| userAgent | String | User Agent |
+| Component | Description |
+|-----------|-------------|
+| `Header` | Navigation, user menu, theme toggle |
+| `AssetTable` | Sortable, filterable asset listing |
+| `FilterPanel` | Dynamic field filtering |
+| `ImportWizard` | Step-by-step import process |
+| `ReportBuilder` | Custom report configuration |
 
-#### User (用户表)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | String (UUID) | 主键 |
-| username | String (UNIQUE) | 用户名 |
-| password | String | 加密密码 |
-| name | String | 显示名称 |
-| email | String (UNIQUE) | 邮箱 |
-| role | String | 角色: ADMIN, USER, VIEWER |
-| active | Boolean | 是否激活 |
+## Backend Architecture
 
----
+### Technology Stack
 
-## 4. API 设计
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Express.js | 4.x | Web framework |
+| TypeScript | 5.x | Type safety |
+| Prisma | 5.x | ORM |
+| JWT | 9.x | Authentication |
+| Winston | 3.x | Logging |
+| Swagger | 6.x | API documentation |
+| Zod | 4.x | Validation |
+| xlsx | 0.18.x | Excel processing |
 
-### 4.1 API 规范
+### Layer Architecture
 
-- **基础路径**: `/api`
-- **认证方式**: JWT (后续实现)
-- **响应格式**: JSON
-- **错误处理**: 统一错误响应格式
+```
+┌─────────────────────────────────────────┐
+│              Routes Layer                │  API endpoint definitions
+├─────────────────────────────────────────┤
+│           Middleware Layer               │  Auth, validation, logging
+├─────────────────────────────────────────┤
+│           Controller Layer               │  Request handling, validation
+├─────────────────────────────────────────┤
+│            Service Layer                 │  Business logic
+├─────────────────────────────────────────┤
+│            Data Layer                    │  Prisma ORM
+└─────────────────────────────────────────┘
+```
 
-### 4.2 统一响应格式
+### Directory Structure
+
+```
+server/src/
+├── controllers/         # Request handlers
+│   ├── asset.controller.ts
+│   ├── auth.controller.ts
+│   ├── field.controller.ts
+│   ├── import.controller.ts
+│   ├── export.controller.ts
+│   ├── user.controller.ts
+│   └── log.controller.ts
+├── services/            # Business logic
+│   ├── asset.service.ts
+│   ├── import.service.ts
+│   ├── export.service.ts
+│   ├── backup.service.ts
+│   └── user.service.ts
+├── routes/              # API routes
+│   └── index.ts
+├── middleware/          # Express middleware
+│   ├── auth.middleware.ts
+│   └── error.middleware.ts
+├── utils/               # Utilities
+│   ├── logger.ts
+│   └── backup.ts
+└── index.ts             # Application entry
+```
+
+### API Response Format
 
 ```typescript
-// 成功响应
-interface ApiResponse<T> {
-  success: true;
-  data: T;
-  message?: string;
+// Success response
+{
+  success: true,
+  data: T,
+  message?: string
 }
 
-// 错误响应
-interface ApiError {
-  success: false;
-  error: string;
-  message?: string;
-  details?: unknown;
+// Error response
+{
+  success: false,
+  error: string,
+  message?: string
 }
 
-// 分页响应
-interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+// Paginated response
+{
+  success: true,
+  data: T[],
+  total: number,
+  page: number,
+  pageSize: number,
+  totalPages: number
 }
 ```
 
-### 4.3 API 端点列表
+## Database Design
 
-#### 字段配置 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/fields | 获取所有字段配置 |
-| GET | /api/fields/:id | 获取单个字段配置 |
-| POST | /api/fields | 创建字段配置 |
-| PUT | /api/fields/:id | 更新字段配置 |
-| DELETE | /api/fields/:id | 删除字段配置 |
-| PUT | /api/fields/reorder | 重新排序字段 |
-
-#### 资产 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/assets | 获取资产列表 (分页、筛选、排序) |
-| GET | /api/assets/:id | 获取资产详情 |
-| POST | /api/assets | 创建资产 |
-| PUT | /api/assets/:id | 更新资产 |
-| DELETE | /api/assets/:id | 删除资产 (软删除) |
-| POST | /api/assets/batch-delete | 批量删除 |
-
-#### 分类 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/categories | 获取分类树 |
-| POST | /api/categories | 创建分类 |
-| PUT | /api/categories/:id | 更新分类 |
-| DELETE | /api/categories/:id | 删除分类 |
-
-#### 导入 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/import/excel | Excel 文件导入 |
-| POST | /api/import/database | 数据库连接测试 |
-| POST | /api/import/database/import | 数据库数据导入 |
-
-#### 导出 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/export/excel | 导出 Excel |
-| GET | /api/export/csv | 导出 CSV |
-| GET | /api/export/images | 导出图片 (ZIP) |
-
-#### 图片 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/assets/:id/images | 上传图片 |
-| GET | /api/assets/:id/images | 获取资产图片列表 |
-| DELETE | /api/assets/:id/images/:imageId | 删除图片 |
-
-#### 统计 API
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/stats/overview | 总览统计 |
-| GET | /api/stats/by-category | 按分类统计 |
-| GET | /api/stats/by-status | 按状态统计 |
-| GET | /api/stats/trend | 趋势统计 |
-
----
-
-## 5. 前端架构
-
-### 5.1 目录结构
+### Entity Relationship Diagram
 
 ```
-client/
-├── public/                 # 静态资源
-├── src/
-│   ├── components/         # 组件
-│   │   ├── layout/         # 布局组件
-│   │   │   ├── Header.tsx
-│   │   │   ├── Layout.tsx
-│   │   │   └── Sidebar.tsx
-│   │   ├── ui/             # 通用 UI 组件
-│   │   │   ├── Button.tsx
-│   │   │   ├── Input.tsx
-│   │   │   ├── Select.tsx
-│   │   │   ├── Modal.tsx
-│   │   │   ├── Table.tsx
-│   │   │   └── ThemeToggle.tsx
-│   │   └── forms/          # 表单组件
-│   │       ├── TextField.tsx
-│   │       ├── NumberField.tsx
-│   │       ├── DateField.tsx
-│   │       ├── SelectField.tsx
-│   │       └── MultiSelectField.tsx
-│   ├── pages/              # 页面组件
-│   │   ├── Dashboard.tsx   # 仪表盘
-│   │   ├── Assets.tsx      # 资产列表
-│   │   ├── AssetDetail.tsx # 资产详情
-│   │   ├── AssetForm.tsx   # 资产表单
-│   │   ├── Import.tsx      # 数据导入
-│   │   ├── Export.tsx      # 数据导出
-│   │   ├── Reports.tsx     # 统计报表
-│   │   └── Settings.tsx    # 系统设置
-│   ├── hooks/              # 自定义 Hooks
-│   │   ├── useTheme.ts     # 主题切换
-│   │   ├── useAssets.ts    # 资产数据
-│   │   └── useFields.ts    # 字段配置
-│   ├── lib/                # 工具库
-│   │   ├── api.ts          # API 客户端
-│   │   ├── utils.ts        # 工具函数
-│   │   └── constants.ts    # 常量定义
-│   ├── stores/             # 状态管理
-│   │   └── index.ts        # Zustand store
-│   ├── types/              # 类型定义
-│   │   ├── api.ts          # API 类型
-│   │   ├── asset.ts        # 资产类型
-│   │   └── field.ts        # 字段类型
-│   ├── App.tsx             # 根组件
-│   ├── main.tsx            # 入口文件
-│   └── index.css           # 全局样式
-├── index.html
-├── tailwind.config.js
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
-```
+┌───────────────┐       ┌───────────────┐
+│     User      │       │  OperationLog │
+├───────────────┤       ├───────────────┤
+│ id            │       │ id            │
+│ username      │       │ action        │
+│ password      │       │ entityType    │
+│ name          │       │ entityId      │
+│ email         │       │ userId        │
+│ role          │       │ oldValue      │
+│ active        │       │ newValue      │
+│ createdAt     │       │ createdAt     │
+└───────────────┘       └───────────────┘
 
-### 5.2 组件设计原则
+┌───────────────┐       ┌───────────────┐
+│  FieldConfig  │       │    Category   │
+├───────────────┤       ├───────────────┤
+│ id            │       │ id            │
+│ name          │       │ name          │
+│ label         │       │ parentId      │
+│ type          │       │ createdAt     │
+│ required      │       └───────────────┘
+│ visible       │
+│ options       │
+│ order         │
+└───────────────┘
 
-1. **原子化设计**: 组件分为原子组件、分子组件、组织组件
-2. **单一职责**: 每个组件只负责一个功能
-3. **可复用性**: 通用组件放在 `components/ui/`
-4. **类型安全**: 所有组件使用 TypeScript 类型
-
-### 5.3 状态管理策略
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   Zustand Store                      │
-├─────────────────────────────────────────────────────┤
-│  - assets: Asset[]         # 资产列表               │
-│  - fields: FieldConfig[]   # 字段配置               │
-│  - categories: Category[]  # 分类数据               │
-│  - filters: FilterState    # 筛选状态               │
-│  - pagination: PageState   # 分页状态               │
-│  - theme: 'light' | 'dark' # 主题状态               │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 6. 后端架构
-
-### 6.1 目录结构
-
-```
-server/
-├── prisma/
-│   ├── schema.prisma       # 数据库模型
-│   └── migrations/         # 迁移文件
-├── src/
-│   ├── controllers/        # 控制器
-│   │   ├── fieldController.ts
-│   │   ├── assetController.ts
-│   │   ├── categoryController.ts
-│   │   ├── importController.ts
-│   │   ├── exportController.ts
-│   │   └── statsController.ts
-│   ├── services/           # 业务逻辑
-│   │   ├── fieldService.ts
-│   │   ├── assetService.ts
-│   │   ├── categoryService.ts
-│   │   ├── importService.ts
-│   │   └── exportService.ts
-│   ├── routes/             # 路由定义
-│   │   ├── index.ts
-│   │   ├── fields.ts
-│   │   ├── assets.ts
-│   │   └── ...
-│   ├── middleware/         # 中间件
-│   │   ├── errorHandler.ts
-│   │   ├── validate.ts
-│   │   └── logger.ts
-│   ├── utils/              # 工具函数
-│   │   ├── response.ts
-│   │   └── validation.ts
-│   ├── types/              # 类型定义
-│   │   └── index.ts
-│   └── index.ts            # 入口文件
-├── .env                    # 环境变量
-├── package.json
-└── tsconfig.json
-```
-
-### 6.2 分层架构
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   Routes (路由层)                    │
-│              定义 API 端点和请求方法                 │
-└─────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────┐
-│               Controllers (控制器层)                 │
-│          处理请求参数，调用服务，返回响应            │
-└─────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────┐
-│                Services (服务层)                     │
-│             实现业务逻辑，调用数据访问层             │
-└─────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────┐
-│              Prisma Client (数据访问层)              │
-│                 数据库 CRUD 操作                     │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 7. 开发规范
-
-### 7.1 命名规范
-
-| 类型 | 规范 | 示例 |
-|------|------|------|
-| 文件名 | kebab-case | `asset-controller.ts` |
-| 组件名 | PascalCase | `AssetList.tsx` |
-| 函数名 | camelCase | `getAssetById()` |
-| 常量 | UPPER_SNAKE_CASE | `MAX_FILE_SIZE` |
-| 数据库表 | snake_case | `field_configs` |
-| API 路径 | kebab-case | `/api/field-configs` |
-
-### 7.2 Git 提交规范
-
-```
-feat: 新功能
-fix: 修复 bug
-docs: 文档更新
-style: 代码格式调整
-refactor: 重构
-test: 测试相关
-chore: 构建/工具相关
-```
-
-### 7.3 代码风格
-
-- 使用 ESLint + Prettier
-- TypeScript 严格模式
-- 使用 async/await 而非 Promise.then
-- 组件使用函数式组件 + Hooks
-
----
-
-## 8. 部署架构
-
-### 8.1 开发环境
-
-**端口配置:**
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| 前端 (Vite) | 5173 | 开发服务器 |
-| 后端 (Express) | 3002 | API 服务 |
-
-```
-┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │    Backend      │
-│  Vite Dev       │    │   tsx watch     │
-│  :5173          │    │     :3002       │
-└─────────────────┘    └─────────────────┘
-                              │
-                       ┌──────┴──────┐
-                       ▼             ▼
-                 ┌──────────┐  ┌──────────┐
-                 │ SQLite   │  │ uploads/ │
-                 │ assets.db│  │ (本地)   │
-                 └──────────┘  └──────────┘
-```
-
-### 8.2 生产环境
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   Nginx (反向代理)                   │
-│                      :80/:443                       │
-└─────────────────────────────────────────────────────┘
-         │                              │
-         │ /api/*                       │ /*
-         ▼                              ▼
-┌─────────────────┐            ┌─────────────────┐
-│    Backend      │            │    Frontend     │
-│  PM2 / Node     │            │  静态文件托管   │
-│     :3002       │            │                 │
-└─────────────────┘            └─────────────────┘
+┌───────────────────────────────────────┐
+│                Asset                   │
+├───────────────────────────────────────┤
+│ id                                    │
+│ name                                  │
+│ code                                  │
+│ status           (ENUM: Active, Idle, Damaged, Scrapped)
+│ categoryId                           │
+│ data             (JSON - dynamic fields)
+│ createdAt                            │
+│ updatedAt                            │
+│ deletedAt        (Soft delete)        │
+└───────────────────────────────────────┘
          │
-  ┌──────┴──────┐
-  ▼             ▼
-┌──────────┐  ┌──────────┐
-│ SQLite   │  │ uploads/ │
-│ assets.db│  │ (本地)   │
-└──────────┘  └──────────┘
+         │ 1:N
+         ▼
+┌───────────────────────────────────────┐
+│              AssetImage               │
+├───────────────────────────────────────┤
+│ id                                    │
+│ assetId                               │
+│ filename                              │
+│ path                                  │
+│ createdAt                             │
+└───────────────────────────────────────┘
 ```
 
----
+### Dynamic Field System
 
-## 9. 功能进度
+The system supports custom fields without schema migrations:
 
-| Phase | 功能 | 状态 |
-|-------|------|------|
-| **Phase 1** | 基础架构 | 🔄 进行中 |
-| | CORE-001: 后端初始化 | ✅ 完成 |
-| | CORE-002: 数据库模型 | ✅ 完成 |
-| | CORE-003: 前端初始化 | ✅ 完成 |
-| | CORE-004: 字段配置 API | ⏳ 待开发 |
-| | CORE-005: 字段配置前端 | ⏳ 待开发 |
-| **Phase 2** | 资产核心功能 | 📋 计划中 |
-| **Phase 3** | 数据导入导出 | 📋 计划中 |
-| **Phase 4** | 图片功能 | 📋 计划中 |
-| **Phase 5** | 可视化与扩展 | 📋 计划中 |
+```typescript
+// Field types
+type FieldType = 'TEXT' | 'TEXTAREA' | 'NUMBER' | 'DATE' | 'SELECT' | 'MULTISELECT'
 
----
+// FieldConfig defines the field structure
+interface FieldConfig {
+  id: string
+  name: string        // Field identifier
+  label: string       // Display label
+  type: FieldType
+  required: boolean
+  visible: boolean
+  options?: string    // For SELECT types (newline-separated)
+  order: number
+}
 
-*文档版本: 1.0.0*
-*最后更新: 2026-02-14*
+// Asset stores field values in JSON
+interface Asset {
+  id: string
+  name: string
+  code: string | null
+  status: AssetStatus
+  categoryId: string | null
+  data: Record<string, any>  // Dynamic field values
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+```
+
+## Security
+
+### Authentication Flow
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐
+│  Login   │────▶│  Verify  │────▶│  Issue   │
+│  Form    │     │ Password │     │   JWT    │
+└──────────┘     └──────────┘     └──────────┘
+                                        │
+                                        ▼
+                                 ┌──────────┐
+                                 │  Store   │
+                                 │  Token   │
+                                 └──────────┘
+                                        │
+                                        ▼
+┌──────────┐     ┌──────────┐     ┌──────────┐
+│  API     │────▶│  Verify  │────▶│  Access  │
+│  Request │     │   JWT    │     │ Resource │
+└──────────┘     └──────────┘     └──────────┘
+```
+
+### Authorization (RBAC)
+
+| Role | Permissions |
+|------|-------------|
+| **Admin** | Full access: all CRUD, user management, system config |
+| **Editor** | Asset management, import/export, view reports |
+| **User** | Read-only: view assets and reports |
+
+### Security Measures
+
+| Measure | Implementation |
+|---------|---------------|
+| Password hashing | bcrypt with salt |
+| XSS protection | Input sanitization (xss library) |
+| SQL injection | Prisma parameterized queries |
+| CORS | Configured origin whitelist |
+| Security headers | Helmet middleware |
+| Rate limiting | Planned for production |
+
+## Performance Considerations
+
+### Frontend Optimization
+
+| Technique | Implementation |
+|-----------|---------------|
+| Code splitting | React.lazy for route-level splitting |
+| Bundle optimization | Vite's built-in tree shaking |
+| Virtual scrolling | @tanstack/react-virtual for large lists |
+| Image optimization | Lazy loading, compression |
+| Caching | localStorage for user preferences |
+
+### Backend Optimization
+
+| Technique | Implementation |
+|-----------|---------------|
+| Database indexing | Indexes on frequently queried fields |
+| Pagination | Cursor-based for large datasets |
+| Query optimization | Prisma select, include optimization |
+| Caching | Planned: Redis for hot data |
+| Async processing | Planned: BullMQ for heavy operations |
+
+### Database Indexes
+
+```sql
+CREATE INDEX idx_assets_name ON assets(name);
+CREATE INDEX idx_assets_status ON assets(status);
+CREATE INDEX idx_assets_category ON assets(categoryId);
+CREATE INDEX idx_assets_created ON assets(createdAt);
+CREATE INDEX idx_assets_deleted ON assets(deletedAt);
+```
+
+## Deployment
+
+### Development
+
+```bash
+# Backend
+cd server && npm run dev
+
+# Frontend
+cd client && npm run dev
+```
+
+### Production
+
+```bash
+# Build
+cd server && npm run build
+cd client && npm run build
+
+# Start
+cd server && npm start
+# Serve client/dist with nginx or similar
+```
+
+### Environment Variables
+
+```env
+# Server
+DATABASE_URL="file:../data/assets.db"
+JWT_SECRET="your-secret-key"
+PORT=3002
+
+# Optional (for external DB)
+# DATABASE_URL="postgresql://user:pass@localhost:5432/assets"
+```

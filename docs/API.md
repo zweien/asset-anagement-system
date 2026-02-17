@@ -1,71 +1,126 @@
-# 资产录入管理系统 - API 文档
+# API Documentation
 
-## 基础信息
+Interactive API documentation is available via Swagger UI at: `http://localhost:3002/api/docs`
 
-- **Base URL**: `http://localhost:3002/api`
-- **认证方式**: 无 (后续支持 JWT)
-- **Content-Type**: `application/json`
+## Base Information
 
-## 通用响应
+| Item | Value |
+|------|-------|
+| **Base URL** | `http://localhost:3002/api` |
+| **Authentication** | JWT Bearer Token |
+| **Content-Type** | `application/json` |
 
-### 成功响应
+## Authentication
+
+All protected endpoints require a JWT token in the Authorization header:
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+Obtain a token via the `/auth/login` endpoint.
+
+## Response Format
+
+### Success Response
 ```json
 {
   "success": true,
   "data": { ... },
-  "message": "操作成功"
+  "message": "Operation successful"
 }
 ```
 
-### 错误响应
+### Error Response
 ```json
 {
   "success": false,
   "error": "ERROR_CODE",
-  "message": "错误描述"
+  "message": "Error description"
 }
 ```
 
-### 分页响应
+### Paginated Response
 ```json
 {
   "success": true,
   "data": [...],
-  "pagination": {
-    "total": 100,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 5
+  "total": 100,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 5
+}
+```
+
+---
+
+## Authentication Endpoints
+
+### POST /auth/login
+
+Login and obtain JWT token.
+
+**Request Body**
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "uuid",
+      "username": "admin",
+      "name": "Administrator",
+      "role": "ADMIN"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIs..."
   }
 }
 ```
 
----
+### POST /auth/register
 
-## 1. 健康检查
+Register a new user.
 
-### GET /health
-
-检查服务状态。
-
-**响应**
+**Request Body**
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-02-14T12:00:00.000Z",
-  "uptime": 3600
+  "username": "newuser",
+  "password": "Password123",
+  "name": "New User",
+  "email": "user@example.com"
+}
+```
+
+### POST /auth/change-password
+
+Change current user's password.
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**
+```json
+{
+  "oldPassword": "currentPassword",
+  "newPassword": "newPassword123"
 }
 ```
 
 ---
 
-## 2. 字段配置 API
+## Field Configuration Endpoints
 
 ### GET /fields
 
-获取所有字段配置。
+Get all field configurations.
 
-**响应**
+**Response**
 ```json
 {
   "success": true,
@@ -73,185 +128,146 @@
     {
       "id": "uuid",
       "name": "serial_number",
-      "label": "序列号",
+      "label": "Serial Number",
       "type": "TEXT",
       "required": true,
+      "visible": true,
       "options": null,
-      "defaultValue": null,
-      "validation": "{\"pattern\": \"^[A-Z0-9]+$\"}",
       "order": 1,
-      "createdAt": "2026-02-14T12:00:00.000Z",
-      "updatedAt": "2026-02-14T12:00:00.000Z"
+      "createdAt": "2025-02-14T12:00:00.000Z"
     }
   ]
 }
 ```
 
-### GET /fields/:id
-
-获取单个字段配置。
-
 ### POST /fields
 
-创建字段配置。
+Create a new field configuration.
 
-**请求体**
+**Request Body**
 ```json
 {
   "name": "purchase_date",
-  "label": "购买日期",
+  "label": "Purchase Date",
   "type": "DATE",
   "required": false,
-  "options": null,
-  "defaultValue": null,
-  "validation": null
+  "visible": true
 }
 ```
 
-**字段类型说明**
-| 类型 | 说明 | options 格式 |
-|------|------|-------------|
-| TEXT | 单行文本 | null |
-| NUMBER | 数字 | null |
-| DATE | 日期 | null |
-| SELECT | 下拉单选 | `["选项1", "选项2"]` |
-| MULTISELECT | 多选 | `["选项1", "选项2", "选项3"]` |
-| TEXTAREA | 多行文本 | null |
+**Field Types**
+
+| Type | Description | Options Format |
+|------|-------------|----------------|
+| TEXT | Single-line text | null |
+| TEXTAREA | Multi-line text | null |
+| NUMBER | Numeric value | null |
+| DATE | Date picker | null |
+| SELECT | Dropdown (single) | "Option1\nOption2\nOption3" |
+| MULTISELECT | Multiple selection | "Option1\nOption2\nOption3" |
 
 ### PUT /fields/:id
 
-更新字段配置。
-
-**请求体**
-```json
-{
-  "label": "采购日期",
-  "required": true
-}
-```
+Update field configuration.
 
 ### DELETE /fields/:id
 
-删除字段配置。
-
-### PUT /fields/reorder
-
-重新排序字段。
-
-**请求体**
-```json
-{
-  "orders": [
-    { "id": "uuid-1", "order": 1 },
-    { "id": "uuid-2", "order": 2 }
-  ]
-}
-```
+Delete field configuration (custom fields only).
 
 ---
 
-## 3. 资产 API
+## Asset Endpoints
 
 ### GET /assets
 
-获取资产列表（分页、筛选、排序）。
+Get paginated list of assets with filtering and sorting.
 
-**查询参数**
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| page | number | 页码 (默认 1) |
-| pageSize | number | 每页条数 (默认 20) |
-| sortBy | string | 排序字段 |
-| sortOrder | string | 排序方向 asc/desc |
-| search | string | 搜索关键词 |
-| category | string | 分类ID |
-| status | string | 状态 |
-| filter | string | 动态字段筛选 (JSON) |
+**Query Parameters**
 
-**响应**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number (default: 1) |
+| pageSize | number | Items per page (default: 20) |
+| sortBy | string | Sort field |
+| sortOrder | string | Sort direction: `asc` or `desc` |
+| search | string | Search keyword |
+| status | string | Filter by status |
+| categoryId | string | Filter by category |
+| filters | string | Dynamic field filters (JSON string) |
+
+**Filter Format**
+```json
+{
+  "fieldName": {
+    "operator": "contains",
+    "value": "search term"
+  }
+}
+```
+
+**Available Operators**
+
+| Operator | Description | Field Types |
+|----------|-------------|-------------|
+| contains | Contains substring | TEXT, TEXTAREA |
+| notContains | Does not contain | TEXT, TEXTAREA |
+| equals | Exact match | All |
+| notEquals | Not equal | All |
+| startsWith | Starts with | TEXT |
+| endsWith | Ends with | TEXT |
+| isEmpty | Is empty/null | All |
+| isNotEmpty | Is not empty | All |
+| gt | Greater than | NUMBER, DATE |
+| gte | Greater than or equal | NUMBER, DATE |
+| lt | Less than | NUMBER, DATE |
+| lte | Less than or equal | NUMBER, DATE |
+| between | In range | NUMBER, DATE |
+
+**Response**
 ```json
 {
   "success": true,
   "data": [
     {
       "id": "uuid",
-      "name": "笔记本电脑",
+      "name": "Laptop Computer",
       "code": "IT-001",
-      "categoryId": "uuid",
       "status": "ACTIVE",
+      "categoryId": "uuid",
       "data": {
         "serial_number": "SN123456",
-        "purchase_date": "2024-01-15",
-        "price": 8000
+        "purchase_date": "2024-01-15"
       },
       "category": {
         "id": "uuid",
-        "name": "电子设备"
+        "name": "Electronics"
       },
       "images": [],
-      "createdAt": "2026-02-14T12:00:00.000Z",
-      "updatedAt": "2026-02-14T12:00:00.000Z"
+      "createdAt": "2025-02-14T12:00:00.000Z"
     }
   ],
-  "pagination": {
-    "total": 100,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 5
-  }
+  "total": 100,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 5
 }
 ```
 
 ### GET /assets/:id
 
-获取资产详情。
-
-**响应**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "name": "笔记本电脑",
-    "code": "IT-001",
-    "categoryId": "uuid",
-    "status": "ACTIVE",
-    "data": {
-      "serial_number": "SN123456",
-      "purchase_date": "2024-01-15",
-      "price": 8000
-    },
-    "category": {
-      "id": "uuid",
-      "name": "电子设备"
-    },
-    "images": [
-      {
-        "id": "uuid",
-        "filename": "abc123.jpg",
-        "originalName": "laptop.jpg",
-        "mimeType": "image/jpeg",
-        "size": 102400,
-        "path": "/uploads/abc123.jpg"
-      }
-    ],
-    "createdAt": "2026-02-14T12:00:00.000Z",
-    "updatedAt": "2026-02-14T12:00:00.000Z"
-  }
-}
-```
+Get single asset details.
 
 ### POST /assets
 
-创建资产。
+Create a new asset.
 
-**请求体**
+**Request Body**
 ```json
 {
-  "name": "笔记本电脑",
+  "name": "Laptop Computer",
   "code": "IT-001",
-  "categoryId": "uuid",
   "status": "ACTIVE",
+  "categoryId": "uuid",
   "data": {
     "serial_number": "SN123456",
     "purchase_date": "2024-01-15",
@@ -262,46 +278,54 @@
 
 ### PUT /assets/:id
 
-更新资产。
+Update an existing asset.
 
 ### DELETE /assets/:id
 
-删除资产（软删除）。
+Soft delete an asset.
 
 ### POST /assets/batch-delete
 
-批量删除资产。
+Batch delete multiple assets.
 
-**请求体**
+**Request Body**
 ```json
 {
   "ids": ["uuid-1", "uuid-2", "uuid-3"]
 }
 ```
 
+### GET /assets/grouped
+
+Get assets grouped by a field.
+
+**Query Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| groupBy | string | Field to group by: `status`, `category`, `month`, or custom field name |
+
 ---
 
-## 4. 分类 API
+## Category Endpoints
 
 ### GET /categories
 
-获取分类树。
+Get category tree.
 
-**响应**
+**Response**
 ```json
 {
   "success": true,
   "data": [
     {
       "id": "uuid",
-      "name": "电子设备",
+      "name": "Electronics",
       "parentId": null,
-      "description": "电子类资产",
-      "order": 1,
       "children": [
         {
           "id": "uuid-2",
-          "name": "计算机",
+          "name": "Computers",
           "parentId": "uuid",
           "children": []
         }
@@ -313,60 +337,50 @@
 
 ### POST /categories
 
-创建分类。
-
-**请求体**
-```json
-{
-  "name": "办公家具",
-  "parentId": null,
-  "description": "办公用家具",
-  "order": 2
-}
-```
+Create a new category.
 
 ### PUT /categories/:id
 
-更新分类。
+Update a category.
 
 ### DELETE /categories/:id
 
-删除分类（有子分类或关联资产时禁止删除）。
+Delete a category (fails if has children or linked assets).
 
 ---
 
-## 5. 导入 API
+## Import/Export Endpoints
 
 ### POST /import/excel
 
-导入 Excel 文件。
+Import assets from Excel file.
 
-**请求**
+**Request**
 - Content-Type: `multipart/form-data`
-- 文件字段: `file`
+- File field: `file`
+- Mapping field: `mapping` (JSON string)
 
-**响应**
+**Response**
 ```json
 {
   "success": true,
   "data": {
     "imported": 100,
     "skipped": 5,
-    "errors": [
-      {
-        "row": 10,
-        "error": "序列号重复"
-      }
-    ]
+    "errors": []
   }
 }
 ```
 
+### GET /import/template
+
+Download Excel import template.
+
 ### POST /import/database/test
 
-测试数据库连接。
+Test database connection.
 
-**请求体**
+**Request Body**
 ```json
 {
   "type": "mysql",
@@ -378,111 +392,61 @@
 }
 ```
 
-**响应**
-```json
-{
-  "success": true,
-  "data": {
-    "tables": ["assets", "categories", "users"]
-  }
-}
-```
+### POST /import/database/preview
+
+Preview data from external database table.
 
 ### POST /import/database
 
-从数据库导入。
-
-**请求体**
-```json
-{
-  "connection": {
-    "type": "mysql",
-    "host": "localhost",
-    "port": 3306,
-    "database": "old_assets",
-    "username": "root",
-    "password": "password"
-  },
-  "table": "assets",
-  "mapping": {
-    "name": "asset_name",
-    "code": "asset_code",
-    "custom_field_1": "field1"
-  }
-}
-```
-
----
-
-## 6. 导出 API
+Import from external database.
 
 ### GET /export/excel
 
-导出 Excel。
+Export assets to Excel.
 
-**查询参数**
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| fields | string | 导出字段 (逗号分隔) |
-| filter | string | 筛选条件 (JSON) |
-
-**响应**
-- Content-Type: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- Content-Disposition: `attachment; filename="assets.xlsx"`
+**Query Parameters**
+| Parameter | Description |
+|-----------|-------------|
+| fields | Comma-separated list of fields to export |
+| filters | JSON filter string |
 
 ### GET /export/csv
 
-导出 CSV。
+Export assets to CSV.
 
 ### GET /export/images
 
-导出图片 (ZIP)。
+Export asset images as ZIP file.
 
 ---
 
-## 7. 图片 API
+## Image Endpoints
 
 ### POST /assets/:id/images
 
-上传资产图片。
+Upload images for an asset.
 
-**请求**
+**Request**
 - Content-Type: `multipart/form-data`
-- 文件字段: `images` (支持多文件)
-
-**响应**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "filename": "abc123.jpg",
-      "originalName": "photo.jpg",
-      "mimeType": "image/jpeg",
-      "size": 102400
-    }
-  ]
-}
-```
+- File field: `images` (supports multiple files)
 
 ### GET /assets/:id/images
 
-获取资产图片列表。
+Get all images for an asset.
 
 ### DELETE /assets/:id/images/:imageId
 
-删除图片。
+Delete an image.
 
 ---
 
-## 8. 统计 API
+## Report Endpoints
 
-### GET /stats/overview
+### GET /reports/stats/overview
 
-获取总览统计。
+Get dashboard overview statistics.
 
-**响应**
+**Response**
 ```json
 {
   "success": true,
@@ -490,64 +454,157 @@
     "total": 1000,
     "activeCount": 800,
     "idleCount": 100,
-    "maintenanceCount": 50,
+    "damagedCount": 50,
     "scrappedCount": 50,
     "thisMonthNew": 20
   }
 }
 ```
 
-### GET /stats/by-category
+### GET /reports/stats/by-status
 
-按分类统计。
+Get asset count by status.
 
-**响应**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "categoryId": "uuid",
-      "categoryName": "电子设备",
-      "count": 500
-    }
-  ]
-}
-```
+### GET /reports/stats/by-category
 
-### GET /stats/by-status
+Get asset count by category.
 
-按状态统计。
+### GET /reports/stats/by-month
 
-**响应**
-```json
-{
-  "success": true,
-  "data": [
-    { "status": "ACTIVE", "count": 800 },
-    { "status": "IDLE", "count": 100 },
-    { "status": "MAINTENANCE", "count": 50 },
-    { "status": "SCRAPPED", "count": 50 }
-  ]
-}
-```
+Get asset count by creation month.
+
+### GET /reports/templates
+
+Get all report templates.
+
+### POST /reports/templates
+
+Create a report template.
+
+### PUT /reports/templates/:id
+
+Update a report template.
+
+### DELETE /reports/templates/:id
+
+Delete a report template.
 
 ---
 
-## 错误码
+## User Management Endpoints
 
-| 错误码 | 说明 |
-|--------|------|
-| VALIDATION_ERROR | 请求参数验证失败 |
-| NOT_FOUND | 资源不存在 |
-| DUPLICATE_ERROR | 重复数据 |
-| FOREIGN_KEY_ERROR | 外键约束失败 |
-| FILE_TOO_LARGE | 文件过大 |
-| INVALID_FILE_TYPE | 无效文件类型 |
-| DATABASE_ERROR | 数据库错误 |
-| INTERNAL_ERROR | 服务器内部错误 |
+### GET /users
+
+Get paginated list of users.
+
+**Query Parameters**
+| Parameter | Description |
+|-----------|-------------|
+| page | Page number |
+| pageSize | Items per page |
+| search | Search by username or name |
+| role | Filter by role |
+| active | Filter by status |
+
+### POST /users
+
+Create a new user.
+
+**Request Body**
+```json
+{
+  "username": "newuser",
+  "password": "Password123",
+  "name": "New User",
+  "email": "user@example.com",
+  "role": "USER"
+}
+```
+
+### PUT /users/:id
+
+Update user information.
+
+### DELETE /users/:id
+
+Delete a user.
+
+### PUT /users/:id/role
+
+Update user role.
+
+### PUT /users/:id/status
+
+Activate/deactivate user.
+
+### POST /users/:id/reset-password
+
+Reset user password.
 
 ---
 
-*文档版本: 1.0.0*
-*最后更新: 2026-02-14*
+## Operation Log Endpoints
+
+### GET /logs
+
+Get paginated operation logs.
+
+**Query Parameters**
+| Parameter | Description |
+|-----------|-------------|
+| page | Page number |
+| pageSize | Items per page |
+| action | Filter by action type |
+| entityType | Filter by entity type |
+| startDate | Filter from date |
+| endDate | Filter to date |
+
+### GET /logs/:id
+
+Get log detail.
+
+---
+
+## Backup Endpoints
+
+### GET /backup
+
+List all backup files.
+
+### POST /backup
+
+Create a new backup.
+
+### GET /backup/:filename
+
+Download a backup file.
+
+### POST /backup/:filename/restore
+
+Restore from a backup file.
+
+### DELETE /backup/:filename
+
+Delete a backup file.
+
+---
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| `VALIDATION_ERROR` | Request validation failed |
+| `UNAUTHORIZED` | Authentication required |
+| `FORBIDDEN` | Insufficient permissions |
+| `NOT_FOUND` | Resource not found |
+| `DUPLICATE_ERROR` | Duplicate data |
+| `FOREIGN_KEY_ERROR` | Foreign key constraint violation |
+| `FILE_TOO_LARGE` | File exceeds size limit |
+| `INVALID_FILE_TYPE` | Invalid file type |
+| `DATABASE_ERROR` | Database operation failed |
+| `INTERNAL_ERROR` | Internal server error |
+
+---
+
+*API Version: 1.0.0*
+*Last Updated: 2025-02-17*

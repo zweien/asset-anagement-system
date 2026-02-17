@@ -1,88 +1,157 @@
-# 长运行代理项目
+# Asset Management System
 
-基于 [Anthropic 的长运行代理最佳实践](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) 构建的项目框架。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
 
-## 核心理念
+A modern, full-stack asset management system with dynamic field configuration, Excel import/export, and comprehensive reporting capabilities.
 
-### 问题背景
-AI 代理在处理复杂任务时面临两大挑战：
-1. **上下文窗口限制** - 每个新会话都没有之前的记忆
-2. **失败模式** - 试图一次性做太多，或过早宣布完成
+[中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md)
 
-### 解决方案：双代理架构
+## ✨ Features
 
-| 代理类型 | 职责 |
-|---------|------|
-| **初始化代理** | 设置环境、创建功能列表、初始化进度文件 |
-| **编码代理** | 每次只做一个功能、增量开发、记录进度 |
+- 📊 **Dynamic Field Configuration** - Create custom fields without modifying the database schema
+- 📥 **Excel Import/Export** - Batch import from Excel files with field mapping
+- 🗄️ **Database Migration** - Import data from external databases (MySQL, PostgreSQL, SQLite)
+- 📈 **Visual Reports** - Charts and statistics with customizable report templates
+- 🌐 **Internationalization** - Full i18n support with Chinese and English translations
+- 🌓 **Dark Mode** - Built-in theme switching with system preference detection
+- 🔐 **Role-Based Access Control** - Admin, Editor, and User roles with granular permissions
+- 📝 **Audit Logging** - Complete operation history with change tracking
+- 💾 **Backup & Restore** - Database backup and restore functionality
+- 📱 **Responsive Design** - Mobile-friendly UI built with shadcn/ui
 
-## 项目结构
+## 🚀 Quick Start
 
-```
-.
-├── init.sh              # 环境管理脚本
-├── claude-progress.txt  # 进度日志
-├── feature_list.json    # 功能特性列表
-├── .claude/
-│   └── agents/
-│       ├── initializer.md    # 初始化代理指令
-│       └── coding-agent.md   # 编码代理指令
-└── README.md
-```
+### Prerequisites
 
-## 快速开始
+- Node.js 18+
+- npm or pnpm
 
-### 1. 初始化项目
+### Installation
+
 ```bash
-./init.sh setup
-```
+# Clone the repository
+git clone https://github.com/yourusername/asset-management-system.git
+cd asset-management-system
 
-### 2. 查看项目状态
-```bash
-./init.sh status
-```
+# Install dependencies
+npm install
+cd client && npm install && cd ..
+cd server && npm install && cd ..
 
-### 3. 启动开发服务器
-```bash
+# Initialize the database
+cd server
+npm run db:push
+cd ..
+
+# Start development servers
 ./init.sh start
 ```
 
-## 工作流程
+Or start manually:
 
-### 会话启动检查清单
-- [ ] 运行 `pwd` 确认目录
-- [ ] 读取 `claude-progress.txt`
-- [ ] 读取 `feature_list.json`
-- [ ] 检查 `git log --oneline -10`
-- [ ] 启动服务并验证基本功能
+```bash
+# Terminal 1 - Backend
+cd server && npm run dev
 
-### 开发原则
-1. **增量开发** - 一次只做一个功能
-2. **测试驱动** - 只有测试通过才标记功能完成
-3. **干净状态** - 每次提交后代码应该可以正常运行
-4. **详细记录** - 更新进度文件和 Git 提交
-
-## 功能列表格式
-
-```json
-{
-  "id": "FEATURE-001",
-  "category": "functional",
-  "priority": "high",
-  "description": "功能描述",
-  "steps": [
-    "测试步骤 1",
-    "测试步骤 2"
-  ],
-  "acceptance_criteria": [
-    "验收标准 1"
-  ],
-  "passes": false,
-  "notes": "备注"
-}
+# Terminal 2 - Frontend
+cd client && npm run dev
 ```
 
-## 参考资源
+Access the application at http://localhost:5173
 
-- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
-- [Claude 4 Prompting Guide](https://docs.anthropic.com/claude/docs/prompting-guide)
+### Default Credentials
+
+- **Username:** `admin`
+- **Password:** `admin123`
+
+> ⚠️ Please change the default password after first login!
+
+## 📁 Project Structure
+
+```
+.
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Route-level page components
+│   │   ├── lib/            # Utilities, API client, types
+│   │   ├── stores/         # Zustand state management
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── i18n/           # Internationalization
+│   └── package.json
+├── server/                 # Express backend
+│   ├── src/
+│   │   ├── controllers/    # Request handlers
+│   │   ├── services/       # Business logic
+│   │   ├── routes/         # API endpoints
+│   │   ├── middleware/     # Express middleware
+│   │   └── utils/          # Utilities
+│   ├── prisma/
+│   │   └── schema.prisma   # Database schema
+│   └── package.json
+├── docs/                   # Documentation
+├── e2e/                    # E2E tests
+└── uploads/                # File uploads
+```
+
+## 🛠️ Tech Stack
+
+| Frontend | Backend |
+|----------|---------|
+| React 19 | Express.js |
+| TypeScript | TypeScript |
+| Vite | Prisma ORM |
+| TailwindCSS v4 | SQLite / PostgreSQL / MySQL |
+| shadcn/ui | JWT Authentication |
+| Zustand | Swagger/OpenAPI |
+| React Router | Winston Logger |
+| Recharts | Zod Validation |
+| i18next | |
+
+## 📖 Documentation
+
+- [Architecture](./docs/ARCHITECTURE.md) - System architecture and design decisions
+- [API Reference](./docs/API.md) - REST API documentation
+- [Contributing](./docs/CONTRIBUTING.md) - How to contribute
+- [Changelog](./docs/CHANGELOG.md) - Version history
+
+## 🧪 Testing
+
+```bash
+# Backend unit tests
+cd server && npm test
+
+# E2E tests
+npm run test:e2e
+
+# E2E tests with UI
+npm run test:e2e:ui
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./docs/CONTRIBUTING.md) for details.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [Recharts](https://recharts.org/) - Composable charting library
+- [Lucide Icons](https://lucide.dev/) - Beautiful open-source icons
+
+---
+
+Made with ❤️ by the Asset Management Team
