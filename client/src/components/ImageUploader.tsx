@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Upload, X, Camera } from 'lucide-react'
+import { getToken } from '@/lib/api'
 
 interface ImageInfo {
   id: string
@@ -35,8 +36,12 @@ export function ImageUploader({ assetId, images, onImagesChange }: ImageUploader
       const formData = new FormData()
       formData.append('image', file)
 
+      const token = getToken()
       const response = await fetch(`${API_BASE}/assets/${assetId}/images`, {
         method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: formData,
       })
 
@@ -71,8 +76,12 @@ export function ImageUploader({ assetId, images, onImagesChange }: ImageUploader
     if (!confirm('确定要删除这张图片吗？')) return
 
     try {
+      const token = getToken()
       const response = await fetch(`${API_BASE}/images/${imageId}`, {
         method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       })
 
       const result = await response.json()
