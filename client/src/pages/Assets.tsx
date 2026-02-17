@@ -1035,12 +1035,12 @@ export function Assets() {
                     </Button>
                   )}
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter || 'ALL'} onValueChange={(v) => setStatusFilter(v === 'ALL' ? '' : v)}>
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t('common.all')}</SelectItem>
+                    <SelectItem value="ALL">{t('common.all')}</SelectItem>
                     {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
                       <SelectItem key={value} value={value}>{label}</SelectItem>
                     ))}
