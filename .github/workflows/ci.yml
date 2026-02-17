@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd client && npm install && cd ..
+          cd server && npm install && cd ..
+
+      - name: Lint frontend
+        run: cd client && npm run lint
+
+      - name: Lint backend
+        run: cd server && npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd client && npm install && cd ..
+          cd server && npm install && cd ..
+
+      - name: Generate Prisma client
+        run: cd server && npm run db:generate
+
+      - name: Run backend tests
+        run: cd server && npm test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd client && npm install && cd ..
+          cd server && npm install && cd ..
+
+      - name: Generate Prisma client
+        run: cd server && npm run db:generate
+
+      - name: Build frontend
+        run: cd client && npm run build
+
+      - name: Build backend
+        run: cd server && npm run build
