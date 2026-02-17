@@ -827,6 +827,7 @@ export function Assets() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => row.id,
     columnResizeMode: 'onChange',
     manualPagination: true,
     pageCount: Math.ceil(total / pageSize),
