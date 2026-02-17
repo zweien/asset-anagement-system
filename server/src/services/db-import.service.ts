@@ -76,7 +76,7 @@ export const DBImportService = {
   // 获取所有表
   async getTables(config: DBConnectionConfig) {
     try {
-      let tables: TableInfo[] = []
+      const tables: TableInfo[] = []
 
       if (config.type === 'mysql') {
         const connection = await mysql.createConnection({

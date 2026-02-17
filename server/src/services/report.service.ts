@@ -99,20 +99,23 @@ export const ReportService = {
           lte: new Date(now.setHours(23, 59, 59, 999)),
         }
         break
-      case 'week':
+      case 'week': {
         const weekStart = new Date(now)
         weekStart.setDate(now.getDate() - now.getDay())
         weekStart.setHours(0, 0, 0, 0)
         dateFilter = { gte: weekStart }
         break
-      case 'month':
+      }
+      case 'month': {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
         dateFilter = { gte: monthStart }
         break
-      case 'year':
+      }
+      case 'year': {
         const yearStart = new Date(now.getFullYear(), 0, 1)
         dateFilter = { gte: yearStart }
         break
+      }
       case 'custom':
         if (customStartDate) {
           dateFilter.gte = new Date(customStartDate)
@@ -160,7 +163,7 @@ export const ReportService = {
       let label: string
 
       switch (dimension) {
-        case 'status':
+        case 'status': {
           const statusLabels: Record<string, string> = {
             ACTIVE: '在用',
             IDLE: '闲置',
@@ -170,18 +173,20 @@ export const ReportService = {
           key = asset.status
           label = statusLabels[asset.status] || asset.status
           break
+        }
 
         case 'categoryId':
           key = asset.categoryId || 'uncategorized'
           label = asset.category?.name || '未分类'
           break
 
-        case 'createdAt':
+        case 'createdAt': {
           // 按月份分组
           const month = asset.createdAt.toISOString().slice(0, 7)
           key = month
           label = month
           break
+        }
 
         default:
           // 动态字段

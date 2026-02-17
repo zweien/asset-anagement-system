@@ -16,7 +16,7 @@ import {
   Line,
 } from 'recharts'
 import { assetApi, reportApi, ASSET_STATUS_LABELS, fieldApi } from '../lib/api'
-import type { AssetStatus, ReportTemplate, ReportDataItem, CreateReportTemplateDto, FieldConfig, ChartType } from '../lib/api'
+import type { AssetStatus, ReportTemplate, ReportDataItem, CreateReportTemplateDto, FieldConfig, ChartType, Asset } from '../lib/api'
 import { EmptyReports } from '@/components/ui/EmptyState'
 
 const COLORS = ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
@@ -71,6 +71,7 @@ export function Reports() {
     loadData()
     loadTemplates()
     loadFields()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadData = async () => {
@@ -78,7 +79,7 @@ export function Reports() {
       setLoading(true)
 
       // 获取所有资产（分批加载）
-      let allAssets: any[] = []
+      let allAssets: Asset[] = []
       let page = 1
       const pageSize = 100
 
@@ -103,7 +104,7 @@ export function Reports() {
         SCRAPPED: 0,
       }
       allAssets.forEach((asset) => {
-        if (statusCount.hasOwnProperty(asset.status)) {
+        if (Object.prototype.hasOwnProperty.call(statusCount, asset.status)) {
           statusCount[asset.status]++
         }
       })
@@ -346,9 +347,10 @@ export function Reports() {
         return t('reports.dimensionCategory')
       case 'createdAt':
         return t('reports.dimensionMonth')
-      default:
+      default: {
         const field = fields.find((f) => f.name === dimension)
         return field?.label || dimension
+      }
     }
   }
 
@@ -373,11 +375,11 @@ export function Reports() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                onClick={(_: any, index: number) => handleCustomChartClick(customChartData[index])}
+                onClick={(_: unknown, index: number) => handleCustomChartClick(customChartData[index])}
                 className="cursor-pointer"
               >
                 {chartData.map((entry, index) => (
@@ -410,7 +412,7 @@ export function Reports() {
                 name={t('reports.count')}
                 stroke="#3b82f6"
                 strokeWidth={2}
-                onClick={(data: any) => {
+                onClick={(data: { index?: number }) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -441,7 +443,7 @@ export function Reports() {
                 name={t('reports.count')}
                 fill="#3b82f6"
                 radius={[4, 4, 0, 0]}
-                onClick={(data: any) => {
+                onClick={(data: { index?: number }) => {
                   if (data && data.index !== undefined) {
                     handleCustomChartClick(customChartData[data.index])
                   }
@@ -502,11 +504,11 @@ export function Reports() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  onClick={(_: any, index: number) => handleStatusChartClick(statusData[index])}
+                  onClick={(_: unknown, index: number) => handleStatusChartClick(statusData[index])}
                   className="cursor-pointer"
                 >
                   {statusData.map((entry, index) => (
@@ -543,7 +545,7 @@ export function Reports() {
                   name={t('reports.newCount')}
                   fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                  onClick={(data: any) => {
+                  onClick={(data: { index?: number }) => {
                     if (data && data.index !== undefined) {
                       handleMonthlyChartClick(monthlyData[data.index])
                     }

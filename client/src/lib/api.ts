@@ -344,7 +344,7 @@ export const dbImportApi = {
 
   // 预览数据
   previewData: (config: DBConnectionConfig, tableName: string) =>
-    api.post<{ success: boolean; data?: Record<string, any>[]; error?: string }>('/db-import/preview', {
+    api.post<{ success: boolean; data?: Record<string, unknown>[]; error?: string }>('/db-import/preview', {
       config,
       tableName,
     }),

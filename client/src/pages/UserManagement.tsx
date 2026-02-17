@@ -125,6 +125,7 @@ export function UserManagement() {
 
   useEffect(() => {
     loadUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filterRole, filterActive])
 
   const loadUsers = async () => {
@@ -136,7 +137,7 @@ export function UserManagement() {
       if (filterRole) params.role = filterRole
       if (filterActive !== '') params.active = filterActive === 'true'
 
-      const response: any = await userApi.getAll(params)
+      const response = await userApi.getAll(params)
       if (response?.success) {
         setUsers(response.data.data)
         setTotal(response.data.total)
@@ -182,7 +183,7 @@ export function UserManagement() {
     try {
       setSubmitting(true)
       setFormError('')
-      const response: any = await userApi.create(formData)
+      const response = await userApi.create(formData)
       if (response?.success) {
         setShowCreateModal(false)
         setFormData({
@@ -194,10 +195,10 @@ export function UserManagement() {
         })
         loadUsers()
       } else {
-        setFormError(response?.error || t('users.createFailed'))
+        setFormError((response as { error?: string })?.error || t('users.createFailed'))
       }
-    } catch (err: any) {
-      setFormError(err.message || t('users.createFailed'))
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : t('users.createFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -210,17 +211,17 @@ export function UserManagement() {
     try {
       setSubmitting(true)
       setFormError('')
-      const response: any = await userApi.update(selectedUser.id, editFormData)
+      const response = await userApi.update(selectedUser.id, editFormData)
       if (response?.success) {
         setShowEditModal(false)
         setSelectedUser(null)
         setEditFormData({})
         loadUsers()
       } else {
-        setFormError(response?.error || t('users.updateFailed'))
+        setFormError((response as { error?: string })?.error || t('users.updateFailed'))
       }
-    } catch (err: any) {
-      setFormError(err.message || t('users.updateFailed'))
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : t('users.updateFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -231,30 +232,30 @@ export function UserManagement() {
     if (user.role === newRole) return
 
     try {
-      const response: any = await userApi.updateRole(user.id, newRole)
+      const response = await userApi.updateRole(user.id, newRole)
       if (response?.success) {
         showSuccess(t('users.roleUpdateSuccess'))
         loadUsers()
       } else {
-        showError(t('users.roleUpdateFailed'), response?.error || t('users.unknownError'))
+        showError(t('users.roleUpdateFailed'), (response as { error?: string })?.error || t('users.unknownError'))
       }
-    } catch (err: any) {
-      showError(t('users.roleUpdateFailed'), err.message || t('users.unknownError'))
+    } catch (err: unknown) {
+      showError(t('users.roleUpdateFailed'), err instanceof Error ? err.message : t('users.unknownError'))
     }
   }
 
   // 切换状态
   const handleToggleStatus = async (user: UserListItem) => {
     try {
-      const response: any = await userApi.updateStatus(user.id, !user.active)
+      const response = await userApi.updateStatus(user.id, !user.active)
       if (response?.success) {
         showSuccess(user.active ? t('users.userDeactivated') : t('users.userActivated'))
         loadUsers()
       } else {
-        showError(t('users.statusUpdateFailed'), response?.error || t('users.unknownError'))
+        showError(t('users.statusUpdateFailed'), (response as { error?: string })?.error || t('users.unknownError'))
       }
-    } catch (err: any) {
-      showError(t('users.statusUpdateFailed'), err.message || t('users.unknownError'))
+    } catch (err: unknown) {
+      showError(t('users.statusUpdateFailed'), err instanceof Error ? err.message : t('users.unknownError'))
     }
   }
 
@@ -276,16 +277,16 @@ export function UserManagement() {
     try {
       setSubmitting(true)
       setFormError('')
-      const response: any = await userApi.resetPassword(selectedUser.id, newPassword)
+      const response = await userApi.resetPassword(selectedUser.id, newPassword)
       if (response?.success) {
         setShowResetPasswordModal(false)
         setSelectedUser(null)
         setNewPassword('')
       } else {
-        setFormError(response?.error || t('users.resetPasswordFailed'))
+        setFormError((response as { error?: string })?.error || t('users.resetPasswordFailed'))
       }
-    } catch (err: any) {
-      setFormError(err.message || t('users.resetPasswordFailed'))
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : t('users.resetPasswordFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -298,15 +299,15 @@ export function UserManagement() {
     }
 
     try {
-      const response: any = await userApi.delete(user.id)
+      const response = await userApi.delete(user.id)
       if (response?.success) {
         showSuccess(t('users.userDeleteSuccess'))
         loadUsers()
       } else {
-        showError(t('users.deleteFailed'), response?.error || t('users.unknownError'))
+        showError(t('users.deleteFailed'), (response as { error?: string })?.error || t('users.unknownError'))
       }
-    } catch (err: any) {
-      showError(t('users.deleteFailed'), err.message || t('users.unknownError'))
+    } catch (err: unknown) {
+      showError(t('users.deleteFailed'), err instanceof Error ? err.message : t('users.unknownError'))
     }
   }
 

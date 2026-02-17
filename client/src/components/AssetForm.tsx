@@ -35,11 +35,17 @@ interface AssetFormProps {
   fields: FieldConfig[]
 }
 
+// 选项类型
+interface OptionItem {
+  value: string
+  label: string
+}
+
 interface FormData {
   name: string
   code: string
   status: AssetStatus
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFormProps) {
@@ -111,7 +117,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
       setImages([])
     }
     setError('')
-  }, [asset, isOpen])
+  }, [asset, isOpen, loadImages])
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
@@ -158,7 +164,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
         onSuccess()
         onClose()
       } else {
-        const errorMsg = (result as any).error || '保存失败'
+        const errorMsg = (result as { error?: string }).error || '保存失败'
         setError(errorMsg)
         showError('保存失败', errorMsg)
       }
@@ -171,7 +177,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }
   }
 
-  const updateDataField = (fieldName: string, value: any) => {
+  const updateDataField = (fieldName: string, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       data: { ...prev.data, [fieldName]: value },
@@ -181,16 +187,16 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
   // 解析选项配置，支持两种格式：
   // 1. 简单字符串数组: ["在用", "闲置"]
   // 2. 对象数组: [{"value":"ACTIVE","label":"在用"}]
-  const parseOptions = (optionsStr: string | null): Array<{ value: string; label: string }> => {
+  const parseOptions = (optionsStr: string | null): OptionItem[] => {
     if (!optionsStr) return []
     try {
       const parsed = JSON.parse(optionsStr)
       if (Array.isArray(parsed)) {
         // 检查是否是对象数组格式
         if (parsed.length > 0 && typeof parsed[0] === 'object') {
-          return parsed.map((opt: any) => ({
-            value: opt.value || opt.name || opt,
-            label: opt.label || opt.name || opt.value || opt,
+          return parsed.map((opt: Record<string, unknown>) => ({
+            value: String(opt.value || opt.name || opt),
+            label: String(opt.label || opt.name || opt.value || opt),
           }))
         }
         // 简单字符串数组
@@ -218,7 +224,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }
 
     switch (field.type) {
-      case 'SELECT':
+      case 'SELECT': {
         const options = parseOptions(field.options)
         // 获取当前选中项的标签用于显示
         const selectedOption = options.find(opt => opt.value === value)
@@ -238,6 +244,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             </SelectContent>
           </Select>
         )
+      }
       case 'TEXTAREA':
         return (
           <Textarea
@@ -312,7 +319,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             onChange={(e) => updateDataField(field.name, e.target.value)}
           />
         )
-      case 'SELECT':
+      case 'SELECT': {
         const selectOptions = parseOptions(field.options)
         const selectedSelectOption = selectOptions.find(opt => opt.value === value)
         return (
@@ -334,7 +341,8 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             </SelectContent>
           </Select>
         )
-      case 'MULTISELECT':
+      }
+      case 'MULTISELECT': {
         const multiOptions = parseOptions(field.options)
         const selectedValues: string[] = Array.isArray(value) ? value : value ? [value] : []
         return (
@@ -360,6 +368,7 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
             })}
           </div>
         )
+      }
       default:
         return null
     }

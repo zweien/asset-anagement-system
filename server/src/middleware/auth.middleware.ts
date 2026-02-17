@@ -25,8 +25,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     // 将用户信息附加到请求对象
-    ;(req as any).userId = result.data.id
-    ;(req as any).user = result.data
+    const typedReq = req as Request & { userId?: string; user?: { id: string; role: string } }
+    typedReq.userId = result.data.id
+    typedReq.user = result.data
 
     next()
   } catch (error) {
@@ -80,8 +81,9 @@ export const optionalAuthMiddleware = async (req: Request, res: Response, next: 
     if (token) {
       const result = await AuthService.verifyToken(token)
       if (result.success && result.data) {
-        ;(req as any).userId = result.data.id
-        ;(req as any).user = result.data
+        const typedReq = req as Request & { userId?: string; user?: { id: string; role: string } }
+        typedReq.userId = result.data.id
+        typedReq.user = result.data
       }
     }
 

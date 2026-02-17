@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Info, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,15 +10,14 @@ interface PageInstructionsProps {
 }
 
 export function PageInstructions({ title, instructions, storageKey }: PageInstructionsProps) {
-  const [isVisible, setIsVisible] = useState(true)
   const key = storageKey || `page-instructions-${title}`
 
-  useEffect(() => {
+  // 使用惰性初始化从 localStorage 读取初始状态
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return true
     const stored = localStorage.getItem(key)
-    if (stored !== null) {
-      setIsVisible(stored === 'true')
-    }
-  }, [key])
+    return stored === null ? true : stored === 'true'
+  })
 
   const handleToggle = () => {
     const newValue = !isVisible

@@ -179,8 +179,8 @@ export function Header() {
       } else {
         setPasswordError(response.error || t('header.passwordChangeFailed'))
       }
-    } catch (err: any) {
-      setPasswordError(err.message || t('header.passwordChangeFailed'))
+    } catch (err: unknown) {
+      setPasswordError(err instanceof Error ? err.message : t('header.passwordChangeFailed'))
     } finally {
       setPasswordSubmitting(false)
     }

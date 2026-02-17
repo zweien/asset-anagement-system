@@ -218,7 +218,7 @@ export function Settings() {
   const loadFields = async () => {
     try {
       setLoading(true)
-      const response: any = await fieldApi.getAll()
+      const response = await fieldApi.getAll()
       if (response?.success) {
         // 按 order 排序，系统字段在前
         const sortedFields = response.data.sort((a: FieldConfig, b: FieldConfig) => a.order - b.order)
@@ -233,28 +233,29 @@ export function Settings() {
 
   useEffect(() => {
     loadFields()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // 添加字段
   const handleAdd = async (data: CreateFieldDto | UpdateFieldDto) => {
-    const response: any = await fieldApi.create(data as CreateFieldDto)
+    const response = await fieldApi.create(data as CreateFieldDto)
     if (response?.success) {
       setShowAddForm(false)
       loadFields()
     } else {
-      throw new Error(response?.error || t('common.error'))
+      throw new Error((response as { error?: string })?.error || t('common.error'))
     }
   }
 
   // 更新字段
   const handleUpdate = async (data: UpdateFieldDto) => {
     if (!editingField) return
-    const response: any = await fieldApi.update(editingField.id, data)
+    const response = await fieldApi.update(editingField.id, data)
     if (response?.success) {
       setEditingField(null)
       loadFields()
     } else {
-      throw new Error(response?.error || t('common.error'))
+      throw new Error((response as { error?: string })?.error || t('common.error'))
     }
   }
 
@@ -268,15 +269,15 @@ export function Settings() {
       return
     }
     try {
-      const response: any = await fieldApi.delete(field.id)
+      const response = await fieldApi.delete(field.id)
       if (response?.success) {
         showSuccess(t('settings.fieldDeleteSuccess'))
         loadFields()
       } else {
-        showError(t('common.error'), response?.error || '')
+        showError(t('common.error'), (response as { error?: string })?.error || '')
       }
-    } catch (err: any) {
-      showError(t('common.error'), err.message || '')
+    } catch (err: unknown) {
+      showError(t('common.error'), err instanceof Error ? err.message : '')
     }
   }
 

@@ -35,13 +35,13 @@ export function Dashboard() {
       setLoading(true)
 
       // 获取资产统计
-      const assetsRes: any = await assetApi.getAll({ pageSize: 1 })
+      const assetsRes = await assetApi.getAll({ pageSize: 1 })
       const totalAssets = assetsRes.data?.total || 0
 
       // 获取本月新增
       const now = new Date()
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const monthlyRes: any = await assetApi.getAll({
+      const monthlyRes = await assetApi.getAll({
         pageSize: 1,
         filters: JSON.stringify({
           createdAt: {
@@ -53,11 +53,11 @@ export function Dashboard() {
       const monthlyNew = monthlyRes.data?.total || 0
 
       // 获取导入记录数
-      const logsRes: any = await logApi.getAll({ action: 'IMPORT', pageSize: 1 })
+      const logsRes = await logApi.getAll({ action: 'IMPORT', pageSize: 1 })
       const importRecords = logsRes.data?.total || 0
 
       // 获取闲置资产数作为待处理
-      const idleRes: any = await assetApi.getAll({ status: 'IDLE', pageSize: 1 })
+      const idleRes = await assetApi.getAll({ status: 'IDLE', pageSize: 1 })
       const pending = idleRes.data?.total || 0
 
       setStats({

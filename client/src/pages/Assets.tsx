@@ -77,7 +77,7 @@ interface ImageInfo {
 function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: ImageUploadModalProps) {
   const { t } = useTranslation()
   const [images, setImages] = useState<ImageInfo[]>([])
-  const [_loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
 
   const loadImages = async () => {
     if (!assetId) return
@@ -205,7 +205,7 @@ function parseOptions(optionsStr: string | null | undefined): string[] {
     if (Array.isArray(parsed)) {
       // 检查是否是对象数组格式
       if (parsed.length > 0 && typeof parsed[0] === 'object') {
-        return parsed.map((opt: any) => opt.value || opt.name || opt)
+        return parsed.map((opt: Record<string, unknown>) => String(opt.value || opt.name || opt))
       }
       // 简单字符串数组
       return parsed.map((opt: string) => opt)
@@ -222,14 +222,13 @@ interface ColumnFilterDropdownProps {
   isOpen: boolean
   anchorRef: React.RefObject<HTMLButtonElement | null>
   columnName: string
-  columnId: string
   fieldType: FieldType | null
   fieldForColumn: FieldConfig | undefined
   operators: { value: FilterOperator; labelKey: string }[]
   filterOperator: FilterOperator
   setFilterOperator: (op: FilterOperator) => void
   filterValue: string | number | { min?: number; max?: number; startDate?: string; endDate?: string }
-  setFilterValue: (value: any) => void
+  setFilterValue: (value: string | number | { min?: number; max?: number; startDate?: string; endDate?: string }) => void
   onApply: () => void
   onClear: () => void
   onClose: () => void
@@ -239,7 +238,6 @@ function ColumnFilterDropdown({
   isOpen,
   anchorRef,
   columnName,
-  columnId: _columnId,
   fieldType,
   fieldForColumn,
   operators,
@@ -333,16 +331,16 @@ function ColumnFilterDropdown({
           <Input
             type="number"
             placeholder={t('filter.min')}
-            value={(filterValue as any)?.min || ''}
-            onChange={(e) => setFilterValue({ ...(filterValue as any || {}), min: e.target.value ? Number(e.target.value) : undefined })}
+            value={(filterValue as { min?: number })?.min || ''}
+            onChange={(e) => setFilterValue({ ...(filterValue as { min?: number; max?: number }), min: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1"
           />
           <span className="text-muted-foreground">-</span>
           <Input
             type="number"
             placeholder={t('filter.max')}
-            value={(filterValue as any)?.max || ''}
-            onChange={(e) => setFilterValue({ ...(filterValue as any || {}), max: e.target.value ? Number(e.target.value) : undefined })}
+            value={(filterValue as { max?: number })?.max || ''}
+            onChange={(e) => setFilterValue({ ...(filterValue as { min?: number; max?: number }), max: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1"
           />
         </div>
@@ -362,15 +360,15 @@ function ColumnFilterDropdown({
         <div className="flex items-center gap-2 mb-2">
           <Input
             type="date"
-            value={(filterValue as any)?.startDate || ''}
-            onChange={(e) => setFilterValue({ ...(filterValue as any || {}), startDate: e.target.value || undefined })}
+            value={(filterValue as { startDate?: string })?.startDate || ''}
+            onChange={(e) => setFilterValue({ ...(filterValue as { startDate?: string; endDate?: string }), startDate: e.target.value || undefined })}
             className="flex-1 text-xs"
           />
           <span className="text-muted-foreground">-</span>
           <Input
             type="date"
-            value={(filterValue as any)?.endDate || ''}
-            onChange={(e) => setFilterValue({ ...(filterValue as any || {}), endDate: e.target.value || undefined })}
+            value={(filterValue as { endDate?: string })?.endDate || ''}
+            onChange={(e) => setFilterValue({ ...(filterValue as { startDate?: string; endDate?: string }), endDate: e.target.value || undefined })}
             className="flex-1 text-xs"
           />
         </div>
@@ -516,7 +514,7 @@ export function Assets() {
     try {
       setLoading(true)
 
-      const filterObj: Record<string, any> = {}
+      const filterObj: Record<string, { operator: string; value: unknown }> = {}
       filters.forEach((f) => {
         filterObj[f.field] = {
           operator: f.operator,
@@ -534,7 +532,10 @@ export function Assets() {
         }
       }
 
-      const [assetsRes, fieldsRes]: any[] = await Promise.all([
+      const [assetsRes, fieldsRes]: [
+        { success: boolean; data: { data: Asset[]; total: number } } | undefined,
+        { success: boolean; data: FieldConfig[] } | undefined
+      ] = await Promise.all([
         assetApi.getAll({
           page,
           pageSize,
@@ -581,20 +582,24 @@ export function Assets() {
 
   useEffect(() => {
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, sorting, search, dateRangeFilter, statusFilter])
 
   // 加载分组数据
   const loadGroupedData = async () => {
     try {
       setLoading(true)
-      const [groupedRes, fieldsRes]: any[] = await Promise.all([
+      const [groupedRes, fieldsRes]: [
+        { success: boolean; data: GroupedAssets } | undefined,
+        { success: boolean; data: FieldConfig[] } | undefined
+      ] = await Promise.all([
         assetApi.getGrouped(groupBy, 100),
         fieldApi.getAll(),
       ])
       if (groupedRes?.success) {
         setGroupedData(groupedRes.data)
         setTotal(groupedRes.data.total)
-        setExpandedGroups(new Set(groupedRes.data.groups.map((g: any) => g.key)))
+        setExpandedGroups(new Set(groupedRes.data.groups.map((g) => g.key)))
       }
       if (fieldsRes?.success) {
         setFields(fieldsRes.data)
@@ -788,7 +793,7 @@ export function Assets() {
               onClick={async () => {
                 if (confirm(t('assets.confirmDelete'))) {
                   try {
-                    const result: any = await assetApi.delete(info.row.original.id)
+                    const result = await assetApi.delete(info.row.original.id)
                     if (result?.success) {
                       loadData()
                     } else {
@@ -1140,7 +1145,7 @@ export function Assets() {
                   return SELECT_OPERATORS_KEYS
                 }
 
-                const updateFilter = (operator: FilterOperator, value: any) => {
+                const updateFilter = (operator: FilterOperator, value: string | number | { min?: number; max?: number; startDate?: string; endDate?: string } | null) => {
                   const newFilters = filters.filter(f => f.field !== field.name)
                   if (operator === 'isEmpty' || operator === 'isNotEmpty') {
                     newFilters.push({ field: field.name, type: field.type as FieldType, operator, value: null })
@@ -1196,9 +1201,9 @@ export function Assets() {
                         <Input
                           type="number"
                           placeholder={t('filter.min')}
-                          value={(existingFilter?.value as any)?.min || ''}
+                          value={(existingFilter?.value as { min?: number })?.min || ''}
                           onChange={(e) => {
-                            const existing = existingFilter?.value as any || {}
+                            const existing = existingFilter?.value as { min?: number; max?: number } || {}
                             updateFilter(currentOperator, { ...existing, min: e.target.value ? Number(e.target.value) : undefined })
                           }}
                           className="h-8 text-sm flex-1"
@@ -1207,9 +1212,9 @@ export function Assets() {
                         <Input
                           type="number"
                           placeholder={t('filter.max')}
-                          value={(existingFilter?.value as any)?.max || ''}
+                          value={(existingFilter?.value as { max?: number })?.max || ''}
                           onChange={(e) => {
-                            const existing = existingFilter?.value as any || {}
+                            const existing = existingFilter?.value as { min?: number; max?: number } || {}
                             updateFilter(currentOperator, { ...existing, max: e.target.value ? Number(e.target.value) : undefined })
                           }}
                           className="h-8 text-sm flex-1"
@@ -1231,9 +1236,9 @@ export function Assets() {
                       <div className="flex items-center gap-2">
                         <Input
                           type="date"
-                          value={(existingFilter?.value as any)?.startDate || ''}
+                          value={(existingFilter?.value as { startDate?: string })?.startDate || ''}
                           onChange={(e) => {
-                            const existing = existingFilter?.value as any || {}
+                            const existing = existingFilter?.value as { startDate?: string; endDate?: string } || {}
                             updateFilter(currentOperator, { ...existing, startDate: e.target.value || undefined })
                           }}
                           className="h-8 text-xs flex-1"
@@ -1241,9 +1246,9 @@ export function Assets() {
                         <span className="text-muted-foreground text-xs">-</span>
                         <Input
                           type="date"
-                          value={(existingFilter?.value as any)?.endDate || ''}
+                          value={(existingFilter?.value as { endDate?: string })?.endDate || ''}
                           onChange={(e) => {
-                            const existing = existingFilter?.value as any || {}
+                            const existing = existingFilter?.value as { startDate?: string; endDate?: string } || {}
                             updateFilter(currentOperator, { ...existing, endDate: e.target.value || undefined })
                           }}
                           className="h-8 text-xs flex-1"
@@ -1383,7 +1388,7 @@ export function Assets() {
                             <Button variant="ghost" size="icon-xs" onClick={async () => {
                               if (confirm(t('assets.confirmDelete'))) {
                                 try {
-                                  const result: any = await assetApi.delete(asset.id)
+                                  const result = await assetApi.delete(asset.id)
                                   if (result?.success) loadGroupedData()
                                 } catch (err) {
                                   setError(err instanceof Error ? err.message : t('common.error'))
@@ -1445,7 +1450,7 @@ export function Assets() {
                         setActiveFilterColumn(columnId)
                         setColumnFilterOperator(existingFilter?.operator || (fieldType === 'TEXT' || fieldType === 'TEXTAREA' ? 'contains' : 'equals'))
                         if (existingFilter?.value) {
-                          setColumnFilterValue(existingFilter.value as any)
+                          setColumnFilterValue(existingFilter.value as string | number | { min?: number; max?: number; startDate?: string; endDate?: string })
                         } else {
                           setColumnFilterValue('')
                         }
@@ -1470,7 +1475,7 @@ export function Assets() {
                       setPage(1)
 
                       setTimeout(() => {
-                        const filterObj: Record<string, any> = {}
+                        const filterObj: Record<string, { operator: string; value: unknown }> = {}
                         newFilters.forEach((f) => {
                           filterObj[f.field] = {
                             operator: f.operator,
@@ -1485,7 +1490,7 @@ export function Assets() {
                           sortBy: sorting[0]?.id,
                           sortOrder: sorting[0]?.desc ? 'desc' : 'asc',
                           filters: Object.keys(filterObj).length > 0 ? JSON.stringify(filterObj) : undefined,
-                        }).then((res: any) => {
+                        }).then((res: { success: boolean; data: { data: Asset[]; total: number } }) => {
                           if (res?.success) {
                             setAssets(res.data.data)
                             setTotal(res.data.total)

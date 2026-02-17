@@ -34,11 +34,12 @@ export function AssetDetail() {
     name: '',
     code: '',
     status: 'IDLE' as AssetStatus,
-    data: {} as Record<string, any>,
+    data: {} as Record<string, unknown>,
   })
 
   useEffect(() => {
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const loadData = async () => {
@@ -141,18 +142,18 @@ export function AssetDetail() {
     setIsEditing(false)
   }
 
-  const updateDataField = (fieldName: string, value: any) => {
+  const updateDataField = (fieldName: string, value: unknown) => {
     setEditForm(prev => ({
       ...prev,
       data: { ...prev.data, [fieldName]: value }
     }))
   }
 
-  const getFieldValue = (fieldName: string): any => {
+  const getFieldValue = (fieldName: string): unknown => {
     if (!asset?.data) return null
     try {
       const data = typeof asset.data === 'string' ? JSON.parse(asset.data) : asset.data
-      return data[fieldName]
+      return (data as Record<string, unknown>)[fieldName]
     } catch {
       return null
     }
@@ -189,7 +190,7 @@ export function AssetDetail() {
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         )
-      case 'SELECT':
+      case 'SELECT': {
         const options = field.options ? JSON.parse(field.options) : []
         return (
           <select
@@ -203,7 +204,8 @@ export function AssetDetail() {
             ))}
           </select>
         )
-      case 'MULTISELECT':
+      }
+      case 'MULTISELECT': {
         const multiOptions = field.options ? JSON.parse(field.options) : []
         const selectedValues = Array.isArray(value) ? value : []
         return (
@@ -227,6 +229,7 @@ export function AssetDetail() {
             ))}
           </div>
         )
+      }
       default:
         return (
           <input

@@ -8,7 +8,7 @@ import { PageInstructions } from '@/components/PageInstructions'
 
 interface ParsedData {
   headers: string[]
-  preview: Record<string, any>[]
+  preview: Record<string, unknown>[]
   total: number
 }
 
@@ -52,7 +52,7 @@ export function Import() {
   const [dbConnected, setDbConnected] = useState(false)
   const [tables, setTables] = useState<TableInfo[]>([])
   const [selectedTable, setSelectedTable] = useState<string>('')
-  const [tablePreview, setTablePreview] = useState<Record<string, any>[]>([])
+  const [tablePreview, setTablePreview] = useState<Record<string, unknown>[]>([])
   const [dbMapping, setDbMapping] = useState<{ sourceColumn: string; targetField: string }[]>([])
   const [dbImportResult, setDbImportResult] = useState<{ total: number; imported: number; failed: number; errors: string[] } | null>(null)
 
