@@ -403,11 +403,12 @@ export function AssetDetail() {
         )}
 
         {/* 动态字段 */}
-        {fields.length > 0 && (
+        {fields.filter(f => !['name', 'code', 'status'].includes(f.name) && f.visible !== false).length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">详细信息</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {fields
+                .filter(f => !['name', 'code', 'status'].includes(f.name) && f.visible !== false)
                 .sort((a, b) => a.order - b.order)
                 .map((field) => {
                   const value = isEditing ? editForm.data[field.name] : getFieldValue(field.name)
