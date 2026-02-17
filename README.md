@@ -12,6 +12,10 @@ A modern, full-stack asset management system with dynamic field configuration, E
 
 [中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
+## 📸 Screenshots
+
+![Dashboard](./docs/snipaste_dashboard.png)
+
 ## ✨ Features
 
 - 📊 **Dynamic Field Configuration** - Create custom fields without modifying the database schema
