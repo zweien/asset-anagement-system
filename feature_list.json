@@ -1090,5 +1090,97 @@
       "支持日志轮转"
     ],
     "passes": true
+  },
+  {
+    "id": "UI-001",
+    "category": "ui",
+    "priority": "high",
+    "description": "微交互动画系统 - 页面过渡和交互动画",
+    "steps": [
+      "创建动画配置文件 (animations.ts)",
+      "添加页面过渡动画组件",
+      "优化按钮和表单交互动画",
+      "添加列表项进入动画",
+      "优化模态框和抽屉动画"
+    ],
+    "acceptance_criteria": [
+      "页面切换有平滑过渡",
+      "按钮有 hover/active 动画",
+      "列表项有交错进入动画",
+      "模态框有缩放和淡入动画"
+    ],
+    "passes": true
+  },
+  {
+    "id": "UI-002",
+    "category": "ui",
+    "priority": "high",
+    "description": "空状态组件优化 - 友好的空数据展示",
+    "steps": [
+      "创建通用 EmptyState 组件",
+      "为资产列表添加空状态",
+      "为报表页添加空状态",
+      "为日志页添加空状态",
+      "添加引导操作按钮"
+    ],
+    "acceptance_criteria": [
+      "空状态有图标和描述",
+      "提供下一步操作引导",
+      "风格与整体设计一致"
+    ],
+    "passes": true
+  },
+  {
+    "id": "UI-003",
+    "category": "ui",
+    "priority": "medium",
+    "description": "骨架屏优化 - 内容感知加载状态",
+    "steps": [
+      "创建 AssetCardSkeleton 组件",
+      "创建 TableRowSkeleton 组件",
+      "创建 StatCardSkeleton 组件",
+      "替换简单 Skeleton 为定制骨架"
+    ],
+    "acceptance_criteria": [
+      "骨架形状与实际内容接近",
+      "动画流畅自然",
+      "减少加载时的布局跳动"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-004",
+    "category": "ui",
+    "priority": "medium",
+    "description": "移动端底部导航 - 提升移动端体验",
+    "steps": [
+      "创建 MobileBottomNav 组件",
+      "根据权限显示导航项",
+      "添加激活状态样式",
+      "在 Layout 中集成"
+    ],
+    "acceptance_criteria": [
+      "移动端显示底部导航",
+      "导航项与权限匹配",
+      "当前页面高亮显示"
+    ],
+    "passes": false
+  },
+  {
+    "id": "PERF-001",
+    "category": "performance",
+    "priority": "medium",
+    "description": "虚拟滚动优化 - 大数据量性能提升",
+    "steps": [
+      "安装 @tanstack/react-virtual",
+      "为资产列表添加虚拟滚动",
+      "测试大数据量性能"
+    ],
+    "acceptance_criteria": [
+      "支持 10000+ 条数据流畅滚动",
+      "内存占用稳定",
+      "滚动流畅无卡顿"
+    ],
+    "passes": false
   }
 ]

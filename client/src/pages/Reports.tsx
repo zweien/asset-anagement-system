@@ -17,6 +17,7 @@ import {
 } from 'recharts'
 import { assetApi, reportApi, ASSET_STATUS_LABELS, fieldApi } from '../lib/api'
 import type { AssetStatus, ReportTemplate, ReportDataItem, CreateReportTemplateDto, FieldConfig, ChartType } from '../lib/api'
+import { EmptyReports } from '@/components/ui/EmptyState'
 
 const COLORS = ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
 
@@ -353,11 +354,7 @@ export function Reports() {
 
   const renderCustomChart = () => {
     if (!customChartData || customChartData.length === 0) {
-      return (
-        <div className="h-64 flex items-center justify-center text-gray-500">
-          {t('common.noData')}
-        </div>
-      )
+      return <EmptyReports />
     }
 
     const template = templates.find((t) => t.id === selectedTemplateId)
@@ -520,9 +517,7 @@ export function Reports() {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
-              {t('common.noData')}
-            </div>
+            <EmptyReports />
           )}
         </div>
 
@@ -558,9 +553,7 @@ export function Reports() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
-              {t('common.noData')}
-            </div>
+            <EmptyReports />
           )}
         </div>
       </div>

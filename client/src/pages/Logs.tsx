@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logApi, LOG_ACTION_LABELS, type LogAction, type OperationLog, type LogQueryParams } from '../lib/api'
+import { EmptyLogs } from '@/components/ui/EmptyState'
 
 export function Logs() {
   const { t } = useTranslation()
@@ -195,9 +196,7 @@ export function Logs() {
             <p className="text-gray-500">{t('common.loading')}</p>
           </div>
         ) : logs.length === 0 ? (
-          <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500">{t('logs.noLogs')}</p>
-          </div>
+          <EmptyLogs />
         ) : (
           <>
             <div className="overflow-x-auto">

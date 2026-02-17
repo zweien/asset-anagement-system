@@ -18,6 +18,7 @@ import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
 import { PageInstructions } from '@/components/PageInstructions'
 import { TableSkeleton } from '@/components/ui/SkeletonLoaders'
+import { EmptyAssets, EmptySearch } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -1228,8 +1229,15 @@ export function Assets() {
             </Card>
           ) : !groupedData || groupedData.groups.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
-                {t('common.noData')}
+              <CardContent className="p-0">
+                {search ? (
+                  <EmptySearch searchTerm={search} />
+                ) : (
+                  <EmptyAssets
+                    onAction={canCreate ? () => { setEditingAsset(null); setShowAssetForm(true) } : undefined}
+                    actionLabel={t('assets.addAsset')}
+                  />
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -1494,8 +1502,15 @@ export function Assets() {
                 ))
               ) : assets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                    {t('common.noData')}
+                  <TableCell colSpan={columns.length} className="p-0 border-0">
+                    {search || filters.length > 0 || statusFilter ? (
+                      <EmptySearch searchTerm={search} />
+                    ) : (
+                      <EmptyAssets
+                        onAction={canCreate ? () => { setEditingAsset(null); setShowAssetForm(true) } : undefined}
+                        actionLabel={t('assets.addAsset')}
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               ) : (
