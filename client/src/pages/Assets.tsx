@@ -680,10 +680,10 @@ export function Assets() {
     }),
   ], [navigate, fields, t])
 
-  // 动态字段列 - 过滤掉系统字段（name, code 已在 baseColumns 中定义）
+  // 动态字段列 - 过滤掉系统字段（name, code, status 已在 baseColumns 中定义）
   const dynamicColumns = useMemo(() => {
     // 系统字段名称列表
-    const systemFieldNames = ['name', 'code']
+    const systemFieldNames = ['name', 'code', 'status']
     // 过滤掉系统字段和不可见字段
     const customFields = fields.filter(f => !systemFieldNames.includes(f.name) && f.visible !== false)
 
