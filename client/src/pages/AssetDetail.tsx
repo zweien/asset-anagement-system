@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Trash2, Calendar, Tag, Image as ImageIcon, X, Save, Camera } from 'lucide-react'
-import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
+import { assetApi, ASSET_STATUS_LABELS, getToken } from '../lib/api'
 import type { Asset, AssetStatus, FieldConfig } from '../lib/api'
 import { fieldApi } from '../lib/api'
 import { ImageUploader } from '../components/ImageUploader'
@@ -64,7 +64,12 @@ export function AssetDetail() {
           data: assetData,
         })
         // 加载图片
-        const imagesRes = await fetch(`${API_BASE}/assets/${id}/images`)
+        const token = getToken()
+        const imagesRes = await fetch(`${API_BASE}/assets/${id}/images`, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        })
         const imagesData = await imagesRes.json()
         if (imagesData.success) {
           setImages(imagesData.data)
@@ -499,7 +504,12 @@ export function AssetDetail() {
                 images={images}
                 onImagesChange={() => {
                   // 重新加载图片
-                  fetch(`${API_BASE}/assets/${asset.id}/images`)
+                  const token = getToken()
+                  fetch(`${API_BASE}/assets/${asset.id}/images`, {
+                    headers: {
+                      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                  })
                     .then(res => res.json())
                     .then(data => {
                       if (data.success) {
