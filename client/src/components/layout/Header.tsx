@@ -49,56 +49,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
-// 密码复杂度验证函数
-function validatePassword(password: string): { valid: boolean; errors: string[] } {
-  const errors: string[] = []
-
-  if (password.length < 8) {
-    errors.push('至少8位')
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push('包含小写字母')
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push('包含大写字母')
-  }
-  if (!/[0-9]/.test(password)) {
-    errors.push('包含数字')
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  }
-}
-
-// 密码要求组件
-function PasswordRequirements({ password }: { password: string }) {
-  const requirements = [
-    { label: '至少8位', valid: password.length >= 8 },
-    { label: '包含小写字母', valid: /[a-z]/.test(password) },
-    { label: '包含大写字母', valid: /[A-Z]/.test(password) },
-    { label: '包含数字', valid: /[0-9]/.test(password) },
-  ]
-
-  return (
-    <div className="mt-2 space-y-1">
-      {requirements.map((req, index) => (
-        <div key={index} className="flex items-center gap-1.5 text-xs">
-          {req.valid ? (
-            <Check className="w-3 h-3 text-green-500" />
-          ) : (
-            <XCircle className="w-3 h-3 text-gray-400" />
-          )}
-          <span className={req.valid ? 'text-green-600' : 'text-muted-foreground'}>
-            {req.label}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 interface NavItem {
   path: string
   labelKey: string
@@ -132,6 +82,56 @@ export function Header() {
   // 使用 Zustand store
   const { user, logout } = useAuthStore()
 
+  // 密码复杂度验证函数
+  const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
+    const errors: string[] = []
+
+    if (password.length < 8) {
+      errors.push(t('users.passwordReq8'))
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push(t('users.passwordReqLower'))
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push(t('users.passwordReqUpper'))
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push(t('users.passwordReqNumber'))
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    }
+  }
+
+  // 密码要求组件
+  const PasswordRequirements = ({ password }: { password: string }) => {
+    const requirements = [
+      { label: t('users.passwordReq8'), valid: password.length >= 8 },
+      { label: t('users.passwordReqLower'), valid: /[a-z]/.test(password) },
+      { label: t('users.passwordReqUpper'), valid: /[A-Z]/.test(password) },
+      { label: t('users.passwordReqNumber'), valid: /[0-9]/.test(password) },
+    ]
+
+    return (
+      <div className="mt-2 space-y-1">
+        {requirements.map((req, index) => (
+          <div key={index} className="flex items-center gap-1.5 text-xs">
+            {req.valid ? (
+              <Check className="w-3 h-3 text-green-500" />
+            ) : (
+              <XCircle className="w-3 h-3 text-gray-400" />
+            )}
+            <span className={req.valid ? 'text-green-600' : 'text-muted-foreground'}>
+              {req.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   // 根据用户权限动态生成导航项
   const navItems = useMemo(() => {
     if (!user) return allNavItems.filter(item => !item.requiredPermission)
@@ -151,19 +151,19 @@ export function Header() {
     setPasswordError('')
 
     if (!oldPassword || !newPassword || !confirmPassword) {
-      setPasswordError('请填写所有密码字段')
+      setPasswordError(t('users.allFieldsRequired'))
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('两次输入的新密码不一致')
+      setPasswordError(t('header.passwordMismatch'))
       return
     }
 
     // 密码复杂度验证
     const passwordValidation = validatePassword(newPassword)
     if (!passwordValidation.valid) {
-      setPasswordError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
+      setPasswordError(`${t('users.passwordInvalid')}${passwordValidation.errors.join('、')}`)
       return
     }
 
@@ -175,12 +175,12 @@ export function Header() {
         setOldPassword('')
         setNewPassword('')
         setConfirmPassword('')
-        showSuccess('密码修改成功')
+        showSuccess(t('users.passwordChangeSuccess'))
       } else {
-        setPasswordError(response.error || '密码修改失败')
+        setPasswordError(response.error || t('header.passwordChangeFailed'))
       }
     } catch (err: any) {
-      setPasswordError(err.message || '密码修改失败')
+      setPasswordError(err.message || t('header.passwordChangeFailed'))
     } finally {
       setPasswordSubmitting(false)
     }
@@ -194,7 +194,7 @@ export function Header() {
           <Link to="/" className="flex items-center gap-2">
             <Package className="w-8 h-8 text-primary" />
             <span className="text-xl font-bold text-foreground">
-              资产管理
+              {t('header.appName')}
             </span>
           </Link>
 
@@ -236,7 +236,7 @@ export function Header() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:block text-sm font-medium">
-                    {user?.name || user?.username || '用户'}
+                    {user?.name || user?.username || t('header.user')}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
@@ -245,7 +245,7 @@ export function Header() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{user?.name || user?.username}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user?.role ? USER_ROLE_LABELS[user.role as UserRole] : '未知角色'}
+                      {user?.role ? t(USER_ROLE_LABELS[user.role as UserRole]) : t('header.unknownRole')}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -271,7 +271,7 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="w-64">
                 <SheetHeader>
-                  <SheetTitle>导航菜单</SheetTitle>
+                  <SheetTitle>{t('header.navMenu')}</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 mt-4">
                   {navItems.map((item) => {
@@ -314,34 +314,34 @@ export function Header() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="old-password">原密码 <span className="text-destructive">*</span></Label>
+              <Label htmlFor="old-password">{t('users.oldPassword')} <span className="text-destructive">*</span></Label>
               <Input
                 id="old-password"
                 type="password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                placeholder="请输入原密码"
+                placeholder={t('header.oldPasswordPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="header-new-password">新密码 <span className="text-destructive">*</span></Label>
+              <Label htmlFor="header-new-password">{t('users.newPassword')} <span className="text-destructive">*</span></Label>
               <Input
                 id="header-new-password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="请输入新密码"
+                placeholder={t('header.newPasswordPlaceholder')}
               />
               {newPassword && <PasswordRequirements password={newPassword} />}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">确认新密码 <span className="text-destructive">*</span></Label>
+              <Label htmlFor="confirm-password">{t('users.confirmPassword')} <span className="text-destructive">*</span></Label>
               <Input
                 id="confirm-password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="请再次输入新密码"
+                placeholder={t('header.confirmPasswordPlaceholder')}
               />
             </div>
           </div>
@@ -353,10 +353,10 @@ export function Header() {
               setConfirmPassword('')
               setPasswordError('')
             }}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleChangePassword} disabled={passwordSubmitting}>
-              {passwordSubmitting ? '修改中...' : '确认修改'}
+              {passwordSubmitting ? t('header.changing') : t('header.confirmChange')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Database, Server, Table, Download } from 'lucide-react'
 import { fieldApi, dbImportApi, type TableInfo, type DBConnectionConfig } from '../lib/api'
 import type { FieldConfig } from '../lib/api'
@@ -26,6 +27,7 @@ interface ImportResult {
 }
 
 export function Import() {
+  const { t } = useTranslation()
   const [importType, setImportType] = useState<'excel' | 'database'>('excel')
 
   // Excel 导入状态
@@ -85,7 +87,7 @@ export function Import() {
         setStep(2)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '解析文件失败')
+      setError(err instanceof Error ? err.message : t('import.parseFailed'))
     } finally {
       setLoading(false)
     }
@@ -103,7 +105,7 @@ export function Import() {
 
   const executeImport = async () => {
     if (!parsedData || mapping.length === 0) {
-      setError('请配置字段映射')
+      setError(t('import.configureMapping'))
       return
     }
 
@@ -121,7 +123,7 @@ export function Import() {
         setStep(3)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导入失败')
+      setError(err instanceof Error ? err.message : t('import.importError'))
     } finally {
       setLoading(false)
     }
@@ -154,10 +156,10 @@ export function Import() {
         }
         await loadFields()
       } else {
-        setError(result.error || '连接失败')
+        setError(result.error || t('import.connectionFailed'))
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '连接失败')
+      setError(err instanceof Error ? err.message : t('import.connectionFailed'))
     } finally {
       setLoading(false)
     }
@@ -171,7 +173,7 @@ export function Import() {
         setTablePreview(result.data)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '预览失败')
+      setError(err instanceof Error ? err.message : t('import.previewFailed'))
     } finally {
       setLoading(false)
     }
@@ -179,7 +181,7 @@ export function Import() {
 
   const executeDbImport = async () => {
     if (!selectedTable || dbMapping.length === 0) {
-      setError('请选择表并配置字段映射')
+      setError(t('import.selectTableAndMapping'))
       return
     }
 
@@ -190,10 +192,10 @@ export function Import() {
       if (result.success && result.data) {
         setDbImportResult(result.data)
       } else {
-        setError(result.error || '导入失败')
+        setError(result.error || t('import.importError'))
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导入失败')
+      setError(err instanceof Error ? err.message : t('import.importError'))
     } finally {
       setLoading(false)
     }
@@ -213,19 +215,19 @@ export function Import() {
     <div className="space-y-6">
       {/* 头部 */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">数据导入</h1>
-        <p className="mt-1 text-muted-foreground">从 Excel 文件或数据库导入资产数据</p>
+        <h1 className="text-2xl font-bold text-foreground">{t('import.title')}</h1>
+        <p className="mt-1 text-muted-foreground">{t('import.subtitle')}</p>
       </div>
 
       {/* 使用说明 */}
       <PageInstructions
-        title="数据导入说明"
+        title={t('import.instructions.title')}
         instructions={[
-          '支持 Excel 文件导入和数据库导入两种方式',
-          'Excel 导入：上传 .xlsx 文件后进行字段映射，然后执行导入',
-          '数据库导入：配置数据库连接后选择表进行导入',
-          '可以先下载模板，按模板格式填写数据后再导入',
-          '导入前请确保字段映射正确，避免数据错误'
+          t('import.instructions.1'),
+          t('import.instructions.2'),
+          t('import.instructions.3'),
+          t('import.instructions.4'),
+          t('import.instructions.5'),
         ]}
       />
 
@@ -240,7 +242,7 @@ export function Import() {
           }`}
         >
           <FileSpreadsheet className="w-4 h-4 inline mr-2" />
-          Excel 导入
+          {t('import.excelImport')}
         </button>
         <button
           onClick={() => setImportType('database')}
@@ -251,7 +253,7 @@ export function Import() {
           }`}
         >
           <Database className="w-4 h-4 inline mr-2" />
-          数据库导入
+          {t('import.databaseImport')}
         </button>
       </div>
 
@@ -280,7 +282,7 @@ export function Import() {
                   {step > s ? <CheckCircle className="w-5 h-5" /> : s}
                 </div>
                 <span className={`text-sm ${step >= s ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
-                  {s === 1 ? '上传文件' : s === 2 ? '字段映射' : '导入结果'}
+                  {s === 1 ? t('import.step1') : s === 2 ? t('import.step2') : t('import.step3')}
                 </span>
                 {s < 3 && <div className="w-12 h-px bg-gray-300 dark:bg-gray-700" />}
               </div>
@@ -291,13 +293,13 @@ export function Import() {
           {step === 1 && (
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">上传 Excel 文件</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('import.uploadExcel')}</h2>
                 <button
                   onClick={() => window.open('http://localhost:3002/api/import/template', '_blank')}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-primary-600 dark:text-primary-400 border border-primary-600 dark:border-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
                   <Download className="w-4 h-4" />
-                  下载模板
+                  {t('import.downloadTemplate')}
                 </button>
               </div>
               <div
@@ -305,8 +307,8 @@ export function Import() {
                 className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center cursor-pointer hover:border-primary-500 transition-colors"
               >
                 <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">点击或拖拽文件到此区域</p>
-                <p className="text-sm text-gray-500">支持 .xlsx, .xls 格式</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">{t('import.dragDrop')}</p>
+                <p className="text-sm text-gray-500">{t('import.supportedFormats')}</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -315,7 +317,7 @@ export function Import() {
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              {loading && <p className="mt-4 text-center text-gray-500">正在解析文件...</p>}
+              {loading && <p className="mt-4 text-center text-gray-500">{t('import.parsing')}</p>}
             </div>
           )}
 
@@ -324,16 +326,16 @@ export function Import() {
             <div className="space-y-6">
               <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">字段映射</h2>
-                  <p className="text-sm text-gray-500">共 {parsedData.total} 行数据</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('import.mapping')}</h2>
+                  <p className="text-sm text-gray-500">{t('import.rowCount', { count: parsedData.total })}</p>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <th className="px-4 py-2 text-left text-gray-500">Excel 列名</th>
-                        <th className="px-4 py-2 text-left text-gray-500">映射到字段</th>
+                        <th className="px-4 py-2 text-left text-gray-500">{t('import.excelColumn')}</th>
+                        <th className="px-4 py-2 text-left text-gray-500">{t('import.mapToField')}</th>
                         {parsedData.headers.slice(0, 3).map((header) => (
                           <th key={header} className="px-4 py-2 text-left text-gray-500">{header}</th>
                         ))}
@@ -355,9 +357,9 @@ export function Import() {
                               }}
                               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             >
-                              <option value="">不映射</option>
-                              <option value="__name__">资产名称</option>
-                              <option value="__code__">资产编号</option>
+                              <option value="">{t('import.noMapping')}</option>
+                              <option value="__name__">{t('assets.assetName')}</option>
+                              <option value="__code__">{t('assets.assetCode')}</option>
                               {fields.map((field) => (
                                 <option key={field.id} value={field.id}>{field.label}</option>
                               ))}
@@ -377,14 +379,14 @@ export function Import() {
 
               <div className="flex justify-end gap-3">
                 <button onClick={reset} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
-                  重新上传
+                  {t('import.reUpload')}
                 </button>
                 <button
                   onClick={executeImport}
                   disabled={loading || mapping.length === 0}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
-                  {loading ? '导入中...' : '开始导入'}
+                  {loading ? t('import.importing') : t('import.startImport')}
                 </button>
               </div>
             </div>
@@ -400,31 +402,31 @@ export function Import() {
                   <XCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
                 )}
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {importResult.success ? '导入完成' : '导入失败'}
+                  {importResult.success ? t('import.importComplete') : t('import.importError')}
                 </h2>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{importResult.total}</p>
-                  <p className="text-sm text-gray-500">总计</p>
+                  <p className="text-sm text-gray-500">{t('import.total')}</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-green-600">{importResult.imported}</p>
-                  <p className="text-sm text-gray-500">成功</p>
+                  <p className="text-sm text-gray-500">{t('import.success')}</p>
                 </div>
                 <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-red-600">{importResult.skipped}</p>
-                  <p className="text-sm text-gray-500">跳过</p>
+                  <p className="text-sm text-gray-500">{t('import.skipped')}</p>
                 </div>
               </div>
 
               <div className="flex justify-center gap-3">
                 <button onClick={reset} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  继续导入
+                  {t('import.continueImport')}
                 </button>
                 <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary-600 text-white rounded-lg">
-                  查看资产列表
+                  {t('import.viewAssetList')}
                 </button>
               </div>
             </div>
@@ -440,13 +442,13 @@ export function Import() {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 <Server className="w-5 h-5 inline mr-2" />
-                数据库连接
+                {t('import.dbConnection')}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    数据库类型
+                    {t('import.dbType')}
                   </label>
                   <select
                     value={dbConfig.type}
@@ -459,7 +461,7 @@ export function Import() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    主机地址
+                    {t('import.dbHost')}
                   </label>
                   <input
                     type="text"
@@ -471,7 +473,7 @@ export function Import() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    端口
+                    {t('import.dbPort')}
                   </label>
                   <input
                     type="number"
@@ -482,7 +484,7 @@ export function Import() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    数据库名
+                    {t('import.dbName')}
                   </label>
                   <input
                     type="text"
@@ -493,7 +495,7 @@ export function Import() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    用户名
+                    {t('import.dbUsername')}
                   </label>
                   <input
                     type="text"
@@ -504,7 +506,7 @@ export function Import() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    密码
+                    {t('import.dbPassword')}
                   </label>
                   <input
                     type="password"
@@ -521,12 +523,12 @@ export function Import() {
                   disabled={loading || !dbConfig.host || !dbConfig.database}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
-                  {loading ? '连接中...' : '测试连接'}
+                  {loading ? t('import.connecting') : t('import.testConnection')}
                 </button>
                 {dbConnected && (
                   <span className="flex items-center text-green-600">
                     <CheckCircle className="w-4 h-4 mr-1" />
-                    连接成功
+                    {t('import.connectionSuccess')}
                   </span>
                 )}
               </div>
@@ -538,7 +540,7 @@ export function Import() {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 <Table className="w-5 h-5 inline mr-2" />
-                选择数据表
+                {t('import.selectTable')}
               </h2>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -558,7 +560,7 @@ export function Import() {
                       }`}
                     >
                       <p className="font-medium text-gray-900 dark:text-white">{table.name}</p>
-                      <p className="text-sm text-gray-500">{table.rowCount} 行</p>
+                      <p className="text-sm text-gray-500">{t('import.tableRows', { count: table.rowCount })}</p>
                     </button>
                   ))}
                 </div>
@@ -566,15 +568,15 @@ export function Import() {
                 {/* 字段映射 */}
                 {selectedTable && tablePreview.length > 0 && (
                   <div className="lg:col-span-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">字段映射</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">{t('import.mapping')}</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gray-200 dark:border-gray-700">
-                            <th className="px-3 py-2 text-left text-gray-500">源字段</th>
-                            <th className="px-3 py-2 text-left text-gray-500">类型</th>
-                            <th className="px-3 py-2 text-left text-gray-500">映射到</th>
-                            <th className="px-3 py-2 text-left text-gray-500">示例值</th>
+                            <th className="px-3 py-2 text-left text-gray-500">{t('import.sourceField')}</th>
+                            <th className="px-3 py-2 text-left text-gray-500">{t('import.fieldType')}</th>
+                            <th className="px-3 py-2 text-left text-gray-500">{t('import.mapTo')}</th>
+                            <th className="px-3 py-2 text-left text-gray-500">{t('import.sampleValue')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -598,10 +600,10 @@ export function Import() {
                                   }}
                                   className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                                 >
-                                  <option value="">不映射</option>
-                                  <option value="name">资产名称</option>
-                                  <option value="code">资产编号</option>
-                                  <option value="status">状态</option>
+                                  <option value="">{t('import.noMapping')}</option>
+                                  <option value="name">{t('assets.assetName')}</option>
+                                  <option value="code">{t('assets.assetCode')}</option>
+                                  <option value="status">{t('assets.status')}</option>
                                   {fields.map((field) => (
                                     <option key={field.id} value={field.name}>{field.label}</option>
                                   ))}
@@ -618,14 +620,14 @@ export function Import() {
 
                     <div className="mt-4 flex justify-end gap-3">
                       <button onClick={resetDb} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                        重新连接
+                        {t('import.reConnect')}
                       </button>
                       <button
                         onClick={executeDbImport}
                         disabled={loading || dbMapping.length === 0}
                         className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                       >
-                        {loading ? '导入中...' : '开始导入'}
+                        {loading ? t('import.importing') : t('import.startImport')}
                       </button>
                     </div>
                   </div>
@@ -639,27 +641,27 @@ export function Import() {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <div className="text-center mb-6">
                 <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">导入完成</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('import.importComplete')}</h2>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{dbImportResult.total}</p>
-                  <p className="text-sm text-gray-500">总计</p>
+                  <p className="text-sm text-gray-500">{t('import.total')}</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-green-600">{dbImportResult.imported}</p>
-                  <p className="text-sm text-gray-500">成功</p>
+                  <p className="text-sm text-gray-500">{t('import.success')}</p>
                 </div>
                 <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-red-600">{dbImportResult.failed}</p>
-                  <p className="text-sm text-gray-500">失败</p>
+                  <p className="text-sm text-gray-500">{t('import.failed')}</p>
                 </div>
               </div>
 
               {dbImportResult.errors.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">错误详情</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">{t('import.errorDetails')}</h3>
                   <div className="max-h-40 overflow-y-auto text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
                     {dbImportResult.errors.map((err, idx) => (
                       <p key={idx}>{err}</p>
@@ -670,10 +672,10 @@ export function Import() {
 
               <div className="flex justify-center gap-3">
                 <button onClick={resetDb} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  继续导入
+                  {t('import.continueImport')}
                 </button>
                 <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary-600 text-white rounded-lg">
-                  查看资产列表
+                  {t('import.viewAssetList')}
                 </button>
               </div>
             </div>

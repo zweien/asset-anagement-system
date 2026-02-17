@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { logApi, LOG_ACTION_LABELS, type LogAction, type OperationLog, type LogQueryParams } from '../lib/api'
 
-const ENTITY_TYPE_LABELS: Record<string, string> = {
-  Asset: '资产',
-  FieldConfig: '字段配置',
-  Category: '分类',
-  User: '用户',
-}
-
 export function Logs() {
+  const { t } = useTranslation()
+
+  // 实体类型标签使用翻译
+  const ENTITY_TYPE_LABELS: Record<string, string> = {
+    Asset: t('logs.entityAsset'),
+    FieldConfig: t('logs.entityFieldConfig'),
+    Category: t('logs.entityCategory'),
+    User: t('logs.entityUser'),
+  }
+
   const [loading, setLoading] = useState(true)
   const [logs, setLogs] = useState<OperationLog[]>([])
   const [total, setTotal] = useState(0)
@@ -46,7 +50,7 @@ export function Logs() {
         setTotalPages(response.data.totalPages)
       }
     } catch (err) {
-      console.error('加载日志失败:', err)
+      console.error(t('logs.loadFailed'), err)
     } finally {
       setLoading(false)
     }
@@ -89,8 +93,8 @@ export function Logs() {
     <div className="space-y-6">
       {/* 头部 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">操作日志</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">查看系统操作记录</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('logs.title')}</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">{t('logs.subtitle')}</p>
       </div>
 
       {/* 筛选条件 */}
@@ -99,7 +103,7 @@ export function Logs() {
           {/* 操作类型 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              操作类型
+              {t('logs.action')}
             </label>
             <select
               value={filterAction}
@@ -109,7 +113,7 @@ export function Logs() {
               }}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">全部</option>
+              <option value="">{t('common.all')}</option>
               {Object.entries(LOG_ACTION_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -121,7 +125,7 @@ export function Logs() {
           {/* 实体类型 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              实体类型
+              {t('logs.entity')}
             </label>
             <select
               value={filterEntityType}
@@ -131,7 +135,7 @@ export function Logs() {
               }}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">全部</option>
+              <option value="">{t('common.all')}</option>
               {Object.entries(ENTITY_TYPE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -143,7 +147,7 @@ export function Logs() {
           {/* 开始日期 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              开始日期
+              {t('logs.startDate')}
             </label>
             <input
               type="date"
@@ -159,7 +163,7 @@ export function Logs() {
           {/* 结束日期 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              结束日期
+              {t('logs.endDate')}
             </label>
             <input
               type="date"
@@ -178,7 +182,7 @@ export function Logs() {
               onClick={handleClearFilters}
               className="w-full px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              清除筛选
+              {t('assets.clearFilters')}
             </button>
           </div>
         </div>
@@ -188,11 +192,11 @@ export function Logs() {
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500">加载中...</p>
+            <p className="text-gray-500">{t('common.loading')}</p>
           </div>
         ) : logs.length === 0 ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500">暂无日志记录</p>
+            <p className="text-gray-500">{t('logs.noLogs')}</p>
           </div>
         ) : (
           <>
@@ -201,22 +205,22 @@ export function Logs() {
                 <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      时间
+                      {t('logs.time')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      操作
+                      {t('logs.action')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      实体类型
+                      {t('logs.entity')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      操作人
+                      {t('logs.operator')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      IP地址
+                      {t('logs.ipAddress')}
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      操作
+                      {t('common.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -249,7 +253,7 @@ export function Logs() {
                           onClick={() => setSelectedLog(log)}
                           className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         >
-                          详情
+                          {t('logs.details')}
                         </button>
                       </td>
                     </tr>
@@ -261,7 +265,7 @@ export function Logs() {
             {/* 分页 */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                共 {total} 条记录
+                {t('logs.totalRecords', { count: total })}
               </div>
               <div className="flex gap-2">
                 <button
@@ -269,7 +273,7 @@ export function Logs() {
                   disabled={page === 1}
                   className="px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  上一页
+                  {t('logs.prevPage')}
                 </button>
                 <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
                   {page} / {totalPages}
@@ -279,7 +283,7 @@ export function Logs() {
                   disabled={page === totalPages}
                   className="px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  下一页
+                  {t('logs.nextPage')}
                 </button>
               </div>
             </div>
@@ -292,7 +296,7 @@ export function Logs() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">操作详情</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('logs.detailTitle')}</h3>
               <button
                 onClick={() => setSelectedLog(null)}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -305,13 +309,13 @@ export function Logs() {
             <div className="p-4 overflow-y-auto max-h-[60vh]">
               <dl className="space-y-4">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">时间</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.time')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                     {formatDate(selectedLog.createdAt)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">操作类型</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.actionType')}</dt>
                   <dd className="mt-1">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getActionColor(
@@ -323,38 +327,38 @@ export function Logs() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">实体类型</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.entity')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                     {ENTITY_TYPE_LABELS[selectedLog.entityType] || selectedLog.entityType}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">实体ID</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.entityId')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                     {selectedLog.entityId || '-'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">操作人</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.operator')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {selectedLog.userName || '-'} ({selectedLog.userId || '未知'})
+                    {selectedLog.userName || '-'} ({selectedLog.userId || t('logs.unknown')})
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">IP地址</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.ipAddress')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                     {selectedLog.ip || '-'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">User Agent</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.userAgent')}</dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-white break-all">
                     {selectedLog.userAgent || '-'}
                   </dd>
                 </div>
                 {selectedLog.oldValue && (
                   <div>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">旧值</dt>
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.oldValue')}</dt>
                     <dd className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono text-gray-900 dark:text-white overflow-x-auto">
                       <pre>{JSON.stringify(JSON.parse(selectedLog.oldValue), null, 2)}</pre>
                     </dd>
@@ -362,7 +366,7 @@ export function Logs() {
                 )}
                 {selectedLog.newValue && (
                   <div>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">新值</dt>
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('logs.newValue')}</dt>
                     <dd className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono text-gray-900 dark:text-white overflow-x-auto">
                       <pre>{JSON.stringify(JSON.parse(selectedLog.newValue), null, 2)}</pre>
                     </dd>
@@ -375,7 +379,7 @@ export function Logs() {
                 onClick={() => setSelectedLog(null)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
-                关闭
+                {t('common.cancel')}
               </button>
             </div>
           </div>

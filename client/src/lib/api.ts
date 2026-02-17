@@ -531,11 +531,15 @@ export const removeUser = () => {
 
 export type UserRole = 'ADMIN' | 'EDITOR' | 'USER'
 
-export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  ADMIN: '管理员',
-  EDITOR: '录入员',
-  USER: '普通用户',
+// 角色翻译键（在组件中使用 t(label) 获取翻译）
+export const USER_ROLE_LABEL_KEYS: Record<UserRole, string> = {
+  ADMIN: 'users.roleAdmin',
+  EDITOR: 'users.roleEditor',
+  USER: 'users.roleUser',
 }
+
+// 保持向后兼容
+export const USER_ROLE_LABELS: Record<UserRole, string> = USER_ROLE_LABEL_KEYS
 
 // 权限定义
 export type Permission =

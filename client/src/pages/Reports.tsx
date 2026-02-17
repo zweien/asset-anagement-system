@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart,
   Bar,
@@ -40,6 +41,7 @@ interface MonthlyData {
 }
 
 export function Reports() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -135,7 +137,7 @@ export function Reports() {
 
       setMonthlyData(monthArray)
     } catch (err) {
-      console.error('加载数据失败:', err)
+      console.error(t('reports.loadFailed'), err)
     } finally {
       setLoading(false)
     }
@@ -154,7 +156,7 @@ export function Reports() {
         }
       }
     } catch (err) {
-      console.error('加载报表模板失败:', err)
+      console.error(t('reports.templateLoadFailed'), err)
     }
   }
 
@@ -338,11 +340,11 @@ export function Reports() {
   const getDimensionLabel = (dimension: string) => {
     switch (dimension) {
       case 'status':
-        return '资产状态'
+        return t('reports.dimensionStatus')
       case 'categoryId':
-        return '资产分类'
+        return t('reports.dimensionCategory')
       case 'createdAt':
-        return '创建时间'
+        return t('reports.dimensionMonth')
       default:
         const field = fields.find((f) => f.name === dimension)
         return field?.label || dimension
@@ -353,7 +355,7 @@ export function Reports() {
     if (!customChartData || customChartData.length === 0) {
       return (
         <div className="h-64 flex items-center justify-center text-gray-500">
-          暂无数据
+          {t('common.noData')}
         </div>
       )
     }
@@ -408,7 +410,7 @@ export function Reports() {
               <Line
                 type="monotone"
                 dataKey="value"
-                name="数量"
+                name={t('reports.count')}
                 stroke="#3b82f6"
                 strokeWidth={2}
                 onClick={(data: any) => {
@@ -439,7 +441,7 @@ export function Reports() {
               />
               <Bar
                 dataKey="value"
-                name="数量"
+                name={t('reports.count')}
                 fill="#3b82f6"
                 radius={[4, 4, 0, 0]}
                 onClick={(data: any) => {
@@ -458,7 +460,7 @@ export function Reports() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">加载中...</p>
+        <p className="text-gray-500">{t('common.loading')}</p>
       </div>
     )
   }
@@ -467,14 +469,14 @@ export function Reports() {
     <div className="space-y-6">
       {/* 头部 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">统计报表</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">查看资产统计分析</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('reports.title')}</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">{t('reports.subtitle')}</p>
       </div>
 
       {/* 汇总卡片 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">资产总数</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('reports.totalAssets')}</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{total}</p>
         </div>
         {statusData.map((item) => (
@@ -494,7 +496,7 @@ export function Reports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 状态分布饼图 */}
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">资产状态分布 <span className="text-sm font-normal text-gray-500">(点击查看明细)</span></h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reports.statusDistribution')} <span className="text-sm font-normal text-gray-500">({t('reports.clickForDetails')})</span></h2>
           {statusData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -519,14 +521,14 @@ export function Reports() {
             </ResponsiveContainer>
           ) : (
             <div className="h-64 flex items-center justify-center text-gray-500">
-              暂无数据
+              {t('common.noData')}
             </div>
           )}
         </div>
 
         {/* 月度新增趋势 */}
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">月度新增趋势 <span className="text-sm font-normal text-gray-500">(点击查看明细)</span></h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reports.monthlyTrend')} <span className="text-sm font-normal text-gray-500">({t('reports.clickForDetails')})</span></h2>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyData}>
@@ -543,7 +545,7 @@ export function Reports() {
                 />
                 <Bar
                   dataKey="count"
-                  name="新增数量"
+                  name={t('reports.newCount')}
                   fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
                   onClick={(data: any) => {
@@ -557,7 +559,7 @@ export function Reports() {
             </ResponsiveContainer>
           ) : (
             <div className="h-64 flex items-center justify-center text-gray-500">
-              暂无数据
+              {t('common.noData')}
             </div>
           )}
         </div>
@@ -566,18 +568,18 @@ export function Reports() {
       {/* 自定义报表区域 */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">自定义报表</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reports.customReport')}</h2>
           <div className="flex gap-2">
             <select
               value={selectedTemplateId}
               onChange={(e) => handleTemplateSelect(e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
             >
-              <option value="">选择报表模板</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                  {t.isDefault ? ' (默认)' : ''}
+              <option value="">{t('reports.selectTemplate')}</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                  {template.isDefault ? ` (${t('reports.default')})` : ''}
                 </option>
               ))}
             </select>
@@ -585,7 +587,7 @@ export function Reports() {
               onClick={handleCreateTemplate}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
             >
-              新建报表
+              {t('reports.newReport')}
             </button>
             {selectedTemplateId && (
               <>
@@ -596,19 +598,19 @@ export function Reports() {
                   }}
                   className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm"
                 >
-                  编辑
+                  {t('common.edit')}
                 </button>
                 <button
                   onClick={handleExportReport}
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
                 >
-                  导出 CSV
+                  {t('reports.exportCSV')}
                 </button>
                 <button
                   onClick={() => handleDeleteTemplate(selectedTemplateId)}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
                 >
-                  删除
+                  {t('common.delete')}
                 </button>
               </>
             )}
@@ -618,13 +620,13 @@ export function Reports() {
         {selectedTemplateId && customChartData ? (
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              数据维度: {getDimensionLabel(templates.find((t) => t.id === selectedTemplateId)?.dimension || '')}
+              {t('reports.dataDimension')}: {getDimensionLabel(templates.find((t) => t.id === selectedTemplateId)?.dimension || '')}
             </p>
             {renderCustomChart()}
           </div>
         ) : (
           <div className="h-64 flex items-center justify-center text-gray-500">
-            {templates.length > 0 ? '请选择一个报表模板' : '请创建报表模板'}
+            {templates.length > 0 ? t('reports.selectTemplatePrompt') : t('reports.createTemplatePrompt')}
           </div>
         )}
       </div>
@@ -634,63 +636,63 @@ export function Reports() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {editingTemplate ? '编辑报表模板' : '创建报表模板'}
+              {editingTemplate ? t('reports.editTemplate') : t('reports.createTemplate')}
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  报表名称 *
+                  {t('reports.reportName')} *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder="输入报表名称"
+                  placeholder={t('reports.reportNamePlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  描述
+                  {t('reports.description')}
                 </label>
                 <input
                   type="text"
                   value={formData.description || ''}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder="输入报表描述"
+                  placeholder={t('reports.descriptionPlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  图表类型 *
+                  {t('reports.chartType')} *
                 </label>
                 <select
                   value={formData.chartType}
                   onChange={(e) => setFormData({ ...formData, chartType: e.target.value as ChartType })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
-                  <option value="bar">柱状图</option>
-                  <option value="pie">饼图</option>
-                  <option value="line">折线图</option>
+                  <option value="bar">{t('reports.barChart')}</option>
+                  <option value="pie">{t('reports.pieChart')}</option>
+                  <option value="line">{t('reports.lineChart')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  数据维度 *
+                  {t('reports.dataDimension')} *
                 </label>
                 <select
                   value={formData.dimension}
                   onChange={(e) => setFormData({ ...formData, dimension: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
-                  <option value="status">资产状态</option>
-                  <option value="categoryId">资产分类</option>
-                  <option value="createdAt">创建时间(按月)</option>
+                  <option value="status">{t('reports.dimensionStatus')}</option>
+                  <option value="categoryId">{t('reports.dimensionCategory')}</option>
+                  <option value="createdAt">{t('reports.dimensionMonth')}</option>
                   {fields.map((field) => (
                     <option key={field.id} value={field.name}>
                       {field.label}
@@ -701,19 +703,19 @@ export function Reports() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  日期范围
+                  {t('reports.dateRange')}
                 </label>
                 <select
                   value={formData.dateRange || 'all'}
                   onChange={(e) => setFormData({ ...formData, dateRange: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
-                  <option value="all">全部</option>
-                  <option value="today">今天</option>
-                  <option value="week">本周</option>
-                  <option value="month">本月</option>
-                  <option value="year">今年</option>
-                  <option value="custom">自定义</option>
+                  <option value="all">{t('reports.rangeAll')}</option>
+                  <option value="today">{t('reports.rangeToday')}</option>
+                  <option value="week">{t('reports.rangeWeek')}</option>
+                  <option value="month">{t('reports.rangeMonth')}</option>
+                  <option value="year">{t('reports.rangeYear')}</option>
+                  <option value="custom">{t('reports.rangeCustom')}</option>
                 </select>
               </div>
 
@@ -721,7 +723,7 @@ export function Reports() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      开始日期
+                      {t('reports.startDate')}
                     </label>
                     <input
                       type="date"
@@ -732,7 +734,7 @@ export function Reports() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      结束日期
+                      {t('reports.endDate')}
                     </label>
                     <input
                       type="date"
@@ -753,7 +755,7 @@ export function Reports() {
                   className="h-4 w-4 text-blue-500 rounded"
                 />
                 <label htmlFor="isDefault" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  设为默认报表
+                  {t('reports.setAsDefault')}
                 </label>
               </div>
             </div>
@@ -763,13 +765,13 @@ export function Reports() {
                 onClick={() => setShowTemplateModal(false)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
               >
-                取消
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSaveTemplate}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
               >
-                保存
+                {t('common.save')}
               </button>
             </div>
           </div>

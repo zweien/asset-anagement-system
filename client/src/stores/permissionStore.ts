@@ -86,9 +86,9 @@ export const usePermissionStore = create<PermissionState>(() => ({
   },
 }))
 
-// 导出角色标签映射（兼容现有代码）
+// 导出角色翻译键映射（在组件中使用 t(label) 获取翻译）
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  ADMIN: '管理员',
-  EDITOR: '录入员',
-  USER: '普通用户',
+  ADMIN: 'users.roleAdmin',
+  EDITOR: 'users.roleEditor',
+  USER: 'users.roleUser',
 }

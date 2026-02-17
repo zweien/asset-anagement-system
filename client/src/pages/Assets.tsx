@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   useReactTable,
   getCoreRowModel,
@@ -72,6 +73,7 @@ interface ImageInfo {
 }
 
 function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: ImageUploadModalProps) {
+  const { t } = useTranslation()
   const [images, setImages] = useState<ImageInfo[]>([])
   const [_loading, setLoading] = useState(false)
 
@@ -101,7 +103,7 @@ function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: Im
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>添加照片 - {assetName}</DialogTitle>
+          <DialogTitle>{t('assets.addPhoto')} - {assetName}</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           <ImageUploader
@@ -114,7 +116,7 @@ function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: Im
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>完成</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.confirm')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -148,46 +150,46 @@ interface FilterCondition {
   value: string | number | string[] | { min?: number; max?: number; startDate?: string; endDate?: string } | null
 }
 
-// 筛选操作符选项
-const TEXT_OPERATORS: { value: FilterOperator; label: string }[] = [
-  { value: 'contains', label: '包含' },
-  { value: 'notContains', label: '不包含' },
-  { value: 'equals', label: '等于' },
-  { value: 'notEquals', label: '不等于' },
-  { value: 'startsWith', label: '开头为' },
-  { value: 'endsWith', label: '结尾为' },
-  { value: 'isEmpty', label: '为空' },
-  { value: 'isNotEmpty', label: '不为空' },
+// 筛选操作符选项 - 使用翻译键
+const TEXT_OPERATORS_KEYS: { value: FilterOperator; labelKey: string }[] = [
+  { value: 'contains', labelKey: 'filter.contains' },
+  { value: 'notContains', labelKey: 'filter.notContains' },
+  { value: 'equals', labelKey: 'filter.equals' },
+  { value: 'notEquals', labelKey: 'filter.notEquals' },
+  { value: 'startsWith', labelKey: 'filter.startsWith' },
+  { value: 'endsWith', labelKey: 'filter.endsWith' },
+  { value: 'isEmpty', labelKey: 'filter.isEmpty' },
+  { value: 'isNotEmpty', labelKey: 'filter.isNotEmpty' },
 ]
 
-const NUMBER_OPERATORS: { value: FilterOperator; label: string }[] = [
-  { value: 'equals', label: '等于' },
-  { value: 'notEquals', label: '不等于' },
-  { value: 'gt', label: '大于' },
-  { value: 'gte', label: '大于等于' },
-  { value: 'lt', label: '小于' },
-  { value: 'lte', label: '小于等于' },
-  { value: 'between', label: '区间' },
-  { value: 'isEmpty', label: '为空' },
-  { value: 'isNotEmpty', label: '不为空' },
+const NUMBER_OPERATORS_KEYS: { value: FilterOperator; labelKey: string }[] = [
+  { value: 'equals', labelKey: 'filter.equals' },
+  { value: 'notEquals', labelKey: 'filter.notEquals' },
+  { value: 'gt', labelKey: 'filter.gt' },
+  { value: 'gte', labelKey: 'filter.gte' },
+  { value: 'lt', labelKey: 'filter.lt' },
+  { value: 'lte', labelKey: 'filter.lte' },
+  { value: 'between', labelKey: 'filter.between' },
+  { value: 'isEmpty', labelKey: 'filter.isEmpty' },
+  { value: 'isNotEmpty', labelKey: 'filter.isNotEmpty' },
 ]
 
-const DATE_OPERATORS: { value: FilterOperator; label: string }[] = [
-  { value: 'equals', label: '等于' },
-  { value: 'gt', label: '之后' },
-  { value: 'gte', label: '不早于' },
-  { value: 'lt', label: '之前' },
-  { value: 'lte', label: '不晚于' },
-  { value: 'between', label: '区间' },
-  { value: 'isEmpty', label: '为空' },
-  { value: 'isNotEmpty', label: '不为空' },
+const DATE_OPERATORS_KEYS: { value: FilterOperator; labelKey: string }[] = [
+  { value: 'equals', labelKey: 'filter.equals' },
+  { value: 'gt', labelKey: 'filter.after' },
+  { value: 'gte', labelKey: 'filter.onOrAfter' },
+  { value: 'lt', labelKey: 'filter.before' },
+  { value: 'lte', labelKey: 'filter.onOrBefore' },
+  { value: 'between', labelKey: 'filter.between' },
+  { value: 'isEmpty', labelKey: 'filter.isEmpty' },
+  { value: 'isNotEmpty', labelKey: 'filter.isNotEmpty' },
 ]
 
-const SELECT_OPERATORS: { value: FilterOperator; label: string }[] = [
-  { value: 'equals', label: '等于' },
-  { value: 'notEquals', label: '不等于' },
-  { value: 'isEmpty', label: '为空' },
-  { value: 'isNotEmpty', label: '不为空' },
+const SELECT_OPERATORS_KEYS: { value: FilterOperator; labelKey: string }[] = [
+  { value: 'equals', labelKey: 'filter.equals' },
+  { value: 'notEquals', labelKey: 'filter.notEquals' },
+  { value: 'isEmpty', labelKey: 'filter.isEmpty' },
+  { value: 'isNotEmpty', labelKey: 'filter.isNotEmpty' },
 ]
 
 // 解析选项配置，支持多种格式：
@@ -221,7 +223,7 @@ interface ColumnFilterDropdownProps {
   columnId: string
   fieldType: FieldType | null
   fieldForColumn: FieldConfig | undefined
-  operators: { value: FilterOperator; label: string }[]
+  operators: { value: FilterOperator; labelKey: string }[]
   filterOperator: FilterOperator
   setFilterOperator: (op: FilterOperator) => void
   filterValue: string | number | { min?: number; max?: number; startDate?: string; endDate?: string }
@@ -247,6 +249,7 @@ function ColumnFilterDropdown({
   onClear,
   onClose,
 }: ColumnFilterDropdownProps) {
+  const { t } = useTranslation()
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ top: 0, left: 0 })
 
@@ -300,7 +303,7 @@ function ColumnFilterDropdown({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="text-sm font-medium text-foreground mb-2">
-        筛选: {columnName}
+        {t('assets.filter')}: {columnName}
       </div>
 
       <Select value={filterOperator} onValueChange={(v) => setFilterOperator(v as FilterOperator)}>
@@ -309,14 +312,14 @@ function ColumnFilterDropdown({
         </SelectTrigger>
         <SelectContent>
           {operators.map(op => (
-            <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+            <SelectItem key={op.value} value={op.value}>{t(op.labelKey)}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       {needsValueInput && (fieldType === 'TEXT' || fieldType === 'TEXTAREA') && (
         <Input
-          placeholder="输入筛选值..."
+          placeholder={t('filter.enterFilterValue')}
           value={filterValue as string}
           onChange={(e) => setFilterValue(e.target.value)}
           className="mb-2"
@@ -327,7 +330,7 @@ function ColumnFilterDropdown({
         <div className="flex items-center gap-2 mb-2">
           <Input
             type="number"
-            placeholder="最小"
+            placeholder={t('filter.min')}
             value={(filterValue as any)?.min || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), min: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1"
@@ -335,7 +338,7 @@ function ColumnFilterDropdown({
           <span className="text-muted-foreground">-</span>
           <Input
             type="number"
-            placeholder="最大"
+            placeholder={t('filter.max')}
             value={(filterValue as any)?.max || ''}
             onChange={(e) => setFilterValue({ ...(filterValue as any || {}), max: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1"
@@ -346,7 +349,7 @@ function ColumnFilterDropdown({
       {needsValueInput && fieldType === 'NUMBER' && filterOperator !== 'between' && (
         <Input
           type="number"
-          placeholder="输入数值"
+          placeholder={t('filter.enterNumber')}
           value={filterValue as string}
           onChange={(e) => setFilterValue(e.target.value ? Number(e.target.value) : '')}
           className="mb-2"
@@ -383,7 +386,7 @@ function ColumnFilterDropdown({
       {needsValueInput && fieldType === 'SELECT' && fieldForColumn?.options && (
         <Select value={filterValue as string} onValueChange={setFilterValue}>
           <SelectTrigger className="w-full mb-2">
-            <SelectValue placeholder="请选择" />
+            <SelectValue placeholder={t('common.all')} />
           </SelectTrigger>
           <SelectContent>
             {parseOptions(fieldForColumn.options).map((opt) => (
@@ -394,8 +397,8 @@ function ColumnFilterDropdown({
       )}
 
       <div className="flex items-center gap-2 pt-1 border-t">
-        <Button variant="outline" size="sm" className="flex-1" onClick={onClear}>清除</Button>
-        <Button size="sm" className="flex-1" onClick={onApply}>应用</Button>
+        <Button variant="outline" size="sm" className="flex-1" onClick={onClear}>{t('assets.clearFilters')}</Button>
+        <Button size="sm" className="flex-1" onClick={onApply}>{t('filter.apply')}</Button>
       </div>
     </div>
   )
@@ -404,6 +407,7 @@ function ColumnFilterDropdown({
 }
 
 export function Assets() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [assets, setAssets] = useState<Asset[]>([])
@@ -458,20 +462,20 @@ export function Assets() {
         }),
       })
 
-      if (!response.ok) throw new Error('导出失败')
+      if (!response.ok) throw new Error(t('assets.exportFailed'))
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `资产数据.${format === 'excel' ? 'xlsx' : 'csv'}`
+      a.download = `${t('assets.exportFilename')}.${format === 'excel' ? 'xlsx' : 'csv'}`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       setShowExportMenu(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导出失败')
+      setError(err instanceof Error ? err.message : t('assets.exportFailed'))
     }
   }
 
@@ -486,21 +490,21 @@ export function Assets() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '导出失败')
+        throw new Error(data.error || t('assets.exportFailed'))
       }
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `资产图片_${new Date().toISOString().split('T')[0]}.zip`
+      a.download = `${t('assets.exportImagesFilename')}_${new Date().toISOString().split('T')[0]}.zip`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       setShowExportMenu(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导出图片失败')
+      setError(err instanceof Error ? err.message : t('assets.exportImagesFailed'))
     }
   }
 
@@ -548,7 +552,7 @@ export function Assets() {
         setFields(fieldsRes.data)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -593,7 +597,7 @@ export function Assets() {
         setFields(fieldsRes.data)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -634,12 +638,12 @@ export function Assets() {
   // 基础列定义 - 系统字段使用字段配置中的标签
   const baseColumns = useMemo(() => [
     columnHelper.accessor('code', {
-      header: getFieldLabel('code', '资产编号'),
+      header: getFieldLabel('code', t('assets.assetCode')),
       cell: (info) => info.getValue() || '-',
       size: 120,
     }),
     columnHelper.accessor('name', {
-      header: getFieldLabel('name', '资产名称'),
+      header: getFieldLabel('name', t('assets.assetName')),
       cell: (info) => (
         <button
           onClick={() => navigate(`/assets/${info.row.original.id}`)}
@@ -651,12 +655,12 @@ export function Assets() {
       size: 200,
     }),
     columnHelper.accessor('createdAt', {
-      header: '创建时间',
+      header: t('assets.createdAt'),
       cell: (info) => new Date(info.getValue()).toLocaleDateString('zh-CN'),
       size: 120,
     }),
     columnHelper.accessor('status', {
-      header: getFieldLabel('status', '状态'),
+      header: getFieldLabel('status', t('assets.status')),
       cell: (info) => {
         const status = info.getValue() as AssetStatus
         const statusStyles: Record<AssetStatus, string> = {
@@ -673,7 +677,7 @@ export function Assets() {
       },
       size: 100,
     }),
-  ], [navigate, fields])
+  ], [navigate, fields, t])
 
   // 动态字段列 - 过滤掉系统字段（name, code 已在 baseColumns 中定义）
   const dynamicColumns = useMemo(() => {
@@ -715,14 +719,14 @@ export function Assets() {
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
-      header: '操作',
+      header: t('common.actions'),
       cell: (info) => (
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon-xs"
             onClick={() => navigate(`/assets/${info.row.original.id}`)}
-            title="查看详情"
+            title={t('assets.viewDetail')}
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
@@ -734,7 +738,7 @@ export function Assets() {
                 setUploadAsset(info.row.original)
                 setShowImageUpload(true)
               }}
-              title="添加照片"
+              title={t('assets.addPhoto')}
             >
               <Camera className="w-4 h-4" />
             </Button>
@@ -747,7 +751,7 @@ export function Assets() {
                 setEditingAsset(info.row.original)
                 setShowAssetForm(true)
               }}
-              title="编辑"
+              title={t('common.edit')}
             >
               <Edit2 className="w-4 h-4" />
             </Button>
@@ -757,20 +761,20 @@ export function Assets() {
               variant="ghost"
               size="icon-xs"
               onClick={async () => {
-                if (confirm('确定要删除这个资产吗？')) {
+                if (confirm(t('assets.confirmDelete'))) {
                   try {
                     const result: any = await assetApi.delete(info.row.original.id)
                     if (result?.success) {
                       loadData()
                     } else {
-                      setError('删除失败')
+                      setError(t('common.error'))
                     }
                   } catch (err) {
-                    setError(err instanceof Error ? err.message : '删除失败')
+                    setError(err instanceof Error ? err.message : t('common.error'))
                   }
                 }
               }}
-              title="删除"
+              title={t('common.delete')}
               className="hover:text-destructive"
             >
               <Trash2 className="w-4 h-4" />
@@ -807,9 +811,9 @@ export function Assets() {
       {/* 头部 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">资产管理</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('assets.title')}</h1>
           <p className="mt-1 text-muted-foreground">
-            共 {total} 条资产
+            {t('assets.totalCount', { count: total })}
           </p>
         </div>
         {canCreate && (
@@ -818,20 +822,20 @@ export function Assets() {
             setShowAssetForm(true)
           }}>
             <Plus className="w-4 h-4 mr-1" />
-            新增资产
+            {t('assets.addAsset')}
           </Button>
         )}
       </div>
 
       {/* 使用说明 */}
       <PageInstructions
-        title="资产管理说明"
+        title={t('assets.instructions.title')}
         instructions={[
-          '点击"新增资产"按钮可以添加新的资产记录',
-          '支持列表视图和分组视图两种显示方式',
-          '使用搜索框可以快速查找资产',
-          '点击表头可以排序，使用列设置可以显示/隐藏列',
-          '操作列提供查看详情、编辑、添加照片和删除功能'
+          t('assets.instructions.1'),
+          t('assets.instructions.2'),
+          t('assets.instructions.3'),
+          t('assets.instructions.4'),
+          t('assets.instructions.5'),
         ]}
       />
 
@@ -844,7 +848,7 @@ export function Assets() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="搜索资产名称或编号..."
+                placeholder={t('assets.searchPlaceholder')}
                 className="flex-1"
               />
               <Button variant="secondary" size="icon" onClick={handleSearch}>
@@ -858,7 +862,7 @@ export function Assets() {
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => setViewMode('list')}
-                title="列表视图"
+                title={t('assets.listView')}
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -866,7 +870,7 @@ export function Assets() {
                 variant={viewMode === 'group' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => setViewMode('group')}
-                title="分组视图"
+                title={t('assets.groupView')}
               >
                 <LayoutGrid className="w-4 h-4" />
               </Button>
@@ -879,12 +883,12 @@ export function Assets() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="status">按状态分组</SelectItem>
-                  <SelectItem value="categoryId">按分类分组</SelectItem>
-                  <SelectItem value="createdAt">按创建月份分组</SelectItem>
+                  <SelectItem value="status">{t('assets.groupByStatus')}</SelectItem>
+                  <SelectItem value="categoryId">{t('assets.groupByCategory')}</SelectItem>
+                  <SelectItem value="createdAt">{t('assets.groupByMonth')}</SelectItem>
                   {fields.map((field) => (
                     <SelectItem key={field.id} value={field.name}>
-                      按{field.label}分组
+                      {t('assets.groupByField', { field: field.label })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -896,7 +900,7 @@ export function Assets() {
               onClick={() => setShowFilterPanel(!showFilterPanel)}
             >
               <Filter className="w-4 h-4 mr-1" />
-              筛选
+              {t('assets.filter')}
               {(filters.length > 0 || statusFilter) && (
                 <Badge variant="secondary" className="ml-1">
                   {filters.length + (statusFilter ? 1 : 0)}
@@ -912,18 +916,18 @@ export function Assets() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <Download className="w-4 h-4 mr-1" />
-                  导出
+                  {t('assets.export')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => handleExport('excel')}>
-                  导出为 Excel
+                  {t('assets.exportExcel')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport('csv')}>
-                  导出为 CSV
+                  {t('assets.exportCSV')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleExportImages}>
-                  导出图片 ZIP
+                  {t('assets.exportImages')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -932,7 +936,7 @@ export function Assets() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   {showColumnSelector ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                  列设置
+                  {t('assets.columns')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48">
@@ -960,7 +964,7 @@ export function Assets() {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">高级筛选</CardTitle>
+              <CardTitle className="text-base">{t('assets.advancedFilter')}</CardTitle>
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -970,13 +974,13 @@ export function Assets() {
                     setPage(1)
                   }}
                 >
-                  清除全部
+                  {t('assets.clearFilters')}
                 </Button>
                 <Button size="sm" onClick={() => {
                   setShowFilterPanel(false)
                   handleSearch()
                 }}>
-                  应用筛选
+                  {t('filter.apply')}
                 </Button>
               </div>
             </div>
@@ -987,8 +991,9 @@ export function Assets() {
               <div className="mb-4 flex flex-wrap gap-2">
                 {filters.map((filter, index) => {
                   const field = fields.find(f => f.name === filter.field)
-                  const operatorLabel = [...TEXT_OPERATORS, ...NUMBER_OPERATORS, ...DATE_OPERATORS, ...SELECT_OPERATORS]
-                    .find(op => op.value === filter.operator)?.label || filter.operator
+                  const allOperators = [...TEXT_OPERATORS_KEYS, ...NUMBER_OPERATORS_KEYS, ...DATE_OPERATORS_KEYS, ...SELECT_OPERATORS_KEYS]
+                  const operatorKey = allOperators.find(op => op.value === filter.operator)?.labelKey || filter.operator
+                  const operatorLabel = t(operatorKey)
                   let valueDisplay = ''
                   if (filter.operator === 'isEmpty' || filter.operator === 'isNotEmpty') {
                     valueDisplay = ''
@@ -1022,19 +1027,19 @@ export function Assets() {
               {/* 状态筛选 */}
               <div className="border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">状态</span>
+                  <span className="text-sm font-medium">{t('assets.status')}</span>
                   {statusFilter && (
                     <Button variant="ghost" size="sm" className="h-auto py-0.5 px-1 text-xs" onClick={() => setStatusFilter('')}>
-                      清除
+                      {t('assets.clearFilters')}
                     </Button>
                   )}
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="全部" />
+                    <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">全部</SelectItem>
+                    <SelectItem value="">{t('common.all')}</SelectItem>
                     {Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => (
                       <SelectItem key={value} value={value}>{label}</SelectItem>
                     ))}
@@ -1048,10 +1053,10 @@ export function Assets() {
                 const currentOperator = existingFilter?.operator || (field.type === 'TEXT' || field.type === 'TEXTAREA' ? 'contains' : 'equals')
 
                 const getOperators = () => {
-                  if (field.type === 'TEXT' || field.type === 'TEXTAREA') return TEXT_OPERATORS
-                  if (field.type === 'NUMBER') return NUMBER_OPERATORS
-                  if (field.type === 'DATE') return DATE_OPERATORS
-                  return SELECT_OPERATORS
+                  if (field.type === 'TEXT' || field.type === 'TEXTAREA') return TEXT_OPERATORS_KEYS
+                  if (field.type === 'NUMBER') return NUMBER_OPERATORS_KEYS
+                  if (field.type === 'DATE') return DATE_OPERATORS_KEYS
+                  return SELECT_OPERATORS_KEYS
                 }
 
                 const updateFilter = (operator: FilterOperator, value: any) => {
@@ -1073,7 +1078,7 @@ export function Assets() {
                       <span className="text-sm font-medium">{field.label}</span>
                       {existingFilter && (
                         <Button variant="ghost" size="sm" className="h-auto py-0.5 px-1 text-xs" onClick={() => setFilters(filters.filter(f => f.field !== field.name))}>
-                          清除
+                          {t('assets.clearFilters')}
                         </Button>
                       )}
                     </div>
@@ -1091,14 +1096,14 @@ export function Assets() {
                       </SelectTrigger>
                       <SelectContent>
                         {operators.map(op => (
-                          <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                          <SelectItem key={op.value} value={op.value}>{t(op.labelKey)}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
                     {needsValue && (field.type === 'TEXT' || field.type === 'TEXTAREA') && (
                       <Input
-                        placeholder={`输入${field.label}...`}
+                        placeholder={t('filter.enterField', { field: field.label })}
                         value={(existingFilter?.value as string) || ''}
                         onChange={(e) => updateFilter(currentOperator, e.target.value)}
                         className="h-8 text-sm"
@@ -1109,7 +1114,7 @@ export function Assets() {
                       <div className="flex items-center gap-2">
                         <Input
                           type="number"
-                          placeholder="最小"
+                          placeholder={t('filter.min')}
                           value={(existingFilter?.value as any)?.min || ''}
                           onChange={(e) => {
                             const existing = existingFilter?.value as any || {}
@@ -1120,7 +1125,7 @@ export function Assets() {
                         <span className="text-muted-foreground text-xs">-</span>
                         <Input
                           type="number"
-                          placeholder="最大"
+                          placeholder={t('filter.max')}
                           value={(existingFilter?.value as any)?.max || ''}
                           onChange={(e) => {
                             const existing = existingFilter?.value as any || {}
@@ -1134,7 +1139,7 @@ export function Assets() {
                     {needsValue && field.type === 'NUMBER' && currentOperator !== 'between' && (
                       <Input
                         type="number"
-                        placeholder="输入数值"
+                        placeholder={t('filter.enterNumber')}
                         value={existingFilter?.value as string || ''}
                         onChange={(e) => updateFilter(currentOperator, e.target.value ? Number(e.target.value) : '')}
                         className="h-8 text-sm"
@@ -1180,7 +1185,7 @@ export function Assets() {
                         onValueChange={(v) => updateFilter(currentOperator, v)}
                       >
                         <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="请选择" />
+                          <SelectValue placeholder={t('common.all')} />
                         </SelectTrigger>
                         <SelectContent>
                           {parseOptions(field.options).map((opt) => (
@@ -1192,7 +1197,7 @@ export function Assets() {
 
                     {!needsValue && (
                       <p className="text-xs text-muted-foreground italic">
-                        已选择 "{operators.find(op => op.value === currentOperator)?.label}"
+                        {t('filter.selected', { operator: t(operators.find(op => op.value === currentOperator)?.labelKey || '') })}
                       </p>
                     )}
                   </div>
@@ -1224,7 +1229,7 @@ export function Assets() {
           ) : !groupedData || groupedData.groups.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
-                暂无资产数据
+                {t('common.noData')}
               </CardContent>
             </Card>
           ) : (
@@ -1268,35 +1273,35 @@ export function Assets() {
                               {asset.name}
                             </button>
                             <p className="text-sm text-muted-foreground">
-                              {asset.code || '无编号'}
+                              {asset.code || t('assets.noCode')}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon-xs" onClick={() => navigate(`/assets/${asset.id}`)} title="查看详情">
+                          <Button variant="ghost" size="icon-xs" onClick={() => navigate(`/assets/${asset.id}`)} title={t('assets.viewDetail')}>
                             <ExternalLink className="w-4 h-4" />
                           </Button>
                           {canUpdate && (
-                            <Button variant="ghost" size="icon-xs" onClick={() => { setUploadAsset(asset); setShowImageUpload(true) }} title="添加照片">
+                            <Button variant="ghost" size="icon-xs" onClick={() => { setUploadAsset(asset); setShowImageUpload(true) }} title={t('assets.addPhoto')}>
                               <Camera className="w-4 h-4" />
                             </Button>
                           )}
                           {canUpdate && (
-                            <Button variant="ghost" size="icon-xs" onClick={() => { setEditingAsset(asset); setShowAssetForm(true) }} title="编辑">
+                            <Button variant="ghost" size="icon-xs" onClick={() => { setEditingAsset(asset); setShowAssetForm(true) }} title={t('common.edit')}>
                               <Edit2 className="w-4 h-4" />
                             </Button>
                           )}
                           {canDelete && (
                             <Button variant="ghost" size="icon-xs" onClick={async () => {
-                              if (confirm('确定要删除这个资产吗？')) {
+                              if (confirm(t('assets.confirmDelete'))) {
                                 try {
                                   const result: any = await assetApi.delete(asset.id)
                                   if (result?.success) loadGroupedData()
                                 } catch (err) {
-                                  setError(err instanceof Error ? err.message : '删除失败')
+                                  setError(err instanceof Error ? err.message : t('common.error'))
                                 }
                               }
-                            }} title="删除" className="hover:text-destructive">
+                            }} title={t('common.delete')} className="hover:text-destructive">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           )}
@@ -1338,10 +1343,10 @@ export function Assets() {
                     const existingFilter = filters.find(f => f.field === columnName)
 
                     const getOperators = () => {
-                      if (fieldType === 'TEXT' || fieldType === 'TEXTAREA') return TEXT_OPERATORS
-                      if (fieldType === 'NUMBER') return NUMBER_OPERATORS
-                      if (fieldType === 'DATE') return DATE_OPERATORS
-                      return SELECT_OPERATORS
+                      if (fieldType === 'TEXT' || fieldType === 'TEXTAREA') return TEXT_OPERATORS_KEYS
+                      if (fieldType === 'NUMBER') return NUMBER_OPERATORS_KEYS
+                      if (fieldType === 'DATE') return DATE_OPERATORS_KEYS
+                      return SELECT_OPERATORS_KEYS
                     }
 
                     const openColumnFilter = (e: React.MouseEvent) => {
@@ -1490,7 +1495,7 @@ export function Assets() {
               ) : assets.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                    暂无资产数据
+                    {t('common.noData')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -1510,7 +1515,7 @@ export function Assets() {
           {/* 分页 */}
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>每页</span>
+              <span>{t('assets.perPage')}</span>
               <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
                 <SelectTrigger className="w-16 h-8">
                   <SelectValue />
@@ -1521,11 +1526,11 @@ export function Assets() {
                   ))}
                 </SelectContent>
               </Select>
-              <span>条</span>
+              <span>{t('assets.items')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                第 {page} / {totalPages} 页
+                {t('assets.pageInfo', { page, total: totalPages })}
               </span>
               <Button variant="outline" size="icon" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
                 <ChevronLeft className="w-4 h-4" />

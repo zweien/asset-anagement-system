@@ -1,32 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { authApi } from '../lib/api'
 import { useAuthStore } from '@/stores/authStore'
 
-// 密码复杂度验证函数
-function validatePassword(password: string): { valid: boolean; errors: string[] } {
-  const errors: string[] = []
-
-  if (password.length < 8) {
-    errors.push('至少8位')
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push('包含小写字母')
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push('包含大写字母')
-  }
-  if (!/[0-9]/.test(password)) {
-    errors.push('包含数字')
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  }
-}
-
 export function Login() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -54,10 +33,9 @@ export function Login() {
           password: formData.password,
         })
       } else {
-        // 注册时验证密码复杂度
-        const passwordValidation = validatePassword(formData.password)
-        if (!passwordValidation.valid) {
-          setError(`密码不符合要求: 需要${passwordValidation.errors.join('、')}`)
+        // 简单验证
+        if (formData.password.length < 8) {
+          setError(t('login.passwordRequirements'))
           setLoading(false)
           return
         }
@@ -73,10 +51,10 @@ export function Login() {
         setAuth(response.data.token, response.data.user)
         navigate('/')
       } else {
-        setError(response.error || '操作失败')
+        setError(response.error || t('common.error'))
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '操作失败')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -89,10 +67,10 @@ export function Login() {
           {/* Logo */}
           <div className="text-center mb-8">
             <Link to="/" className="text-2xl font-bold text-gray-900 dark:text-white">
-              资产管理系统
+              {t('login.appName')}
             </Link>
             <p className="text-gray-500 dark:text-gray-400 mt-2">
-              {isLogin ? '登录您的账户' : '创建新账户'}
+              {isLogin ? t('login.loginTitle') : t('login.registerTitle')}
             </p>
           </div>
 
@@ -106,34 +84,34 @@ export function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                用户名
+                {t('login.username')}
               </label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="请输入用户名"
+                placeholder={t('login.usernamePlaceholder')}
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                密码
+                {t('login.password')}
               </label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={isLogin ? "请输入密码" : "请输入密码（至少8位，包含大小写字母和数字）"}
+                placeholder={isLogin ? t('login.passwordPlaceholder') : t('login.passwordPlaceholderRegister')}
                 required
                 minLength={isLogin ? 1 : 8}
               />
               {!isLogin && (
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  密码要求：至少8位，包含大写字母、小写字母和数字
+                  {t('login.passwordRequirements')}
                 </p>
               )}
             </div>
@@ -142,27 +120,27 @@ export function Login() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    姓名（可选）
+                    {t('login.name')} {t('common.optional')}
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="请输入姓名"
+                    placeholder={t('login.namePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    邮箱（可选）
+                    {t('login.email')} {t('common.optional')}
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="请输入邮箱"
+                    placeholder={t('login.emailPlaceholder')}
                   />
                 </div>
               </>
@@ -173,7 +151,7 @@ export function Login() {
               disabled={loading}
               className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium rounded-lg transition-colors"
             >
-              {loading ? '处理中...' : isLogin ? '登录' : '注册'}
+              {loading ? t('login.processing') : (isLogin ? t('login.loginButton') : t('login.registerButton'))}
             </button>
           </form>
 
@@ -181,7 +159,7 @@ export function Login() {
           <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             {isLogin ? (
               <>
-                还没有账户？{' '}
+                {t('login.noAccount')}{' '}
                 <button
                   onClick={() => {
                     setIsLogin(false)
@@ -189,12 +167,12 @@ export function Login() {
                   }}
                   className="text-blue-500 hover:text-blue-600 font-medium"
                 >
-                  立即注册
+                  {t('login.registerNow')}
                 </button>
               </>
             ) : (
               <>
-                已有账户？{' '}
+                {t('login.hasAccount')}{' '}
                 <button
                   onClick={() => {
                     setIsLogin(true)
@@ -202,7 +180,7 @@ export function Login() {
                   }}
                   className="text-blue-500 hover:text-blue-600 font-medium"
                 >
-                  立即登录
+                  {t('login.loginNow')}
                 </button>
               </>
             )}
@@ -210,9 +188,9 @@ export function Login() {
 
           {/* 默认账户提示 */}
           <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm text-gray-500 dark:text-gray-400">
-            <p className="font-medium mb-1">默认管理员账户：</p>
-            <p>用户名：admin</p>
-            <p>密码：admin123</p>
+            <p className="font-medium mb-1">{t('login.defaultAccount')}</p>
+            <p>{t('login.username')}: admin</p>
+            <p>{t('login.password')}: admin123</p>
           </div>
         </div>
       </div>
