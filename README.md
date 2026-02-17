@@ -1,6 +1,6 @@
 # Asset Management System
 
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/yourusername/asset-management-system/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.0.2-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -8,7 +8,7 @@
 
 A modern, full-stack asset management system with dynamic field configuration, Excel import/export, and comprehensive reporting capabilities.
 
-**🎉 Version 1.0.0 Released!** - First stable release with complete feature set.
+**🎉 Version 1.0.2 Released!** - Added batch selection and delete functionality.
 
 [中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
@@ -36,7 +36,7 @@ A modern, full-stack asset management system with dynamic field configuration, E
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/asset-management-system.git
+git clone https://github.com/zweien/asset-anagement-system.git
 cd asset-management-system
 
 # Install dependencies
