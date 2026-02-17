@@ -293,7 +293,7 @@ export function AssetDetail() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center gap-1 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-1 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {saving ? '保存中...' : '保存'}

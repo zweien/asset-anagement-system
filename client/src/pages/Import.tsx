@@ -275,7 +275,7 @@ export function Import() {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     step >= s
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
                   }`}
                 >
@@ -384,7 +384,7 @@ export function Import() {
                 <button
                   onClick={executeImport}
                   disabled={loading || mapping.length === 0}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
                 >
                   {loading ? t('import.importing') : t('import.startImport')}
                 </button>
@@ -425,7 +425,7 @@ export function Import() {
                 <button onClick={reset} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
                   {t('import.continueImport')}
                 </button>
-                <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary-600 text-white rounded-lg">
+                <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg">
                   {t('import.viewAssetList')}
                 </button>
               </div>
@@ -521,7 +521,7 @@ export function Import() {
                 <button
                   onClick={testDbConnection}
                   disabled={loading || !dbConfig.host || !dbConfig.database}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
                 >
                   {loading ? t('import.connecting') : t('import.testConnection')}
                 </button>
@@ -625,7 +625,7 @@ export function Import() {
                       <button
                         onClick={executeDbImport}
                         disabled={loading || dbMapping.length === 0}
-                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
                       >
                         {loading ? t('import.importing') : t('import.startImport')}
                       </button>
@@ -674,7 +674,7 @@ export function Import() {
                 <button onClick={resetDb} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
                   {t('import.continueImport')}
                 </button>
-                <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary-600 text-white rounded-lg">
+                <button onClick={() => (window.location.href = '/assets')} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg">
                   {t('import.viewAssetList')}
                 </button>
               </div>

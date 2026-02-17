@@ -129,7 +129,7 @@ export function ImageUploader({ assetId, images, onImagesChange }: ImageUploader
           <button
             onClick={() => cameraInputRef.current?.click()}
             disabled={uploading}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             <Camera className="w-5 h-5" />
             {uploading ? '上传中...' : '拍照上传'}
