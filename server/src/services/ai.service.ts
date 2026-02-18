@@ -17,6 +17,7 @@ export interface AIConfig {
   baseUrl: string
   model: string
   maxTokens: number
+  apiType: 'chat' | 'responses'
 }
 
 // SQL 执行工具
@@ -49,10 +50,11 @@ const executeSqlTool = tool({
   },
 })
 
-// AI 服务返回类型
-export interface AIChatResult {
-  toTextStreamResponse: () => Response
-}
+// 导入 streamText 返回类型
+import type { StreamTextResult } from 'ai'
+
+// AI 服务返回类型 - 直接使用 streamText 的返回类型
+export type AIChatResult = StreamTextResult<any, any>
 
 // AI 服务
 export const AIService = {
@@ -76,8 +78,13 @@ export const AIService = {
 
     const systemPrompt = await getSystemPrompt()
 
+    // 根据 apiType 选择模型调用方式
+    const model = config.apiType === 'responses'
+      ? openai.responses(config.model)  // 使用 Responses API
+      : openai.chat(config.model)       // 使用 Chat Completions API（默认）
+
     const result = streamText({
-      model: openai(config.model),
+      model,
       system: systemPrompt,
       messages,
       tools: {

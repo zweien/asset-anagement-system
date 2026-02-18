@@ -86,11 +86,13 @@ export const SystemConfigService = {
 
   // AI 配置相关
   async getAIConfig() {
+    const apiTypeValue = await this.get('ai_api_type')
     const config = {
-      apiKey: await this.get('ai_api_key') || '',
-      baseUrl: await this.get('ai_base_url') || 'https://api.deepseek.com',
-      model: await this.get('ai_model') || 'deepseek-chat',
-      maxTokens: parseInt(await this.get('ai_max_tokens') || '2000', 10),
+      apiKey: await this.get('ai_api_key') || process.env.DEEPSEEK_API_KEY || '',
+      baseUrl: await this.get('ai_base_url') || process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+      model: await this.get('ai_model') || process.env.AI_MODEL || 'deepseek-chat',
+      maxTokens: parseInt(await this.get('ai_max_tokens') || process.env.AI_MAX_TOKENS || '2000', 10),
+      apiType: (apiTypeValue === 'responses' ? 'responses' : 'chat') as 'chat' | 'responses',
     }
     return config
   },
@@ -100,6 +102,7 @@ export const SystemConfigService = {
     baseUrl?: string
     model?: string
     maxTokens?: number
+    apiType?: string
   }) {
     if (data.apiKey !== undefined) {
       await this.set('ai_api_key', data.apiKey, 'AI API Key')
@@ -112,6 +115,9 @@ export const SystemConfigService = {
     }
     if (data.maxTokens !== undefined) {
       await this.set('ai_max_tokens', String(data.maxTokens), 'AI 最大 Token 数')
+    }
+    if (data.apiType !== undefined) {
+      await this.set('ai_api_type', data.apiType, 'API 端点类型')
     }
     return { success: true, data: await this.getAIConfig() }
   },

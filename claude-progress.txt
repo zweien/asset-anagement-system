@@ -2,6 +2,78 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-18 - 会话 11 (AI 功能增强)
+
+### 完成的工作
+- [x] AI-003: API 端点类型选择（Chat Completions / Responses API）
+- [x] AI-004: AI 配置环境变量回退支持
+- [x] AI-005: Markdown 渲染支持
+- [x] AI-006: 对话导出功能
+
+### 实现细节
+
+**AI-003 API 端点类型选择**
+- 后端修改：
+  - `server/src/services/system-config.service.ts` - 添加 apiType 配置项
+  - `server/src/services/ai.service.ts` - 根据 apiType 选择 openai.chat() 或 openai.responses()
+  - `server/src/controllers/ai.controller.ts` - 验证 apiType 参数
+- 前端修改：
+  - `client/src/lib/ai-api.ts` - 更新类型定义
+  - `client/src/pages/Settings.tsx` - 添加 API 端点选择下拉框
+- 功能特性：
+  - Chat Completions (`/v1/chat/completions`) - 兼容性更好（默认）
+  - Responses API (`/v1/responses`) - OpenAI 专用高级功能
+
+**AI-004 AI 配置环境变量回退**
+- 修改 `SystemConfigService.getAIConfig()` 支持 `.env` 回退
+- 配置优先级：数据库 > 环境变量 > 默认值
+- 支持的环境变量：
+  - `DEEPSEEK_API_KEY`
+  - `DEEPSEEK_BASE_URL`
+  - `AI_MODEL`
+  - `AI_MAX_TOKENS`
+
+**AI-005 Markdown 渲染**
+- 安装依赖：`streamdown`, `@streamdown/code`, `@tailwindcss/typography`
+- 修改 `client/src/components/ai/AIChatDialog.tsx` - 使用 Streamdown 组件
+- 功能特性：
+  - 表格、代码块、列表正确渲染
+  - 语法高亮支持
+  - 流式 Markdown 平滑渲染
+
+**AI-006 对话导出**
+- 修改 `client/src/components/ai/AIChatDialog.tsx` - 添加导出功能
+- 功能特性：
+  - 导出为 Markdown (.md) - 人类可读格式
+  - 导出为 JSON (.json) - 结构化数据
+  - 包含工具调用和 SQL 查询结果
+
+### Bug 修复
+- **BigInt 序列化问题** - 修复 SQL COUNT(*) 返回 BigInt 无法 JSON 序列化的问题
+- **流式响应处理** - 使用 fullStream 替代 toTextStreamResponse() 支持工具调用
+
+### 新增依赖
+```json
+// client/package.json
+"streamdown": "^latest",
+"@streamdown/code": "^latest",
+"@tailwindcss/typography": "^latest"
+```
+
+### Git 提交记录
+1. feat(ai): add API endpoint type selection (chat/responses)
+2. feat(ai): add .env fallback for AI configuration
+3. feat(ai): add Markdown rendering support with streamdown
+4. feat(ai): add chat export functionality (Markdown/JSON)
+
+### 当前状态
+- 进度: 66/66 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.2.0
+
+---
+
 ## 2026-02-18 - 会话 10 (AI 功能集成)
 
 ### 完成的工作

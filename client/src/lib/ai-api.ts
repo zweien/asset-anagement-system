@@ -44,6 +44,7 @@ export interface AIConfig {
   baseUrl: string
   model: string
   maxTokens: number
+  apiType: 'chat' | 'responses'
 }
 
 // 流式聊天响应
@@ -130,6 +131,7 @@ export const aiApi = {
     baseUrl: string
     model: string
     maxTokens: number
+    apiType: 'chat' | 'responses'
   }>): Promise<{ success: boolean; data?: AIConfig; error?: string; message?: string }> {
     return axiosInstance.put('/ai/config', config)
   },
@@ -139,6 +141,7 @@ export const aiApi = {
     apiKey: string
     baseUrl: string
     model: string
+    apiType: 'chat' | 'responses'
   }>): Promise<{
     success: boolean
     data?: {

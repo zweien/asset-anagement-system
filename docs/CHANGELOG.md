@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-18
+
+### Added
+- **API Endpoint Type Selection** - Choose between Chat Completions and Responses API
+  - Chat Completions (`/v1/chat/completions`) - Better compatibility with most LLM providers
+  - Responses API (`/v1/responses`) - OpenAI's advanced API with more features
+  - Configurable in Settings page, default is Chat Completions for maximum compatibility
+- **Markdown Rendering in AI Chat** - Rich text display for AI responses
+  - Tables, code blocks, lists, and headers properly formatted
+  - Syntax highlighting for code blocks
+  - Smooth streaming with partial markdown support
+- **Chat Export Functionality** - Export AI conversations
+  - Export as Markdown (.md) - Human-readable format
+  - Export as JSON (.json) - Structured data for processing
+  - Includes tool invocations and SQL query results
+
+### Fixed
+- **AI Configuration Loading** - Now properly reads configuration from `.env` file as fallback
+  - Priority: Database config > Environment variables > Default values
+  - Supports `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, `AI_MODEL`, `AI_MAX_TOKENS` env vars
+- **BigInt Serialization** - Fixed SQL query results with COUNT(*) returning BigInt values
+
+### Technical Details
+- Added `streamdown` and `@streamdown/code` for markdown rendering
+- Added `@tailwindcss/typography` for prose styling
+- AI service now uses `openai.chat()` or `openai.responses()` based on configuration
+
 ## [1.1.0] - 2026-02-18
 
 ### Added
@@ -126,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.2.0 | 2026-02-18 | API endpoint selection, Markdown rendering, Chat export |
 | 1.1.0 | 2026-02-18 | AI assistant integration, frontend LLM configuration |
 | 1.0.3 | 2026-02-18 | User avatar, system branding, filter enhancements |
 | 1.0.2 | 2026-02-18 | Batch selection and delete feature |

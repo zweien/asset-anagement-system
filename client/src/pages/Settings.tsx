@@ -232,6 +232,7 @@ export function Settings() {
     baseUrl: 'https://api.deepseek.com',
     model: 'deepseek-chat',
     maxTokens: 2000,
+    apiType: 'chat' as 'chat' | 'responses',
   })
   const [showApiKey, setShowApiKey] = useState(false)
   const [savingAIConfig, setSavingAIConfig] = useState(false)
@@ -271,6 +272,7 @@ export function Settings() {
           baseUrl: response.data.baseUrl,
           model: response.data.model,
           maxTokens: response.data.maxTokens,
+          apiType: response.data.apiType || 'chat',
         })
       }
     } catch (err) {
@@ -287,10 +289,12 @@ export function Settings() {
         baseUrl: string
         model: string
         maxTokens: number
+        apiType: 'chat' | 'responses'
       }> = {
         baseUrl: aiConfigForm.baseUrl,
         model: aiConfigForm.model,
         maxTokens: aiConfigForm.maxTokens,
+        apiType: aiConfigForm.apiType,
       }
 
       // 只有输入了新的 API Key 才更新
@@ -322,9 +326,10 @@ export function Settings() {
     setTestResult(null)
     try {
       // 构建测试配置
-      const testConfig: Partial<{ apiKey: string; baseUrl: string; model: string }> = {
+      const testConfig: Partial<{ apiKey: string; baseUrl: string; model: string; apiType: 'chat' | 'responses' }> = {
         baseUrl: aiConfigForm.baseUrl,
         model: aiConfigForm.model,
+        apiType: aiConfigForm.apiType,
       }
 
       // 如果输入了新的 API Key，使用新值测试
@@ -670,6 +675,32 @@ export function Settings() {
                 placeholder="deepseek-chat"
                 className="max-w-xs"
               />
+            </div>
+
+            {/* API 端点类型 */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-api-type" className="text-sm font-medium">
+                {t('settings.aiApiType')}
+              </Label>
+              <Select
+                value={aiConfigForm.apiType}
+                onValueChange={(v) => setAIConfigForm(prev => ({ ...prev, apiType: v as 'chat' | 'responses' }))}
+              >
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="chat">
+                    Chat Completions (/v1/chat/completions)
+                  </SelectItem>
+                  <SelectItem value="responses">
+                    Responses API (/v1/responses)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground max-w-xs">
+                {t('settings.aiApiTypeHint')}
+              </p>
             </div>
 
             {/* 最大 Tokens */}

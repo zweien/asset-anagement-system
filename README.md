@@ -1,6 +1,6 @@
 # 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.1.0)
+[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -8,7 +8,7 @@
 
 一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 版本 1.1.0 发布！** - 新增 AI 智能助手，支持自然语言查询资产数据。
+**🎉 版本 1.2.0 发布！** - 新增 API 端点类型选择、Markdown 渲染、对话导出功能。
 
 [English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 
@@ -39,11 +39,15 @@ AI 助手支持自然语言交互，让数据查询更简单：
 - **统计分析** - "帮我统计上个月新增的资产数量"
 - **快捷问题** - 一键点击常用查询
 - **流式响应** - 实时显示 AI 回复
+- **Markdown 渲染** - 表格、代码块、列表等富文本展示
+- **对话导出** - 支持 Markdown 和 JSON 格式导出
 - **安全可控** - 仅执行 SELECT 查询，支持限流
+- **多 API 兼容** - 支持 Chat Completions 和 Responses API 两种端点
 
 支持的 LLM 提供商：
 - DeepSeek（推荐）
 - OpenAI
+- Moonshot (Kimi)
 - 硅基流动
 - 其他 OpenAI 兼容的 API
 
@@ -95,6 +99,18 @@ cd client && npm run dev
    - API Key
    - API 地址（如 https://api.deepseek.com）
    - 模型名称（如 deepseek-chat）
+   - API 端点类型：
+     - **Chat Completions** - 兼容性更好，支持大多数 LLM 提供商（推荐）
+     - **Responses API** - OpenAI 专用，支持更高级的功能
+
+也可以通过环境变量配置（作为默认值）：
+```bash
+# server/.env
+DEEPSEEK_API_KEY=your-api-key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+AI_MODEL=deepseek-chat
+AI_MAX_TOKENS=2000
+```
 
 ### 默认账户
 

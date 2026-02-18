@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Sparkles, Send, Trash2, Loader2, Database } from 'lucide-react'
+import { Sparkles, Send, Trash2, Loader2, Database, Download, FileText, FileJson } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,9 +9,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { aiApi } from '@/lib/ai-api'
 import type { AIMessage, ToolInvocation } from '@/lib/ai-api'
+import { Streamdown } from 'streamdown'
+import { code } from '@streamdown/code'
 
 interface AIChatDialogProps {
   isOpen: boolean
@@ -120,6 +128,68 @@ export function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
     setError(null)
   }
 
+  // 导出为 Markdown
+  const exportToMarkdown = () => {
+    if (messages.length === 0) return
+
+    const timestamp = new Date().toISOString().split('T')[0]
+    let markdown = `# AI 对话记录\n\n导出时间：${new Date().toLocaleString()}\n\n---\n\n`
+
+    messages.forEach((msg) => {
+      const role = msg.role === 'user' ? '👤 用户' : '🤖 AI 助手'
+      markdown += `### ${role}\n\n${msg.content}\n\n`
+
+      // 如果有工具调用结果，也导出
+      if (msg.toolInvocations?.length) {
+        markdown += `**SQL 查询结果:**\n\n`
+        msg.toolInvocations.forEach((tool) => {
+          if (tool.result?.data) {
+            markdown += '```\n'
+            markdown += JSON.stringify(tool.result.data, null, 2)
+            markdown += '\n```\n\n'
+          }
+        })
+      }
+    })
+
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `AI对话_${timestamp}.md`
+    document.body.appendChild(a)
+    a.click()
+    URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  }
+
+  // 导出为 JSON
+  const exportToJSON = () => {
+    if (messages.length === 0) return
+
+    const timestamp = new Date().toISOString().split('T')[0]
+    const exportData = {
+      exportTime: new Date().toISOString(),
+      messageCount: messages.length,
+      messages: messages.map((msg) => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        toolInvocations: msg.toolInvocations,
+      })),
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `AI对话_${timestamp}.json`
+    document.body.appendChild(a)
+    a.click()
+    URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  }
+
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -201,7 +271,20 @@ export function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
                   </div>
                 )}
                 <div className="text-sm">
-                  {message.content || (
+                  {message.content ? (
+                    message.role === 'assistant' ? (
+                      <Streamdown
+                        plugins={{ code }}
+                        caret="block"
+                        isAnimating={isLoading && messages.indexOf(message) === messages.length - 1}
+                        className="prose prose-sm dark:prose-invert max-w-none prose-pre:bg-muted prose-pre:p-3 prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs"
+                      >
+                        {message.content}
+                      </Streamdown>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{message.content}</span>
+                    )
+                  ) : (
                     <span className="flex items-center gap-1">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       {t('ai.thinking')}
@@ -248,6 +331,29 @@ export function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
               <Send className="w-4 h-4" />
             )}
           </Button>
+
+          {/* 导出按钮 */}
+          {messages.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title={t('ai.export')}>
+                  <Download className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportToMarkdown}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  {t('ai.exportMarkdown')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToJSON}>
+                  <FileJson className="w-4 h-4 mr-2" />
+                  {t('ai.exportJSON')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {/* 清空按钮 */}
           {messages.length > 0 && (
             <Button
               variant="ghost"

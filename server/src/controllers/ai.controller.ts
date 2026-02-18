@@ -49,33 +49,30 @@ export const chat = async (req: Request, res: Response) => {
     // 调用 AI 服务
     const result = await AIService.chat(messages)
 
-    // 创建可读流
-    const stream = result.toTextStreamResponse()
-
-    // 将流转发给客户端
-    const reader = stream.body?.getReader()
-    if (!reader) {
-      return res.status(500).json({
-        success: false,
-        error: '创建流失败',
-      })
-    }
-
+    // 使用 fullStream 处理文本和工具调用
     try {
-      let done = false
-      while (!done) {
-        const result = await reader.read()
-        done = result.done
-        if (done) {
-          res.write('data: [DONE]\n\n')
-          break
+      for await (const part of result.fullStream) {
+        switch (part.type) {
+          case 'text-delta':
+            res.write(`data: ${JSON.stringify({ content: part.text })}\n\n`)
+            break
+          case 'tool-call':
+            // 工具调用开始
+            res.write(`data: ${JSON.stringify({ toolCall: { id: part.toolCallId, name: part.toolName, input: part.input } })}\n\n`)
+            break
+          case 'tool-result':
+            // 工具调用结果
+            res.write(`data: ${JSON.stringify({ toolResult: { id: part.toolCallId, name: part.toolName, result: part.output } })}\n\n`)
+            break
+          case 'error':
+            res.write(`data: ${JSON.stringify({ error: part.error })}\n\n`)
+            break
         }
-        // 将数据作为 SSE 事件发送
-        const chunk = new TextDecoder().decode(result.value)
-        res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`)
       }
-    } finally {
-      reader.releaseLock()
+      res.write('data: [DONE]\n\n')
+    } catch (streamError) {
+      console.error('[AI] 流处理错误:', streamError)
+      res.write(`data: ${JSON.stringify({ error: streamError instanceof Error ? streamError.message : '流处理错误' })}\n\n`)
     }
 
     res.end()
@@ -146,7 +143,7 @@ export const getConfig = async (req: Request, res: Response) => {
 // 更新 AI 配置（仅管理员）
 export const updateConfig = async (req: Request, res: Response) => {
   try {
-    const { apiKey, baseUrl, model, maxTokens } = req.body
+    const { apiKey, baseUrl, model, maxTokens, apiType } = req.body
 
     // 验证输入
     const updateData: {
@@ -154,6 +151,7 @@ export const updateConfig = async (req: Request, res: Response) => {
       baseUrl?: string
       model?: string
       maxTokens?: number
+      apiType?: string
     } = {}
 
     if (apiKey !== undefined && apiKey !== '') {
@@ -182,6 +180,16 @@ export const updateConfig = async (req: Request, res: Response) => {
       updateData.maxTokens = tokens
     }
 
+    if (apiType !== undefined) {
+      if (!['chat', 'responses'].includes(apiType)) {
+        return res.status(400).json({
+          success: false,
+          error: 'apiType 必须是 chat 或 responses',
+        })
+      }
+      updateData.apiType = apiType
+    }
+
     const result = await SystemConfigService.setAIConfig(updateData)
 
     return res.json({
@@ -200,10 +208,10 @@ export const updateConfig = async (req: Request, res: Response) => {
 // 测试 AI 配置连接（仅管理员）
 export const testConfig = async (req: Request, res: Response) => {
   try {
-    const { apiKey, baseUrl, model } = req.body
+    const { apiKey, baseUrl, model, apiType } = req.body
 
     // 构建测试配置（只使用提供的值）
-    const testConfig: { apiKey?: string; baseUrl?: string; model?: string } = {}
+    const testConfig: { apiKey?: string; baseUrl?: string; model?: string; apiType?: 'chat' | 'responses' } = {}
 
     if (apiKey && !apiKey.includes('...')) {
       testConfig.apiKey = apiKey
@@ -213,6 +221,9 @@ export const testConfig = async (req: Request, res: Response) => {
     }
     if (model) {
       testConfig.model = model
+    }
+    if (apiType && (apiType === 'chat' || apiType === 'responses')) {
+      testConfig.apiType = apiType
     }
 
     const result = await AIService.testConnection(

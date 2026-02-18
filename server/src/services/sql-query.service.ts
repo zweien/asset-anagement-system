@@ -113,7 +113,7 @@ function validateSql(sql: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
-// 过滤敏感数据
+// 过滤敏感数据并处理 BigInt
 function sanitizeResult(data: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
   const sensitiveFields = ['password', 'passwordHash', 'token', 'secret']
 
@@ -123,6 +123,9 @@ function sanitizeResult(data: Array<Record<string, unknown>>): Array<Record<stri
       // 过滤敏感字段
       if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
         sanitized[key] = '***'
+      } else if (typeof value === 'bigint') {
+        // 将 BigInt 转换为 Number
+        sanitized[key] = Number(value)
       } else {
         sanitized[key] = value
       }
