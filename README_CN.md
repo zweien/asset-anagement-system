@@ -1,164 +1,195 @@
-# 资产管理系统
+# Asset Management System
 
-[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.3)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
 
-一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出和全面的报表功能。
+A modern, full-stack asset management system with dynamic field configuration, Excel import/export, AI assistant, and comprehensive reporting capabilities.
 
-**🎉 版本 1.0.3 发布！** - 新增用户头像、系统品牌设置和筛选增强功能。
+**🎉 Version 1.1.0 Released!** - Added AI Assistant for natural language asset data queries.
 
-[English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
+[中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
-## 📸 截图
+## 📸 Screenshots
 
-![仪表盘](./docs/snipaste_dashboard.png)
+![Dashboard](./docs/snipaste_dashboard.png)
 
-## ✨ 功能特性
+## ✨ Features
 
-- 📊 **动态字段配置** - 无需修改数据库结构即可创建自定义字段
-- 📥 **Excel 导入导出** - 支持字段映射的批量 Excel 导入
-- 🗄️ **数据库迁移** - 从外部数据库导入数据（MySQL、PostgreSQL、SQLite）
-- 📈 **可视化报表** - 可自定义报表模板的图表和统计功能
-- 🌐 **国际化** - 完整的中英文翻译支持
-- 🌓 **深色模式** - 内置主题切换，支持系统偏好检测
-- 🔐 **基于角色的访问控制** - 管理员、录入员、普通用户三种角色
-- 📝 **操作日志** - 完整的操作历史和变更追踪
-- 💾 **备份与恢复** - 数据库备份和恢复功能
-- 📱 **响应式设计** - 基于 shadcn/ui 的移动端友好界面
+- 🤖 **AI Assistant** - Query and analyze asset data using natural language
+- 📊 **Dynamic Field Configuration** - Create custom fields without modifying the database schema
+- 📥 **Excel Import/Export** - Batch import from Excel files with field mapping
+- 🗄️ **Database Migration** - Import data from external databases (MySQL, PostgreSQL, SQLite)
+- 📈 **Visual Reports** - Charts and statistics with customizable report templates
+- 🔍 **SQL Query** - Admin users can execute safe SQL queries directly
+- 🌐 **Internationalization** - Full i18n support with Chinese and English translations
+- 🌓 **Dark Mode** - Built-in theme switching with system preference detection
+- 🔐 **Role-Based Access Control** - Admin, Editor, and User roles with granular permissions
+- 📝 **Audit Logging** - Complete operation history with change tracking
+- 💾 **Backup & Restore** - Database backup and restore functionality
+- 📱 **Responsive Design** - Mobile-friendly UI built with shadcn/ui
 
-## 🚀 快速开始
+## 🤖 AI Assistant
 
-### 环境要求
+The AI assistant enables natural language interaction for easier data queries:
+
+- **Natural Language Queries** - "Show all active assets"
+- **Statistical Analysis** - "Count assets added last month"
+- **Quick Questions** - One-click common queries
+- **Streaming Responses** - Real-time AI replies
+- **Safe & Controlled** - SELECT-only queries with rate limiting
+
+Supported LLM Providers:
+- DeepSeek (Recommended)
+- OpenAI
+- SiliconFlow
+- Other OpenAI-compatible APIs
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Node.js 18+
-- npm 或 pnpm
+- npm or pnpm
 
-### 安装步骤
+### Installation
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone https://github.com/zweien/asset-anagement-system.git
 cd asset-management-system
 
-# 安装依赖
+# Install dependencies
 npm install
 cd client && npm install && cd ..
 cd server && npm install && cd ..
 
-# 初始化数据库
+# Initialize the database
 cd server
 npm run db:push
 cd ..
 
-# 启动开发服务器
+# Start development servers
 ./init.sh start
 ```
 
-或手动启动：
+Or start manually:
 
 ```bash
-# 终端 1 - 后端
+# Terminal 1 - Backend
 cd server && npm run dev
 
-# 终端 2 - 前端
+# Terminal 2 - Frontend
 cd client && npm run dev
 ```
 
-访问 http://localhost:5173 使用系统
+Access the application at http://localhost:5173
 
-### 默认账户
+### Configure AI Assistant (Optional)
 
-- **用户名：** `admin`
-- **密码：** `admin123`
+1. Login as administrator
+2. Go to Settings page
+3. Fill in "AI Model Configuration":
+   - API Key
+   - API Base URL (e.g., https://api.deepseek.com)
+   - Model Name (e.g., deepseek-chat)
 
-> ⚠️ 首次登录后请修改默认密码！
+### Default Credentials
 
-## 📁 项目结构
+- **Username:** `admin`
+- **Password:** `admin123`
+
+> ⚠️ Please change the default password after first login!
+
+## 📁 Project Structure
 
 ```
 .
-├── client/                 # React 前端
+├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/     # 可复用 UI 组件
-│   │   ├── pages/          # 页面级组件
-│   │   ├── lib/            # 工具函数、API 客户端、类型定义
-│   │   ├── stores/         # Zustand 状态管理
-│   │   ├── hooks/          # 自定义 React Hooks
-│   │   └── i18n/           # 国际化配置
+│   │   ├── components/     # Reusable UI components
+│   │   │   └── ai/         # AI assistant components
+│   │   ├── pages/          # Route-level page components
+│   │   ├── lib/            # Utilities, API client, types
+│   │   ├── stores/         # Zustand state management
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── i18n/           # Internationalization
 │   └── package.json
-├── server/                 # Express 后端
+├── server/                 # Express backend
 │   ├── src/
-│   │   ├── controllers/    # 请求处理
-│   │   ├── services/       # 业务逻辑
-│   │   ├── routes/         # API 路由
-│   │   ├── middleware/     # Express 中间件
-│   │   └── utils/          # 工具函数
+│   │   ├── controllers/    # Request handlers
+│   │   ├── services/       # Business logic
+│   │   ├── routes/         # API endpoints
+│   │   ├── middleware/     # Express middleware
+│   │   ├── prompts/        # AI prompts
+│   │   └── utils/          # Utilities
 │   ├── prisma/
-│   │   └── schema.prisma   # 数据库模型
+│   │   └── schema.prisma   # Database schema
 │   └── package.json
-├── docs/                   # 文档
-├── e2e/                    # E2E 测试
-└── uploads/                # 文件上传目录
+├── docs/                   # Documentation
+├── e2e/                    # E2E tests
+└── uploads/                # File uploads
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-| 前端 | 后端 |
-|------|------|
+| Frontend | Backend |
+|----------|---------|
 | React 19 | Express.js |
 | TypeScript | TypeScript |
 | Vite | Prisma ORM |
 | TailwindCSS v4 | SQLite / PostgreSQL / MySQL |
-| shadcn/ui | JWT 认证 |
+| shadcn/ui | JWT Authentication |
 | Zustand | Swagger/OpenAPI |
-| React Router | Winston 日志 |
-| Recharts | Zod 验证 |
-| i18next | |
+| React Router | Winston Logger |
+| Recharts | Zod Validation |
+| i18next | Vercel AI SDK |
+| @ai-sdk/react | @ai-sdk/openai |
 
-## 📖 文档
+## 📖 Documentation
 
-- [技术架构](./docs/ARCHITECTURE.md) - 系统架构和设计决策
-- [API 文档](./docs/API.md) - REST API 接口文档
-- [贡献指南](./docs/CONTRIBUTING.md) - 如何参与贡献
-- [更新日志](./docs/CHANGELOG.md) - 版本历史
+- [Architecture](./docs/ARCHITECTURE.md) - System architecture and design decisions
+- [API Reference](./docs/API.md) - REST API documentation
+- [Contributing](./docs/CONTRIBUTING.md) - How to contribute
+- [Changelog](./docs/CHANGELOG.md) - Version history
 
-## 🧪 测试
+## 🧪 Testing
 
 ```bash
-# 后端单元测试
+# Backend unit tests
 cd server && npm test
 
-# E2E 测试
+# E2E tests
 npm run test:e2e
 
-# E2E 测试（带 UI）
+# E2E tests with UI
 npm run test:e2e:ui
 ```
 
-## 🤝 参与贡献
+## 🤝 Contributing
 
-欢迎参与贡献！请查看 [贡献指南](./docs/CONTRIBUTING.md) 了解详情。
+We welcome contributions! Please see our [Contributing Guide](./docs/CONTRIBUTING.md) for details.
 
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'feat: add amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 提交 Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📝 许可证
+## 📝 License
 
-本项目基于 MIT 许可证开源 - 详见 [LICENSE](LICENSE) 文件。
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- [shadcn/ui](https://ui.shadcn.com/) - 精美的 UI 组件库
-- [Prisma](https://www.prisma.io/) - 下一代 ORM
-- [Recharts](https://recharts.org/) - 可组合的图表库
-- [Lucide Icons](https://lucide.dev/) - 美观的开源图标
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [Recharts](https://recharts.org/) - Composable charting library
+- [Lucide Icons](https://lucide.dev/) - Beautiful open-source icons
+- [Vercel AI SDK](https://sdk.vercel.ai/) - AI application development toolkit
 
 ---
 
-由资产管理团队用 ❤️ 打造
+Made with ❤️ by the Asset Management Team

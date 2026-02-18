@@ -1,164 +1,195 @@
-# Asset Management System
+# 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.3)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
 
-A modern, full-stack asset management system with dynamic field configuration, Excel import/export, and comprehensive reporting capabilities.
+一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 Version 1.0.3 Released!** - Added user avatar, system branding, and filter enhancements.
+**🎉 版本 1.1.0 发布！** - 新增 AI 智能助手，支持自然语言查询资产数据。
 
-[中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
+[English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 
-## 📸 Screenshots
+## 📸 截图
 
-![Dashboard](./docs/snipaste_dashboard.png)
+![仪表盘](./docs/snipaste_dashboard.png)
 
-## ✨ Features
+## ✨ 功能特性
 
-- 📊 **Dynamic Field Configuration** - Create custom fields without modifying the database schema
-- 📥 **Excel Import/Export** - Batch import from Excel files with field mapping
-- 🗄️ **Database Migration** - Import data from external databases (MySQL, PostgreSQL, SQLite)
-- 📈 **Visual Reports** - Charts and statistics with customizable report templates
-- 🌐 **Internationalization** - Full i18n support with Chinese and English translations
-- 🌓 **Dark Mode** - Built-in theme switching with system preference detection
-- 🔐 **Role-Based Access Control** - Admin, Editor, and User roles with granular permissions
-- 📝 **Audit Logging** - Complete operation history with change tracking
-- 💾 **Backup & Restore** - Database backup and restore functionality
-- 📱 **Responsive Design** - Mobile-friendly UI built with shadcn/ui
+- 🤖 **AI 智能助手** - 通过自然语言查询和分析资产数据
+- 📊 **动态字段配置** - 无需修改数据库结构即可创建自定义字段
+- 📥 **Excel 导入导出** - 支持字段映射的批量 Excel 导入
+- 🗄️ **数据库迁移** - 从外部数据库导入数据（MySQL、PostgreSQL、SQLite）
+- 📈 **可视化报表** - 可自定义报表模板的图表和统计功能
+- 🔍 **SQL 查询** - 管理员可直接执行安全的 SQL 查询
+- 🌐 **国际化** - 完整的中英文翻译支持
+- 🌓 **深色模式** - 内置主题切换，支持系统偏好检测
+- 🔐 **基于角色的访问控制** - 管理员、录入员、普通用户三种角色
+- 📝 **操作日志** - 完整的操作历史和变更追踪
+- 💾 **备份与恢复** - 数据库备份和恢复功能
+- 📱 **响应式设计** - 基于 shadcn/ui 的移动端友好界面
 
-## 🚀 Quick Start
+## 🤖 AI 智能助手
 
-### Prerequisites
+AI 助手支持自然语言交互，让数据查询更简单：
+
+- **自然语言查询** - "显示所有在用状态的资产"
+- **统计分析** - "帮我统计上个月新增的资产数量"
+- **快捷问题** - 一键点击常用查询
+- **流式响应** - 实时显示 AI 回复
+- **安全可控** - 仅执行 SELECT 查询，支持限流
+
+支持的 LLM 提供商：
+- DeepSeek（推荐）
+- OpenAI
+- 硅基流动
+- 其他 OpenAI 兼容的 API
+
+## 🚀 快速开始
+
+### 环境要求
 
 - Node.js 18+
-- npm or pnpm
+- npm 或 pnpm
 
-### Installation
+### 安装步骤
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/zweien/asset-anagement-system.git
 cd asset-management-system
 
-# Install dependencies
+# 安装依赖
 npm install
 cd client && npm install && cd ..
 cd server && npm install && cd ..
 
-# Initialize the database
+# 初始化数据库
 cd server
 npm run db:push
 cd ..
 
-# Start development servers
+# 启动开发服务器
 ./init.sh start
 ```
 
-Or start manually:
+或手动启动：
 
 ```bash
-# Terminal 1 - Backend
+# 终端 1 - 后端
 cd server && npm run dev
 
-# Terminal 2 - Frontend
+# 终端 2 - 前端
 cd client && npm run dev
 ```
 
-Access the application at http://localhost:5173
+访问 http://localhost:5173 使用系统
 
-### Default Credentials
+### 配置 AI 助手（可选）
 
-- **Username:** `admin`
-- **Password:** `admin123`
+1. 登录管理员账户
+2. 进入系统设置页面
+3. 在"AI 模型配置"卡片中填写：
+   - API Key
+   - API 地址（如 https://api.deepseek.com）
+   - 模型名称（如 deepseek-chat）
 
-> ⚠️ Please change the default password after first login!
+### 默认账户
 
-## 📁 Project Structure
+- **用户名：** `admin`
+- **密码：** `admin123`
+
+> ⚠️ 首次登录后请修改默认密码！
+
+## 📁 项目结构
 
 ```
 .
-├── client/                 # React frontend
+├── client/                 # React 前端
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Route-level page components
-│   │   ├── lib/            # Utilities, API client, types
-│   │   ├── stores/         # Zustand state management
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── i18n/           # Internationalization
+│   │   ├── components/     # 可复用 UI 组件
+│   │   │   └── ai/         # AI 助手组件
+│   │   ├── pages/          # 页面级组件
+│   │   ├── lib/            # 工具函数、API 客户端、类型定义
+│   │   ├── stores/         # Zustand 状态管理
+│   │   ├── hooks/          # 自定义 React Hooks
+│   │   └── i18n/           # 国际化配置
 │   └── package.json
-├── server/                 # Express backend
+├── server/                 # Express 后端
 │   ├── src/
-│   │   ├── controllers/    # Request handlers
-│   │   ├── services/       # Business logic
-│   │   ├── routes/         # API endpoints
-│   │   ├── middleware/     # Express middleware
-│   │   └── utils/          # Utilities
+│   │   ├── controllers/    # 请求处理
+│   │   ├── services/       # 业务逻辑
+│   │   ├── routes/         # API 路由
+│   │   ├── middleware/     # Express 中间件
+│   │   ├── prompts/        # AI 提示词
+│   │   └── utils/          # 工具函数
 │   ├── prisma/
-│   │   └── schema.prisma   # Database schema
+│   │   └── schema.prisma   # 数据库模型
 │   └── package.json
-├── docs/                   # Documentation
-├── e2e/                    # E2E tests
-└── uploads/                # File uploads
+├── docs/                   # 文档
+├── e2e/                    # E2E 测试
+└── uploads/                # 文件上传目录
 ```
 
-## 🛠️ Tech Stack
+## 🛠️ 技术栈
 
-| Frontend | Backend |
-|----------|---------|
+| 前端 | 后端 |
+|------|------|
 | React 19 | Express.js |
 | TypeScript | TypeScript |
 | Vite | Prisma ORM |
 | TailwindCSS v4 | SQLite / PostgreSQL / MySQL |
-| shadcn/ui | JWT Authentication |
+| shadcn/ui | JWT 认证 |
 | Zustand | Swagger/OpenAPI |
-| React Router | Winston Logger |
-| Recharts | Zod Validation |
-| i18next | |
+| React Router | Winston 日志 |
+| Recharts | Zod 验证 |
+| i18next | Vercel AI SDK |
+| @ai-sdk/react | @ai-sdk/openai |
 
-## 📖 Documentation
+## 📖 文档
 
-- [Architecture](./docs/ARCHITECTURE.md) - System architecture and design decisions
-- [API Reference](./docs/API.md) - REST API documentation
-- [Contributing](./docs/CONTRIBUTING.md) - How to contribute
-- [Changelog](./docs/CHANGELOG.md) - Version history
+- [技术架构](./docs/ARCHITECTURE.md) - 系统架构和设计决策
+- [API 文档](./docs/API.md) - REST API 接口文档
+- [贡献指南](./docs/CONTRIBUTING.md) - 如何参与贡献
+- [更新日志](./docs/CHANGELOG.md) - 版本历史
 
-## 🧪 Testing
+## 🧪 测试
 
 ```bash
-# Backend unit tests
+# 后端单元测试
 cd server && npm test
 
-# E2E tests
+# E2E 测试
 npm run test:e2e
 
-# E2E tests with UI
+# E2E 测试（带 UI）
 npm run test:e2e:ui
 ```
 
-## 🤝 Contributing
+## 🤝 参与贡献
 
-We welcome contributions! Please see our [Contributing Guide](./docs/CONTRIBUTING.md) for details.
+欢迎参与贡献！请查看 [贡献指南](./docs/CONTRIBUTING.md) 了解详情。
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'feat: add amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 提交 Pull Request
 
-## 📝 License
+## 📝 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目基于 MIT 许可证开源 - 详见 [LICENSE](LICENSE) 文件。
 
-## 🙏 Acknowledgments
+## 🙏 致谢
 
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
-- [Prisma](https://www.prisma.io/) - Next-generation ORM
-- [Recharts](https://recharts.org/) - Composable charting library
-- [Lucide Icons](https://lucide.dev/) - Beautiful open-source icons
+- [shadcn/ui](https://ui.shadcn.com/) - 精美的 UI 组件库
+- [Prisma](https://www.prisma.io/) - 下一代 ORM
+- [Recharts](https://recharts.org/) - 可组合的图表库
+- [Lucide Icons](https://lucide.dev/) - 美观的开源图标
+- [Vercel AI SDK](https://sdk.vercel.ai/) - AI 应用开发工具包
 
 ---
 
-Made with ❤️ by the Asset Management Team
+由资产管理团队用 ❤️ 打造
