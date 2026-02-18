@@ -258,9 +258,9 @@ export function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
             >
               <div
                 className={cn(
-                  'max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap',
+                  'max-w-[80%] rounded-lg px-4 py-2',
                   message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
                     : 'bg-background border'
                 )}
               >
@@ -277,9 +277,9 @@ export function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
                         plugins={{ code }}
                         caret="block"
                         isAnimating={isLoading && messages.indexOf(message) === messages.length - 1}
-                        className="prose prose-sm dark:prose-invert max-w-none prose-pre:bg-muted prose-pre:p-3 prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs"
+                        className="prose prose-sm dark:prose-invert max-w-none prose-pre:bg-muted prose-pre:p-3 prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs [&_pre:empty]:hidden"
                       >
-                        {message.content}
+                        {message.content.replace(/\n{3,}/g, '\n\n')}
                       </Streamdown>
                     ) : (
                       <span className="whitespace-pre-wrap">{message.content}</span>
