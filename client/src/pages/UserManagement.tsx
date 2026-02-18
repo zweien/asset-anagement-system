@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   userApi,
@@ -8,9 +8,10 @@ import {
   type UserQueryParams,
   type CreateUserDto,
   type UpdateUserDto,
+  type UserImportResult,
 } from '../lib/api'
 import { showSuccess, showError } from '../lib/toast'
-import { Plus, Pencil, Trash2, Key, UserCheck, UserX, Search, RotateCcw, Check, XCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Key, UserCheck, UserX, Search, RotateCcw, Check, XCircle, Download, Upload } from 'lucide-react'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -122,6 +123,13 @@ export function UserManagement() {
   const [newPassword, setNewPassword] = useState('')
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // 导入相关状态
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState<UserImportResult | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadUsers()
@@ -311,6 +319,65 @@ export function UserManagement() {
     }
   }
 
+  // 下载用户导入模板
+  const handleDownloadTemplate = async () => {
+    try {
+      await userApi.downloadTemplate()
+      showSuccess(t('users.templateDownloadSuccess'))
+    } catch (err) {
+      showError(t('users.templateDownloadFailed'), err instanceof Error ? err.message : t('users.unknownError'))
+    }
+  }
+
+  // 处理文件选择
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImportFile(file)
+      setImportResult(null)
+    }
+  }
+
+  // 执行导入
+  const handleImport = async () => {
+    if (!importFile) {
+      showError(t('users.pleaseSelectFile'))
+      return
+    }
+
+    try {
+      setImporting(true)
+      const result = await userApi.importUsers(importFile)
+      setImportResult(result)
+
+      if (result.success && result.data) {
+        showSuccess(t('users.importSuccess', {
+          success: result.data.success,
+          failed: result.data.failed
+        }))
+        if (result.data.success > 0) {
+          loadUsers()
+        }
+      } else {
+        showError(t('users.importFailed'), result.error || t('users.unknownError'))
+      }
+    } catch (err) {
+      showError(t('users.importFailed'), err instanceof Error ? err.message : t('users.unknownError'))
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  // 关闭导入对话框
+  const handleCloseImportModal = () => {
+    setShowImportModal(false)
+    setImportFile(null)
+    setImportResult(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleString('zh-CN', {
@@ -340,10 +407,16 @@ export function UserManagement() {
           <h1 className="text-2xl font-bold text-foreground">{t('users.title')}</h1>
           <p className="mt-1 text-muted-foreground">{t('users.subtitle')}</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          {t('users.addUser')}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowImportModal(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            {t('users.importUsers')}
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            {t('users.addUser')}
+          </Button>
+        </div>
       </div>
 
       {/* 使用说明 */}
@@ -740,6 +813,123 @@ export function UserManagement() {
             </Button>
             <Button onClick={handleResetPassword} disabled={submitting}>
               {submitting ? t('users.resetting') : t('users.confirmReset')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 导入用户对话框 */}
+      <Dialog open={showImportModal} onOpenChange={handleCloseImportModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('users.importUsers')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* 步骤说明 */}
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">1</div>
+                <span className="text-sm">{t('users.importStep1')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">2</div>
+                <span className="text-sm">{t('users.importStep2')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">3</div>
+                <span className="text-sm">{t('users.importStep3')}</span>
+              </div>
+            </div>
+
+            {/* 下载模板 */}
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div>
+                <p className="font-medium">{t('users.downloadTemplate')}</p>
+                <p className="text-sm text-muted-foreground">{t('users.downloadTemplateDesc')}</p>
+              </div>
+              <Button variant="outline" onClick={handleDownloadTemplate}>
+                <Download className="w-4 h-4 mr-2" />
+                {t('users.download')}
+              </Button>
+            </div>
+
+            {/* 文件上传 */}
+            <div className="space-y-2">
+              <Label>{t('users.selectFile')}</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                {importFile ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm">{importFile.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setImportFile(null)
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = ''
+                        }
+                      }}
+                    >
+                      {t('common.remove')}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    {t('users.selectExcelFile')}
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {t('users.supportedFormats')}: .xlsx, .xls
+                </p>
+              </div>
+            </div>
+
+            {/* 导入结果 */}
+            {importResult && (
+              <div className={`p-4 rounded-lg ${importResult.success ? 'bg-green-50 dark:bg-green-950' : 'bg-red-50 dark:bg-red-950'}`}>
+                <p className="font-medium mb-2">{t('users.importResult')}</p>
+                {importResult.data && (
+                  <div className="text-sm space-y-1">
+                    <p className="text-green-600 dark:text-green-400">
+                      {t('users.importSuccessCount')}: {importResult.data.success}
+                    </p>
+                    <p className="text-red-600 dark:text-red-400">
+                      {t('users.importFailedCount')}: {importResult.data.failed}
+                    </p>
+                    {importResult.data.errors.length > 0 && (
+                      <div className="mt-2 max-h-32 overflow-y-auto">
+                        <p className="font-medium">{t('users.errorDetails')}:</p>
+                        <ul className="list-disc list-inside text-xs">
+                          {importResult.data.errors.map((err, idx) => (
+                            <li key={idx}>
+                              {t('users.row')} {err.row}: {err.username ? `${err.username} - ` : ''}{err.error}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {importResult.error && (
+                  <p className="text-sm text-red-600 dark:text-red-400">{importResult.error}</p>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseImportModal}>
+              {t('common.close')}
+            </Button>
+            <Button onClick={handleImport} disabled={!importFile || importing}>
+              {importing ? t('users.importing') : t('users.startImport')}
             </Button>
           </DialogFooter>
         </DialogContent>

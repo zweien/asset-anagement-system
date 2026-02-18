@@ -10,8 +10,26 @@ import {
   updateStatusSchema,
   resetPasswordSchema,
 } from '../validators'
+import multer from 'multer'
 
 const router = Router()
+
+// 配置 multer 用于文件上传
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 限制
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+    ]
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('只支持 Excel 文件 (.xlsx, .xls)'))
+    }
+  },
+})
 
 /**
  * @swagger
@@ -56,6 +74,70 @@ router.use(adminMiddleware)
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/', validate(paginationSchema, 'query'), UserController.getAll)
+
+/**
+ * @swagger
+ * /users/template:
+ *   get:
+ *     summary: 下载用户导入模板
+ *     tags: [用户管理]
+ *     responses:
+ *       200:
+ *         description: Excel 模板文件
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+router.get('/template', UserController.downloadTemplate)
+
+/**
+ * @swagger
+ * /users/import:
+ *   post:
+ *     summary: 批量导入用户
+ *     tags: [用户管理]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: 导入结果
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     success:
+ *                       type: integer
+ *                     failed:
+ *                       type: integer
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           row:
+ *                             type: integer
+ *                           username:
+ *                             type: string
+ *                           error:
+ *                             type: string
+ */
+router.post('/import', upload.single('file'), UserController.importUsers)
 
 /**
  * @swagger

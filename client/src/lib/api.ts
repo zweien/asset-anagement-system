@@ -674,6 +674,62 @@ export const userApi = {
   // 删除用户
   delete: (id: string) =>
     api.delete<{ success: boolean; message?: string; error?: string }>(`/users/${id}`),
+
+  // 下载用户导入模板
+  downloadTemplate: async (): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/users/template`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('下载模板失败')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'user_import_template.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
+
+  // 批量导入用户
+  importUsers: async (file: File): Promise<UserImportResult> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch(`${API_BASE_URL}/users/import`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    })
+
+    return response.json()
+  },
+}
+
+// 用户导入结果类型
+export interface UserImportResult {
+  success: boolean
+  data?: {
+    success: number
+    failed: number
+    errors: Array<{
+      row: number
+      username?: string
+      error: string
+    }>
+  }
+  message?: string
+  error?: string
 }
 
 // 头像上传 API

@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { UserService, CreateUserDto, UpdateUserDto } from '../services/user.service'
 import { LogService } from '../services/log.service'
 import { validatePasswordStrength } from '../services/auth.service'
+import * as XLSX from 'xlsx'
 
 // 统一响应格式
 const sendSuccess = <T>(res: Response, data: T, message?: string) => {
@@ -364,6 +365,153 @@ export const UserController = {
       sendSuccess(res, null, result.message)
     } catch (error) {
       sendError(res, '删除用户失败', 500)
+    }
+  },
+
+  // GET /api/users/template - 下载用户导入模板
+  async downloadTemplate(req: Request, res: Response) {
+    try {
+      // 创建工作簿
+      const workbook = XLSX.utils.book_new()
+
+      // 定义模板数据
+      const templateData = [
+        ['用户名*', '姓名', '邮箱', '角色*', '密码*'],
+        ['zhangsan', '张三', 'zhangsan@example.com', 'USER', 'Password123'],
+        ['lisi', '李四', 'lisi@example.com', 'EDITOR', 'Password123'],
+        ['wangwu', '王五', '', 'USER', 'Password123'],
+      ]
+
+      // 创建工作表
+      const worksheet = XLSX.utils.aoa_to_sheet(templateData)
+
+      // 设置列宽
+      worksheet['!cols'] = [
+        { wch: 15 }, // 用户名
+        { wch: 15 }, // 姓名
+        { wch: 25 }, // 邮箱
+        { wch: 10 }, // 角色
+        { wch: 15 }, // 密码
+      ]
+
+      // 添加工作表到工作簿
+      XLSX.utils.book_append_sheet(workbook, worksheet, '用户导入模板')
+
+      // 生成 Excel 文件
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
+
+      // 设置响应头
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      res.setHeader('Content-Disposition', 'attachment; filename=user_import_template.xlsx')
+
+      res.send(buffer)
+    } catch (error) {
+      sendError(res, '生成模板失败', 500)
+    }
+  },
+
+  // POST /api/users/import - 批量导入用户
+  async importUsers(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return sendError(res, '请上传 Excel 文件')
+      }
+
+      // 解析 Excel 文件
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+
+      if (data.length < 2) {
+        return sendError(res, 'Excel 文件为空或格式不正确')
+      }
+
+      // 跳过标题行
+      const rows = data.slice(1)
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as { row: number; username?: string; error: string }[],
+      }
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        const rowNum = i + 2 // Excel 行号（从 2 开始，1 是标题行）
+
+        // 解析行数据
+        const username = row[0]?.toString().trim()
+        const name = row[1]?.toString().trim() || ''
+        const email = row[2]?.toString().trim() || undefined
+        const role = row[3]?.toString().trim().toUpperCase() || 'USER'
+        const password = row[4]?.toString().trim()
+
+        // 验证必填字段
+        if (!username) {
+          results.failed++
+          results.errors.push({ row: rowNum, error: '用户名不能为空' })
+          continue
+        }
+
+        if (!password) {
+          results.failed++
+          results.errors.push({ row: rowNum, username, error: '密码不能为空' })
+          continue
+        }
+
+        // 验证角色
+        const validRoles = ['ADMIN', 'EDITOR', 'USER']
+        if (!validRoles.includes(role)) {
+          results.failed++
+          results.errors.push({ row: rowNum, username, error: `无效的角色: ${role}，有效角色: ${validRoles.join(', ')}` })
+          continue
+        }
+
+        // 验证密码复杂度
+        const passwordValidation = validatePasswordStrength(password)
+        if (!passwordValidation.valid) {
+          results.failed++
+          results.errors.push({ row: rowNum, username, error: `密码不符合要求: ${passwordValidation.errors.join(', ')}` })
+          continue
+        }
+
+        // 创建用户
+        const result = await UserService.create({
+          username,
+          password,
+          name: name || undefined,
+          email,
+          role,
+        })
+
+        if (result.success) {
+          results.success++
+        } else {
+          results.failed++
+          results.errors.push({ row: rowNum, username, error: result.error || '创建失败' })
+        }
+      }
+
+      // 记录操作日志
+      const operator = getOperatorInfo(req)
+      await LogService.create({
+        action: 'IMPORT',
+        entityType: 'User',
+        userId: operator.userId,
+        userName: operator.userName,
+        newValue: {
+          成功数量: results.success,
+          失败数量: results.failed,
+          总数量: rows.length,
+        },
+        ip: operator.ip,
+        userAgent: operator.userAgent,
+      })
+
+      sendSuccess(res, results, `导入完成：成功 ${results.success} 条，失败 ${results.failed} 条`)
+    } catch (error) {
+      console.error('导入用户失败:', error)
+      sendError(res, '导入用户失败', 500)
     }
   },
 }
