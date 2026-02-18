@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { config } from 'dotenv'
 import swaggerUi from 'swagger-ui-express'
+import path from 'path'
 import routes from './routes'
 import { AuthService } from './services/auth.service'
 import { xssSanitize } from './middleware/xss.middleware'
@@ -22,6 +23,9 @@ app.use(helmet({
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// 静态文件服务 - 用于访问上传的文件（Logo、头像等）
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 // 请求日志中间件
 app.use(requestLogger)
