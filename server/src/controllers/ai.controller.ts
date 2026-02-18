@@ -62,14 +62,16 @@ export const chat = async (req: Request, res: Response) => {
     }
 
     try {
-      while (true) {
-        const { done, value } = await reader.read()
+      let done = false
+      while (!done) {
+        const result = await reader.read()
+        done = result.done
         if (done) {
           res.write('data: [DONE]\n\n')
           break
         }
         // 将数据作为 SSE 事件发送
-        const chunk = new TextDecoder().decode(value)
+        const chunk = new TextDecoder().decode(result.value)
         res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`)
       }
     } finally {
