@@ -221,6 +221,7 @@ function parseOptions(optionsStr: string | null | undefined): string[] {
 interface ColumnFilterDropdownProps {
   isOpen: boolean
   anchorRef: React.RefObject<HTMLButtonElement | null>
+  columnId: string
   columnName: string
   fieldType: FieldType | null
   fieldForColumn: FieldConfig | undefined
@@ -237,6 +238,7 @@ interface ColumnFilterDropdownProps {
 function ColumnFilterDropdown({
   isOpen,
   anchorRef,
+  columnId,
   columnName,
   fieldType,
   fieldForColumn,
@@ -383,15 +385,24 @@ function ColumnFilterDropdown({
         />
       )}
 
-      {needsValueInput && fieldType === 'SELECT' && fieldForColumn?.options && (
+      {needsValueInput && fieldType === 'SELECT' && (fieldForColumn?.options || columnId === 'status') && (
         <Select value={filterValue as string} onValueChange={setFilterValue}>
           <SelectTrigger className="w-full mb-2">
             <SelectValue placeholder={t('common.all')} />
           </SelectTrigger>
           <SelectContent>
-            {parseOptions(fieldForColumn.options).map((opt) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-            ))}
+            {columnId === 'status' ? (
+              <>
+                <SelectItem value="ACTIVE">{t('assets.statusActive')}</SelectItem>
+                <SelectItem value="IDLE">{t('assets.statusIdle')}</SelectItem>
+                <SelectItem value="DAMAGED">{t('assets.statusDamaged')}</SelectItem>
+                <SelectItem value="SCRAPPED">{t('assets.statusScrapped')}</SelectItem>
+              </>
+            ) : (
+              parseOptions(fieldForColumn?.options || '').map((opt) => (
+                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       )}
@@ -1442,12 +1453,13 @@ export function Assets() {
                     const getFieldType = (): FieldType | null => {
                       if (columnId === 'createdAt') return 'DATE'
                       if (columnId === 'name' || columnId === 'code') return 'TEXT'
+                      if (columnId === 'status') return 'SELECT'
                       return fieldForColumn?.type as FieldType || null
                     }
                     const fieldType = getFieldType()
 
                     const getColumnName = () => {
-                      if (columnId === 'createdAt' || columnId === 'name' || columnId === 'code') return columnId
+                      if (columnId === 'createdAt' || columnId === 'name' || columnId === 'code' || columnId === 'status') return columnId
                       return fieldForColumn?.name || ''
                     }
                     const columnName = getColumnName()
@@ -1571,6 +1583,7 @@ export function Assets() {
                         <ColumnFilterDropdown
                           isOpen={activeFilterColumn === columnId}
                           anchorRef={{ current: filterButtonRefs.current[columnId] || null }}
+                          columnId={columnId}
                           columnName={typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : columnId}
                           fieldType={fieldType}
                           fieldForColumn={fieldForColumn}
