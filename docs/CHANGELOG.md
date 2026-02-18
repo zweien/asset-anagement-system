@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-19
+
+### Added
+- **AI Custom Field Queries** - AI can now query and analyze custom fields stored in JSON
+  - Automatic field configuration included in system prompt
+  - Uses SQLite `json_extract()` function for JSON field queries
+  - Full support for TEXT, NUMBER, DATE, SELECT, MULTISELECT field types
+- **User Batch Import** - Import multiple users at once via Excel template
+  - Download pre-configured Excel template with all required fields
+  - Upload and parse Excel file for batch user creation
+  - Validation and error reporting for invalid entries
+  - Success/failure summary after import
+
+### Fixed
+- **Markdown Rendering** - Removed extra whitespace before tables in AI chat responses
+- **i18n Translations** - Added missing `close` and `remove` translation keys
+
+### Technical Details
+- Enhanced AI system prompt with field configuration and JSON query guidance
+- Added multer file upload for user import endpoint
+- Added xlsx library for Excel template generation and parsing
+
 ## [1.2.0] - 2026-02-18
 
 ### Added
@@ -153,6 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.3.0 | 2026-02-19 | AI custom field queries, user batch import |
 | 1.2.0 | 2026-02-18 | API endpoint selection, Markdown rendering, Chat export |
 | 1.1.0 | 2026-02-18 | AI assistant integration, frontend LLM configuration |
 | 1.0.3 | 2026-02-18 | User avatar, system branding, filter enhancements |
@@ -170,7 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Advanced reporting with export to PDF
 - Batch operations with progress tracking
 
-### [1.3.0] - Planned
+### [1.4.0] - Planned
 - Docker containerization
 - CI/CD pipeline with GitHub Actions
 - Plugin system for custom extensions
@@ -179,6 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.3.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.3.0
+[1.2.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.2.0
 [1.1.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.1.0
 [1.0.3]: https://github.com/zweien/asset-management-system/releases/tag/v1.0.3
 [1.0.2]: https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.2

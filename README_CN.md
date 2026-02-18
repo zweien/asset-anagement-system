@@ -1,6 +1,6 @@
 # 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.2.0)
+[![Version](https://img.shields.io/badge/version-1.3.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.3.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -8,7 +8,7 @@
 
 一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 版本 1.2.0 发布！** - 新增 API 端点类型选择、Markdown 渲染、对话导出功能。
+**🎉 版本 1.3.0 发布！** - 新增 AI 自定义字段查询、用户批量导入功能。
 
 [English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 
@@ -26,7 +26,7 @@
 - 🔍 **SQL 查询** - 管理员可直接执行安全的 SQL 查询
 - 🌐 **国际化** - 完整的中英文翻译支持
 - 🌓 **深色模式** - 内置主题切换，支持系统偏好检测
-- 🔐 **基于角色的访问控制** - 管理员、录入员、普通用户三种角色
+- 🔐 **基于角色的访问控制** - 管理员、录入员、普通用户三种角色，支持 Excel 批量导入用户
 - 📝 **操作日志** - 完整的操作历史和变更追踪
 - 💾 **备份与恢复** - 数据库备份和恢复功能
 - 📱 **响应式设计** - 基于 shadcn/ui 的移动端友好界面
@@ -41,6 +41,7 @@ AI 助手支持自然语言交互，让数据查询更简单：
 - **流式响应** - 实时显示 AI 回复
 - **Markdown 渲染** - 表格、代码块、列表等富文本展示
 - **对话导出** - 支持 Markdown 和 JSON 格式导出
+- **自定义字段查询** - AI 能理解和查询存储在 JSON 中的动态自定义字段
 - **安全可控** - 仅执行 SELECT 查询，支持限流
 - **多 API 兼容** - 支持 Chat Completions 和 Responses API 两种端点
 

@@ -1,6 +1,6 @@
 # Asset Management System
 
-[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.2.0)
+[![Version](https://img.shields.io/badge/version-1.3.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.3.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -8,7 +8,7 @@
 
 A modern, full-stack asset management system with dynamic field configuration, Excel import/export, AI assistant, and comprehensive reporting capabilities.
 
-**🎉 Version 1.2.0 Released!** - Added API endpoint selection, Markdown rendering, and chat export.
+**🎉 Version 1.3.0 Released!** - Added AI custom field queries, user batch import with Excel template.
 
 [中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
@@ -26,7 +26,7 @@ A modern, full-stack asset management system with dynamic field configuration, E
 - 🔍 **SQL Query** - Admin users can execute safe SQL queries directly
 - 🌐 **Internationalization** - Full i18n support with Chinese and English translations
 - 🌓 **Dark Mode** - Built-in theme switching with system preference detection
-- 🔐 **Role-Based Access Control** - Admin, Editor, and User roles with granular permissions
+- 🔐 **Role-Based Access Control** - Admin, Editor, and User roles with granular permissions, batch user import via Excel
 - 📝 **Audit Logging** - Complete operation history with change tracking
 - 💾 **Backup & Restore** - Database backup and restore functionality
 - 📱 **Responsive Design** - Mobile-friendly UI built with shadcn/ui
@@ -41,6 +41,7 @@ The AI assistant enables natural language interaction for easier data queries:
 - **Streaming Responses** - Real-time AI replies
 - **Markdown Rendering** - Tables, code blocks, and lists properly formatted
 - **Chat Export** - Export conversations as Markdown or JSON
+- **Custom Field Queries** - AI understands and queries dynamic custom fields stored in JSON
 - **Safe & Controlled** - SELECT-only queries with rate limiting
 - **Multi-API Support** - Chat Completions and Responses API endpoints
 
