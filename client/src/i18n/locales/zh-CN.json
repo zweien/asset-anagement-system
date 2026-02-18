@@ -191,7 +191,11 @@
     "aiModel": "模型名称",
     "aiMaxTokens": "最大 Token 数",
     "aiConfigSaveSuccess": "AI 配置保存成功",
-    "aiConfigSaveFailed": "AI 配置保存失败"
+    "aiConfigSaveFailed": "AI 配置保存失败",
+    "aiTest": "测试连接",
+    "aiTesting": "测试中...",
+    "aiTestSuccess": "AI 配置验证成功",
+    "aiTestFailed": "AI 配置验证失败"
   },
   "users": {
     "title": "用户管理",

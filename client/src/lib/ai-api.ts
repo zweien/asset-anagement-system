@@ -133,4 +133,22 @@ export const aiApi = {
   }>): Promise<{ success: boolean; data?: AIConfig; error?: string; message?: string }> {
     return axiosInstance.put('/ai/config', config)
   },
+
+  // 测试 AI 配置连接
+  async testConfig(config?: Partial<{
+    apiKey: string
+    baseUrl: string
+    model: string
+  }>): Promise<{
+    success: boolean
+    data?: {
+      success: boolean
+      message: string
+      model?: string
+      responseTime?: number
+    }
+    error?: string
+  }> {
+    return axiosInstance.post('/ai/config/test', config || {})
+  },
 }

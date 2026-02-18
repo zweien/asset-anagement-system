@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { authMiddleware, adminMiddleware } from '../middleware/auth.middleware'
 import { aiRateLimitMiddleware } from '../middleware/ai-rate-limit'
-import { chat, getStatus, getConfig, updateConfig } from '../controllers/ai.controller'
+import { chat, getStatus, getConfig, updateConfig, testConfig } from '../controllers/ai.controller'
 
 const router = Router()
 
@@ -19,5 +19,8 @@ router.get('/config', adminMiddleware, getConfig)
 
 // 更新 AI 配置 - 仅管理员可访问
 router.put('/config', adminMiddleware, updateConfig)
+
+// 测试 AI 配置连接 - 仅管理员可访问
+router.post('/config/test', adminMiddleware, testConfig)
 
 export default router

@@ -196,3 +196,37 @@ export const updateConfig = async (req: Request, res: Response) => {
     })
   }
 }
+
+// 测试 AI 配置连接（仅管理员）
+export const testConfig = async (req: Request, res: Response) => {
+  try {
+    const { apiKey, baseUrl, model } = req.body
+
+    // 构建测试配置（只使用提供的值）
+    const testConfig: { apiKey?: string; baseUrl?: string; model?: string } = {}
+
+    if (apiKey && !apiKey.includes('...')) {
+      testConfig.apiKey = apiKey
+    }
+    if (baseUrl) {
+      testConfig.baseUrl = baseUrl
+    }
+    if (model) {
+      testConfig.model = model
+    }
+
+    const result = await AIService.testConnection(
+      Object.keys(testConfig).length > 0 ? testConfig : undefined
+    )
+
+    return res.json({
+      success: result.success,
+      data: result,
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : '测试连接失败',
+    })
+  }
+}

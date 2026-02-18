@@ -191,7 +191,11 @@
     "aiModel": "Model Name",
     "aiMaxTokens": "Max Tokens",
     "aiConfigSaveSuccess": "AI configuration saved successfully",
-    "aiConfigSaveFailed": "Failed to save AI configuration"
+    "aiConfigSaveFailed": "Failed to save AI configuration",
+    "aiTest": "Test Connection",
+    "aiTesting": "Testing...",
+    "aiTestSuccess": "AI configuration verified successfully",
+    "aiTestFailed": "AI configuration verification failed"
   },
   "users": {
     "title": "User Management",

@@ -105,4 +105,70 @@ export const AIService = {
       // 不返回 API Key
     }
   },
+
+  // 验证 AI 配置是否有效
+  async testConnection(config?: Partial<AIConfig>): Promise<{
+    success: boolean
+    message: string
+    model?: string
+    responseTime?: number
+  }> {
+    try {
+      const testConfig = config
+        ? { ...await this.getConfig(), ...config }
+        : await this.getConfig()
+
+      if (!testConfig.apiKey) {
+        return {
+          success: false,
+          message: 'API Key 未配置',
+        }
+      }
+
+      const openai = createOpenAI({
+        apiKey: testConfig.apiKey,
+        baseURL: testConfig.baseUrl,
+      })
+
+      const startTime = Date.now()
+
+      // 发送一个简单的测试请求
+      const response = await fetch(`${testConfig.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${testConfig.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: testConfig.model,
+          messages: [{ role: 'user', content: 'Hi' }],
+          max_tokens: 5,
+        }),
+      })
+
+      const responseTime = Date.now() - startTime
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({})) as { error?: { message?: string } }
+        const errorMessage = errorData.error?.message || `HTTP ${response.status}`
+        return {
+          success: false,
+          message: `连接失败: ${errorMessage}`,
+          responseTime,
+        }
+      }
+
+      return {
+        success: true,
+        message: '连接成功',
+        model: testConfig.model,
+        responseTime,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : '连接测试失败',
+      }
+    }
+  },
 }

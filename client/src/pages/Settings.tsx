@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload, Sparkles, Eye as EyeIcon } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload, Sparkles, Eye as EyeIcon, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { fieldApi, FIELD_TYPES, systemConfigApi, hasPermission, getStoredUser } from '../lib/api'
 import { aiApi } from '../lib/ai-api'
 import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto, UserRole } from '../lib/api'
@@ -235,6 +235,12 @@ export function Settings() {
   })
   const [showApiKey, setShowApiKey] = useState(false)
   const [savingAIConfig, setSavingAIConfig] = useState(false)
+  const [testingAIConfig, setTestingAIConfig] = useState(false)
+  const [testResult, setTestResult] = useState<{
+    success: boolean
+    message: string
+    responseTime?: number
+  } | null>(null)
 
   // 权限检查
   const currentUser = getStoredUser()
@@ -298,6 +304,8 @@ export function Settings() {
         loadAIConfig()
         // 清空 API Key 输入
         setAIConfigForm(prev => ({ ...prev, apiKey: '' }))
+        // 清空测试结果
+        setTestResult(null)
       } else {
         showError(response.error || t('settings.aiConfigSaveFailed'))
       }
@@ -305,6 +313,53 @@ export function Settings() {
       showError(err instanceof Error ? err.message : t('settings.aiConfigSaveFailed'))
     } finally {
       setSavingAIConfig(false)
+    }
+  }
+
+  // 测试 AI 配置连接
+  const handleTestAIConfig = async () => {
+    setTestingAIConfig(true)
+    setTestResult(null)
+    try {
+      // 构建测试配置
+      const testConfig: Partial<{ apiKey: string; baseUrl: string; model: string }> = {
+        baseUrl: aiConfigForm.baseUrl,
+        model: aiConfigForm.model,
+      }
+
+      // 如果输入了新的 API Key，使用新值测试
+      if (aiConfigForm.apiKey.trim()) {
+        testConfig.apiKey = aiConfigForm.apiKey.trim()
+      }
+
+      const response = await aiApi.testConfig(testConfig)
+      if (response.success && response.data) {
+        setTestResult({
+          success: response.data.success,
+          message: response.data.message,
+          responseTime: response.data.responseTime,
+        })
+        if (response.data.success) {
+          showSuccess(t('settings.aiTestSuccess'))
+        } else {
+          showError(response.data.message)
+        }
+      } else {
+        setTestResult({
+          success: false,
+          message: response.error || t('settings.aiTestFailed'),
+        })
+        showError(response.error || t('settings.aiTestFailed'))
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t('settings.aiTestFailed')
+      setTestResult({
+        success: false,
+        message: errorMessage,
+      })
+      showError(errorMessage)
+    } finally {
+      setTestingAIConfig(false)
     }
   }
 
@@ -634,14 +689,47 @@ export function Settings() {
             </div>
 
             {/* 保存按钮 */}
-            <div className="flex justify-end pt-2">
-              <Button
-                onClick={handleSaveAIConfig}
-                disabled={savingAIConfig}
-              >
-                <Save className="w-4 h-4 mr-1" />
-                {savingAIConfig ? t('common.processing') : t('common.save')}
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
+              {/* 测试结果 */}
+              {testResult && (
+                <div className={`flex items-center gap-2 text-sm ${
+                  testResult.success ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {testResult.success ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  <span>{testResult.message}</span>
+                  {testResult.responseTime && (
+                    <span className="text-muted-foreground">
+                      ({testResult.responseTime}ms)
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleTestAIConfig}
+                  disabled={testingAIConfig}
+                >
+                  {testingAIConfig ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-1" />
+                  )}
+                  {testingAIConfig ? t('settings.aiTesting') : t('settings.aiTest')}
+                </Button>
+                <Button
+                  onClick={handleSaveAIConfig}
+                  disabled={savingAIConfig}
+                >
+                  <Save className="w-4 h-4 mr-1" />
+                  {savingAIConfig ? t('common.processing') : t('common.save')}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
