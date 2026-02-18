@@ -26,7 +26,9 @@
     "selectAll": "全选",
     "selectRow": "选择行",
     "clearSelection": "取消选择",
-    "batchDelete": "批量删除"
+    "batchDelete": "批量删除",
+    "close": "关闭",
+    "remove": "移除"
   },
   "nav": {
     "dashboard": "仪表盘",
