@@ -275,6 +275,30 @@
     "passes": true
   },
   {
+    "id": "ASSET-009",
+    "category": "functional",
+    "priority": "medium",
+    "description": "SQL查询功能 - 资产管理页面支持SQL语言查询",
+    "steps": [
+      "后端：创建SQL查询API（仅允许SELECT语句）",
+      "后端：限制可查询的表（仅Asset相关表）",
+      "后端：SQL注入防护验证",
+      "后端：查询结果格式化处理",
+      "前端：添加SQL查询输入框",
+      "前端：显示查询结果",
+      "前端：权限控制（仅管理员）",
+      "编写测试用例"
+    ],
+    "acceptance_criteria": [
+      "支持SELECT查询语句",
+      "禁止INSERT/UPDATE/DELETE等危险操作",
+      "仅管理员可使用此功能",
+      "查询结果正确显示",
+      "SQL注入攻击被有效阻止"
+    ],
+    "passes": true
+  },
+  {
     "id": "IMPORT-001",
     "category": "functional",
     "priority": "medium",

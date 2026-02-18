@@ -451,5 +451,21 @@
     "createdAt": "Created At",
     "confirmRestore": "Are you sure you want to restore this backup? Current data will be overwritten.",
     "confirmDelete": "Are you sure you want to delete this backup?"
+  },
+  "sqlQuery": {
+    "title": "SQL Query",
+    "button": "SQL Query",
+    "description": "Enter SQL SELECT statement to query data (read-only)",
+    "adminOnly": "Admin only",
+    "placeholder": "SELECT * FROM assets WHERE status = 'ACTIVE' LIMIT 10",
+    "execute": "Execute",
+    "executing": "Executing...",
+    "emptyQuery": "Please enter a SQL query",
+    "executeFailed": "Query execution failed",
+    "rowCount": "{{count}} records returned",
+    "executionTime": "Took {{time}}ms",
+    "noResults": "Query successful, but no data returned",
+    "resultLimited": "Showing first {{count}} of {{total}} records",
+    "allowedTables": "Allowed tables"
   }
 }

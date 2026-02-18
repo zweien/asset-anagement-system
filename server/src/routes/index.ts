@@ -11,6 +11,7 @@ import authRouter from './auth'
 import usersRouter from './users'
 import backupRouter from './backup'
 import systemConfigRouter from './system-config'
+import sqlQueryRouter from './sql-query'
 
 const router = Router()
 
@@ -58,5 +59,8 @@ router.use('/backup', backupRouter)
 
 // 系统配置路由
 router.use('/system-config', systemConfigRouter)
+
+// SQL 查询路由（仅管理员）
+router.use('/sql-query', sqlQueryRouter)
 
 export default router

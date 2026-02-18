@@ -11,8 +11,8 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table'
 import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink } from 'lucide-react'
-import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser } from '../lib/api'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2 } from 'lucide-react'
+import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi } from '../lib/api'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
@@ -461,6 +461,18 @@ export function Assets() {
   const [columnFilterValue, setColumnFilterValue] = useState<string | number | { min?: number; max?: number; startDate?: string; endDate?: string }>('')
   const filterButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
+  // SQL 查询状态
+  const [showSqlQuery, setShowSqlQuery] = useState(false)
+  const [sqlQuery, setSqlQuery] = useState('')
+  const [sqlResult, setSqlResult] = useState<Array<Record<string, unknown>> | null>(null)
+  const [sqlColumns, setSqlColumns] = useState<string[]>([])
+  const [sqlError, setSqlError] = useState('')
+  const [sqlExecuting, setSqlExecuting] = useState(false)
+  const [sqlExecutionTime, setSqlExecutionTime] = useState<number | null>(null)
+
+  // 是否为管理员
+  const isAdmin = currentUser?.role === 'ADMIN'
+
   // 导出数据
   const handleExport = async (format: 'excel' | 'csv') => {
     try {
@@ -878,6 +890,43 @@ export function Assets() {
     setRowSelection({})
   }
 
+  // 执行 SQL 查询
+  const executeSqlQuery = async () => {
+    if (!sqlQuery.trim()) {
+      setSqlError(t('sqlQuery.emptyQuery'))
+      return
+    }
+
+    setSqlExecuting(true)
+    setSqlError('')
+    setSqlResult(null)
+
+    try {
+      const result = await sqlQueryApi.execute(sqlQuery)
+      if (result.success) {
+        setSqlResult(result.data || [])
+        setSqlColumns(result.columns || [])
+        setSqlExecutionTime(result.executionTime || null)
+      } else {
+        setSqlError(result.error || t('sqlQuery.executeFailed'))
+      }
+    } catch (err) {
+      setSqlError(err instanceof Error ? err.message : t('sqlQuery.executeFailed'))
+    } finally {
+      setSqlExecuting(false)
+    }
+  }
+
+  // 关闭 SQL 查询对话框
+  const closeSqlQuery = () => {
+    setShowSqlQuery(false)
+    setSqlQuery('')
+    setSqlResult(null)
+    setSqlColumns([])
+    setSqlError('')
+    setSqlExecutionTime(null)
+  }
+
   return (
     <div className="space-y-4">
       {/* 头部 */}
@@ -1070,6 +1119,18 @@ export function Assets() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* SQL 查询按钮 - 仅管理员可见 */}
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => setShowSqlQuery(true)}
+                title={t('sqlQuery.title')}
+              >
+                <Code2 className="w-4 h-4 mr-1" />
+                {t('sqlQuery.button')}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1700,6 +1761,102 @@ export function Assets() {
         assetName={uploadAsset?.name || ''}
         onSuccess={viewMode === 'group' ? loadGroupedData : loadData}
       />
+
+      {/* SQL 查询对话框 */}
+      <Dialog open={showSqlQuery} onOpenChange={(open) => !open && closeSqlQuery()}>
+        <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Code2 className="w-5 h-5" />
+              {t('sqlQuery.title')}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-hidden flex flex-col gap-4">
+            {/* SQL 输入区 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t('sqlQuery.description')}</span>
+                <span className="text-xs text-muted-foreground">{t('sqlQuery.adminOnly')}</span>
+              </div>
+              <textarea
+                value={sqlQuery}
+                onChange={(e) => setSqlQuery(e.target.value)}
+                placeholder={t('sqlQuery.placeholder')}
+                className="w-full h-32 p-3 font-mono text-sm border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                spellCheck={false}
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{t('sqlQuery.allowedTables')}: assets, categories, field_configs, asset_images, operation_logs, users, system_configs</span>
+                <Button onClick={executeSqlQuery} disabled={sqlExecuting || !sqlQuery.trim()}>
+                  {sqlExecuting ? t('sqlQuery.executing') : t('sqlQuery.execute')}
+                </Button>
+              </div>
+            </div>
+
+            {/* 错误提示 */}
+            {sqlError && (
+              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {sqlError}
+              </div>
+            )}
+
+            {/* 执行时间和行数 */}
+            {sqlResult !== null && (
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>{t('sqlQuery.rowCount', { count: sqlResult.length })}</span>
+                {sqlExecutionTime !== null && (
+                  <span>{t('sqlQuery.executionTime', { time: sqlExecutionTime })}</span>
+                )}
+              </div>
+            )}
+
+            {/* 结果展示区 */}
+            {sqlResult !== null && sqlResult.length > 0 && (
+              <div className="flex-1 overflow-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {sqlColumns.map((col) => (
+                        <TableHead key={col} className="whitespace-nowrap">{col}</TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sqlResult.slice(0, 100).map((row, idx) => (
+                      <TableRow key={idx}>
+                        {sqlColumns.map((col) => (
+                          <TableCell key={col} className="whitespace-nowrap max-w-[200px] truncate">
+                            {typeof row[col] === 'object' ? JSON.stringify(row[col]) : String(row[col] ?? '')}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {sqlResult.length > 100 && (
+                  <div className="p-2 text-center text-sm text-muted-foreground bg-muted/50">
+                    {t('sqlQuery.resultLimited', { count: 100, total: sqlResult.length })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 空结果 */}
+            {sqlResult !== null && sqlResult.length === 0 && (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                {t('sqlQuery.noResults')}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeSqlQuery}>
+              {t('common.close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

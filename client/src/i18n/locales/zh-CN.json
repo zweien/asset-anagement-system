@@ -451,5 +451,21 @@
     "createdAt": "创建时间",
     "confirmRestore": "确定要恢复这个备份吗？当前数据将被覆盖。",
     "confirmDelete": "确定要删除这个备份吗？"
+  },
+  "sqlQuery": {
+    "title": "SQL 查询",
+    "button": "SQL查询",
+    "description": "输入 SQL SELECT 语句查询数据（仅允许查询操作）",
+    "adminOnly": "仅管理员可用",
+    "placeholder": "SELECT * FROM assets WHERE status = 'ACTIVE' LIMIT 10",
+    "execute": "执行查询",
+    "executing": "执行中...",
+    "emptyQuery": "请输入 SQL 查询语句",
+    "executeFailed": "查询执行失败",
+    "rowCount": "返回 {{count}} 条记录",
+    "executionTime": "耗时 {{time}}ms",
+    "noResults": "查询成功，但没有返回数据",
+    "resultLimited": "仅显示前 {{count}} 条（共 {{total}} 条）",
+    "allowedTables": "允许查询的表"
   }
 }

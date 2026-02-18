@@ -748,3 +748,33 @@ export const systemConfigApi = {
   setSystemName: (name: string) =>
     api.put<{ success: boolean; data: { name: string } }>('/system-config/name', { name }),
 }
+
+// SQL 查询相关类型
+export interface SqlQueryResult {
+  success: boolean
+  data?: Array<Record<string, unknown>>
+  error?: string
+  rowCount?: number
+  columns?: string[]
+  executionTime?: number
+}
+
+export interface TableSchema {
+  name: string
+  type: string
+}
+
+// SQL 查询 API
+export const sqlQueryApi = {
+  // 执行 SQL 查询
+  execute: (sql: string) =>
+    api.post<SqlQueryResult>('/sql-query/execute', { sql }),
+
+  // 获取允许查询的表列表
+  getAllowedTables: () =>
+    api.get<{ success: boolean; data: string[] }>('/sql-query/tables'),
+
+  // 获取表结构
+  getTableSchema: (tableName: string) =>
+    api.get<{ success: boolean; data: TableSchema[] }>(`/sql-query/tables/${tableName}/schema`),
+}
