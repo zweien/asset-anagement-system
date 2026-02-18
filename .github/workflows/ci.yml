@@ -32,6 +32,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./test.db"
+      JWT_SECRET: "test-secret-key-for-ci"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,6 +52,9 @@ jobs:
 
       - name: Generate Prisma client
         run: cd server && npm run db:generate
+
+      - name: Setup test database
+        run: cd server && npm run db:push
 
       - name: Run backend tests
         run: cd server && npm test
