@@ -2,6 +2,45 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-18 - 会话 9 (SQL查询功能)
+
+### 完成的工作
+- [x] ASSET-009: SQL查询功能 - 资产管理页面支持SQL语言查询
+
+### 实现细节
+
+**ASSET-009 SQL查询功能**
+- 后端 API：
+  - POST /api/sql-query/execute - 执行SQL查询
+  - GET /api/sql-query/tables - 获取允许查询的表列表
+  - GET /api/sql-query/tables/:tableName/schema - 获取表结构
+- 安全措施：
+  - 只允许 SELECT 查询语句
+  - 禁止 INSERT/UPDATE/DELETE/DROP 等危险操作
+  - SQL注入检测模式（UNION注入、永真条件、注释等）
+  - 表白名单限制（assets, categories, field_configs等）
+  - 结果数量限制（最大5000条）
+  - 敏感字段过滤（password, token等）
+  - 仅管理员可用
+- 前端：
+  - 资产管理页面工具栏添加"SQL查询"按钮
+  - SQL查询对话框支持输入和执行
+  - 结果以表格形式展示
+  - 显示执行时间和行数统计
+- 测试：
+  - 21个单元测试全部通过
+  - 浏览器自动化测试通过
+
+### Git 提交记录
+1. feat(asset): add SQL query feature for admin users
+
+### 当前状态
+- 进度: 64/64 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+
+---
+
 ## 2026-02-18 - 会话 8 (UI增强和用户头像功能)
 
 ### 完成的工作
