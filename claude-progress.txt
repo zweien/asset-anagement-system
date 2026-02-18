@@ -43,6 +43,14 @@
 1. feat(ui): enhance filter icon highlight with animation
 2. feat(ui): add clear all filters button
 3. feat(user): add avatar and system logo support
+4. fix: 为状态字段添加筛选按钮功能
+
+### Bug 修复
+- **状态字段筛选功能修复**: 发现并修复了状态字段缺少筛选按钮的问题
+  - 原因: getFieldType() 未处理 status 列
+  - 原因: SELECT 下拉框判断使用 columnName 而非 columnId
+  - 解决: 添加 columnId 属性用于正确识别状态列
+  - 状态筛选显示正确的选项(在用/闲置/损坏/已报废)
 
 ### 当前状态
 - 进度: 62/62 功能通过 (100%) ✅

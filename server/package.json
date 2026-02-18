@@ -1,6 +1,6 @@
 {
   "name": "asset-management-server",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "资产录入管理系统 - 后端服务",
   "main": "dist/index.js",
   "scripts": {
