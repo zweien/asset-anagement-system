@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock } from 'lucide-react'
-import { fieldApi, FIELD_TYPES } from '../lib/api'
-import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto } from '../lib/api'
+import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload } from 'lucide-react'
+import { fieldApi, FIELD_TYPES, systemConfigApi, hasPermission, getStoredUser } from '../lib/api'
+import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto, UserRole } from '../lib/api'
 import { showSuccess, showError, showWarning } from '../lib/toast'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+
+const API_BASE = 'http://localhost:3002'
 
 // 字段表单组件
 function FieldForm({
@@ -214,6 +216,83 @@ export function Settings() {
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
 
+  // 系统设置状态
+  const [systemLogo, setSystemLogo] = useState<string | null>(null)
+  const [systemName, setSystemName] = useState<string>('')
+  const [systemNameInput, setSystemNameInput] = useState<string>('')
+  const [savingName, setSavingName] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
+  // 权限检查
+  const currentUser = getStoredUser()
+  const isAdmin = hasPermission(currentUser?.role as UserRole, 'user:manage')
+
+  // 加载系统配置
+  const loadSystemConfig = async () => {
+    try {
+      const response = await systemConfigApi.getPublicConfig()
+      if (response.success) {
+        setSystemLogo(response.data.logo)
+        setSystemName(response.data.name)
+        setSystemNameInput(response.data.name)
+      }
+    } catch (err) {
+      console.error('加载系统配置失败:', err)
+    }
+  }
+
+  // 上传 Logo
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 验证文件类型
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+    if (!allowedTypes.includes(file.type)) {
+      showError(t('settings.invalidFileType'))
+      return
+    }
+
+    // 验证文件大小 (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showError(t('settings.fileTooLarge'))
+      return
+    }
+
+    try {
+      const response = await systemConfigApi.uploadLogo(file)
+      if (response.success) {
+        setSystemLogo(response.data.logo)
+        showSuccess(t('settings.logoUploadSuccess'))
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('settings.logoUploadFailed'))
+    }
+
+    // 清空 input
+    if (logoInputRef.current) {
+      logoInputRef.current.value = ''
+    }
+  }
+
+  // 更新系统名称
+  const handleSaveSystemName = async () => {
+    if (!systemNameInput.trim()) return
+
+    setSavingName(true)
+    try {
+      const response = await systemConfigApi.setSystemName(systemNameInput.trim())
+      if (response.success) {
+        setSystemName(systemNameInput.trim())
+        showSuccess(t('settings.systemNameUpdateSuccess'))
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('settings.systemNameUpdateFailed'))
+    } finally {
+      setSavingName(false)
+    }
+  }
+
   // 加载字段列表
   const loadFields = async () => {
     try {
@@ -233,6 +312,7 @@ export function Settings() {
 
   useEffect(() => {
     loadFields()
+    loadSystemConfig()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -312,6 +392,80 @@ export function Settings() {
         <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg">
           {error}
         </div>
+      )}
+
+      {/* 系统设置卡片（仅管理员可见） */}
+      {isAdmin && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="flex items-center gap-2">
+              <Image className="w-5 h-5" />
+              {t('settings.systemSettings')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* 系统Logo */}
+            <div className="flex items-center gap-6">
+              <div className="flex-shrink-0">
+                {systemLogo ? (
+                  <img
+                    src={`${API_BASE}${systemLogo}`}
+                    alt={systemName || 'Logo'}
+                    className="w-16 h-16 object-contain rounded-lg border"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                    <Image className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <Label className="text-sm font-medium">{t('settings.systemLogo')}</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {t('settings.uploadLogo')}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-1" />
+                  {t('settings.uploadLogo')}
+                </Button>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* 系统名称 */}
+            <div className="space-y-2">
+              <Label htmlFor="system-name" className="text-sm font-medium">
+                {t('settings.systemName')}
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="system-name"
+                  value={systemNameInput}
+                  onChange={(e) => setSystemNameInput(e.target.value)}
+                  placeholder={t('header.appName')}
+                  className="max-w-xs"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveSystemName}
+                  disabled={savingName || systemNameInput === systemName}
+                >
+                  {savingName ? t('common.processing') : t('common.save')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* 字段列表 */}

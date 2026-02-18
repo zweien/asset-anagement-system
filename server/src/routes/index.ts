@@ -10,6 +10,7 @@ import reportRouter from './report'
 import authRouter from './auth'
 import usersRouter from './users'
 import backupRouter from './backup'
+import systemConfigRouter from './system-config'
 
 const router = Router()
 
@@ -54,5 +55,8 @@ router.use('/users', usersRouter)
 
 // 备份路由（仅管理员）
 router.use('/backup', backupRouter)
+
+// 系统配置路由
+router.use('/system-config', systemConfigRouter)
 
 export default router

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { authApi } from '@/lib/api'
 
 // 用户类型 - 与后端返回的数据结构一致
 export interface User {
@@ -7,6 +8,7 @@ export interface User {
   username: string
   name: string | null
   email: string | null
+  avatar: string | null
   role: string
 }
 
@@ -16,12 +18,13 @@ interface AuthState {
   isAuthenticated: boolean
   setAuth: (token: string, user: User) => void
   updateUser: (user: Partial<User>) => void
+  refreshUser: () => Promise<void>
   logout: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
       isAuthenticated: false,
@@ -38,6 +41,21 @@ export const useAuthStore = create<AuthState>()(
           localStorage.setItem('user', JSON.stringify(updatedUser))
           return { user: updatedUser }
         })
+      },
+      refreshUser: async () => {
+        const { token } = get()
+        if (!token) return
+
+        try {
+          const response = await authApi.getCurrentUser()
+          if (response.success && response.data) {
+            const updatedUser = response.data as User
+            localStorage.setItem('user', JSON.stringify(updatedUser))
+            set({ user: updatedUser })
+          }
+        } catch (err) {
+          console.error('刷新用户信息失败:', err)
+        }
       },
       logout: () => {
         localStorage.removeItem('token')

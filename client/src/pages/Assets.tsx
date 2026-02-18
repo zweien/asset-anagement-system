@@ -994,6 +994,24 @@ export function Assets() {
               )}
             </Button>
 
+            {/* 一键取消筛选按钮 */}
+            {(filters.length > 0 || statusFilter) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFilters([])
+                  setStatusFilter('')
+                  setDateRangeFilter({})
+                  setPage(1)
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <X className="w-4 h-4 mr-1" />
+                {t('assets.clearAllFilters')}
+              </Button>
+            )}
+
             <Button variant="ghost" size="icon" onClick={loadData}>
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -1532,16 +1550,20 @@ export function Assets() {
                           {!isActionsColumn && fieldType && (
                             <Button
                               ref={(el) => { filterButtonRefs.current[columnId] = el }}
-                              variant="ghost"
+                              variant={existingFilter ? "default" : "ghost"}
                               size="icon-xs"
                               onClick={openColumnFilter}
                               className={cn(
+                                "relative transition-all duration-200",
                                 existingFilter
-                                  ? "text-primary"
-                                  : "text-muted-foreground"
+                                  ? "text-primary-foreground bg-primary shadow-sm ring-2 ring-primary/30"
+                                  : "text-muted-foreground hover:text-foreground"
                               )}
                             >
                               <Filter className="w-3.5 h-3.5" />
+                              {existingFilter && (
+                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                              )}
                             </Button>
                           )}
                         </div>

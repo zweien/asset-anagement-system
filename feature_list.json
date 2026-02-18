@@ -1182,5 +1182,61 @@
       "滚动流畅无卡顿"
     ],
     "passes": true
+  },
+  {
+    "id": "UI-006",
+    "category": "ui",
+    "priority": "medium",
+    "description": "筛选图标高亮增强 - 筛选后的字段图标更明显",
+    "steps": [
+      "当字段有筛选条件时，筛选图标使用高亮背景色",
+      "添加动画效果增强视觉反馈",
+      "增加筛选状态的小圆点指示器"
+    ],
+    "acceptance_criteria": [
+      "筛选后字段图标有明显的高亮效果",
+      "未筛选字段图标保持原样",
+      "视觉效果清晰易识别"
+    ],
+    "passes": true
+  },
+  {
+    "id": "UI-007",
+    "category": "ui",
+    "priority": "medium",
+    "description": "一键取消筛选按钮",
+    "steps": [
+      "在工具栏添加一键取消所有筛选按钮",
+      "仅在有筛选条件时显示",
+      "点击后清除所有筛选并刷新数据"
+    ],
+    "acceptance_criteria": [
+      "有筛选时显示取消按钮",
+      "点击后清除所有筛选条件",
+      "无筛选时隐藏按钮"
+    ],
+    "passes": true
+  },
+  {
+    "id": "USER-003",
+    "category": "functional",
+    "priority": "medium",
+    "description": "用户头像和系统Logo设置",
+    "steps": [
+      "后端：添加用户头像上传API",
+      "后端：添加系统Logo配置API（仅管理员）",
+      "数据库：User表添加avatar字段",
+      "数据库：添加SystemConfig表存储系统配置",
+      "前端：Header显示用户头像",
+      "前端：用户设置页面添加头像上传",
+      "前端：管理员可设置系统Logo"
+    ],
+    "acceptance_criteria": [
+      "用户可以上传和更换头像",
+      "管理员可以设置系统Logo",
+      "Header正确显示头像和Logo",
+      "支持图片裁剪和压缩"
+    ],
+    "passes": true
   }
 ]

@@ -81,6 +81,7 @@ export interface AuthUser {
   username: string
   name: string | null
   email: string | null
+  avatar: string | null
   role: string
 }
 
@@ -120,6 +121,7 @@ export const AuthService = {
           username: user.username,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
           role: user.role,
         },
       },
@@ -177,6 +179,7 @@ export const AuthService = {
           username: user.username,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
           role: user.role,
         },
       },
@@ -202,6 +205,7 @@ export const AuthService = {
           username: user.username,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
           role: user.role,
         },
       }
@@ -227,6 +231,7 @@ export const AuthService = {
         username: user.username,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
         role: user.role,
       },
     }
@@ -254,6 +259,24 @@ export const AuthService = {
     })
 
     return { success: true, message: '密码修改成功' }
+  },
+
+  // 更新头像
+  async updateAvatar(userId: string, avatarPath: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      return { success: false, error: '用户不存在' }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: avatarPath },
+    })
+
+    return { success: true, message: '头像更新成功' }
   },
 
   // 创建默认管理员

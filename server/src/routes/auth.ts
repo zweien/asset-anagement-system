@@ -230,4 +230,50 @@ router.get('/me', authMiddleware, AuthController.getCurrentUser)
  */
 router.post('/change-password', authMiddleware, validate(changePasswordSchema), AuthController.changePassword)
 
+/**
+ * @swagger
+ * /auth/avatar:
+ *   post:
+ *     summary: 上传用户头像
+ *     tags: [认证]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: 头像上传成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     avatar:
+ *                       type: string
+ *       400:
+ *         description: 请选择图片文件
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: 未授权
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post('/avatar', authMiddleware, AuthController.uploadAvatarMiddleware, AuthController.uploadAvatar)
+
 export default router

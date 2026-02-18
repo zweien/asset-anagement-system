@@ -450,6 +450,7 @@ export interface User {
   username: string
   name: string | null
   email: string | null
+  avatar: string | null
   role: string
 }
 
@@ -673,4 +674,77 @@ export const userApi = {
   // 删除用户
   delete: (id: string) =>
     api.delete<{ success: boolean; message?: string; error?: string }>(`/users/${id}`),
+}
+
+// 头像上传 API
+export const avatarApi = {
+  // 上传头像
+  upload: async (file: File): Promise<{ success: boolean; data: { avatar: string } }> => {
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    const response = await fetch(`${API_BASE_URL}/auth/avatar`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    })
+
+    return response.json()
+  },
+}
+
+// 系统配置类型
+export interface SystemConfig {
+  id: string
+  key: string
+  value: string
+  description: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PublicConfig {
+  logo: string | null
+  name: string
+}
+
+// 系统配置 API
+export const systemConfigApi = {
+  // 获取公开配置
+  getPublicConfig: () =>
+    api.get<{ success: boolean; data: PublicConfig }>('/system-config/public'),
+
+  // 获取所有配置（管理员）
+  getAll: () =>
+    api.get<{ success: boolean; data: SystemConfig[] }>('/system-config'),
+
+  // 获取系统Logo
+  getLogo: () =>
+    api.get<{ success: boolean; data: { logo: string | null } }>('/system-config/logo'),
+
+  // 上传系统Logo（管理员）
+  uploadLogo: async (file: File): Promise<{ success: boolean; data: { logo: string } }> => {
+    const formData = new FormData()
+    formData.append('logo', file)
+
+    const response = await fetch(`${API_BASE_URL}/system-config/logo`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    })
+
+    return response.json()
+  },
+
+  // 获取系统名称
+  getSystemName: () =>
+    api.get<{ success: boolean; data: { name: string } }>('/system-config/name'),
+
+  // 设置系统名称（管理员）
+  setSystemName: (name: string) =>
+    api.put<{ success: boolean; data: { name: string } }>('/system-config/name', { name }),
 }

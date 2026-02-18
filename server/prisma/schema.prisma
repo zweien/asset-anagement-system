@@ -104,12 +104,25 @@ model User {
   password    String                   // 加密后的密码
   name        String?                  // 显示名称
   email       String?  @unique
+  avatar      String?                  // 用户头像路径
   role        String   @default("USER") // 角色: ADMIN, USER, VIEWER
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("users")
+}
+
+// 系统配置表
+model SystemConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique            // 配置键
+  value       String                      // 配置值
+  description String?                     // 描述
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_configs")
 }
 
 // 报表模板表

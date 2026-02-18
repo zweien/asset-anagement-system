@@ -14,11 +14,12 @@ import {
   Users,
   KeyRound,
   Check,
-  XCircle
+  XCircle,
+  Camera
 } from 'lucide-react'
-import { useState, useMemo } from 'react'
-import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi } from '../../lib/api'
-import { showSuccess } from '../../lib/toast'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi, systemConfigApi, avatarApi } from '../../lib/api'
+import { showSuccess, showError } from '../../lib/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
@@ -44,10 +45,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+
+const API_BASE = 'http://localhost:3002'
 
 interface NavItem {
   path: string
@@ -78,9 +81,62 @@ export function Header() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [passwordSubmitting, setPasswordSubmitting] = useState(false)
+  const [systemLogo, setSystemLogo] = useState<string | null>(null)
+  const [systemName, setSystemName] = useState<string>('')
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   // 使用 Zustand store
-  const { user, logout } = useAuthStore()
+  const { user, logout, refreshUser } = useAuthStore()
+
+  // 加载系统配置
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await systemConfigApi.getPublicConfig()
+        if (response.success) {
+          setSystemLogo(response.data.logo)
+          setSystemName(response.data.name)
+        }
+      } catch (err) {
+        console.error('加载系统配置失败:', err)
+      }
+    }
+    loadConfig()
+  }, [])
+
+  // 上传头像
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 验证文件类型
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      showError(t('settings.invalidFileType'))
+      return
+    }
+
+    // 验证文件大小 (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showError(t('settings.fileTooLarge'))
+      return
+    }
+
+    try {
+      const response = await avatarApi.upload(file)
+      if (response.success) {
+        refreshUser()
+        showSuccess(t('settings.avatarUploadSuccess'))
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('settings.avatarUploadFailed'))
+    }
+
+    // 清空 input
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = ''
+    }
+  }
 
   // 密码复杂度验证函数
   const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
@@ -192,9 +248,17 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <Package className="w-8 h-8 text-primary" />
+            {systemLogo ? (
+              <img
+                src={`${API_BASE}${systemLogo}`}
+                alt={systemName || t('header.appName')}
+                className="w-8 h-8 object-contain"
+              />
+            ) : (
+              <Package className="w-8 h-8 text-primary" />
+            )}
             <span className="text-xl font-bold text-foreground">
-              {t('header.appName')}
+              {systemName || t('header.appName')}
             </span>
           </Link>
 
@@ -230,7 +294,10 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 px-2">
-                  <Avatar size="sm">
+                  <Avatar className="w-8 h-8">
+                    {user?.avatar ? (
+                      <AvatarImage src={`${API_BASE}${user.avatar}`} alt={user.name || user.username} />
+                    ) : null}
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       <User className="w-4 h-4" />
                     </AvatarFallback>
@@ -250,6 +317,10 @@ export function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => avatarInputRef.current?.click()}>
+                  <Camera className="w-4 h-4 mr-2" />
+                  {t('settings.uploadAvatar')}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowChangePasswordModal(true)}>
                   <KeyRound className="w-4 h-4 mr-2" />
                   {t('users.changePassword')}
@@ -261,6 +332,15 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* 隐藏的头像上传 input */}
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
 
             {/* Mobile menu button */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
