@@ -180,7 +180,18 @@
     "logoUploadSuccess": "Logo uploaded successfully",
     "logoUploadFailed": "Logo upload failed",
     "systemNameUpdateSuccess": "System name updated successfully",
-    "systemNameUpdateFailed": "System name update failed"
+    "systemNameUpdateFailed": "System name update failed",
+    "aiConfig": "AI Model Configuration",
+    "aiConfigured": "Configured",
+    "aiApiKeyPlaceholder": "Enter API Key",
+    "aiApiKeyHint": "API Key is configured, leave empty to keep current value",
+    "aiApiKeyHintEmpty": "Please enter your API Key",
+    "aiBaseUrl": "API Base URL",
+    "aiBaseUrlHint": "Supports OpenAI-compatible APIs like DeepSeek, SiliconFlow, etc.",
+    "aiModel": "Model Name",
+    "aiMaxTokens": "Max Tokens",
+    "aiConfigSaveSuccess": "AI configuration saved successfully",
+    "aiConfigSaveFailed": "Failed to save AI configuration"
   },
   "users": {
     "title": "User Management",
@@ -467,5 +478,25 @@
     "noResults": "Query successful, but no data returned",
     "resultLimited": "Showing first {{count}} of {{total}} records",
     "allowedTables": "Allowed tables"
+  },
+  "ai": {
+    "title": "AI Assistant",
+    "assistant": "AI Assistant",
+    "inputPlaceholder": "Enter your question, e.g., Show all active assets",
+    "thinking": "Thinking...",
+    "welcome": "Hello! I can help you query and analyze asset data. Please enter your question or click a quick question below.",
+    "sendFailed": "Failed to send, please try again",
+    "errorOccurred": "Sorry, an error occurred",
+    "clearChat": "Clear chat",
+    "sqlResult": "Query result: {{count}} records",
+    "executionTime": "Took {{time}}ms",
+    "resultLimited": "Showing first {{count}} of {{total}} records",
+    "button": "AI Assistant",
+    "quickQuestions": {
+      "status": "Assets by status",
+      "recent": "Recently added assets",
+      "category": "Assets by category",
+      "statistics": "Overall analysis"
+    }
   }
 }

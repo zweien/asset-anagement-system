@@ -11,11 +11,12 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table'
 import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2 } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2, Sparkles } from 'lucide-react'
 import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi } from '../lib/api'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
+import { AIChatDialog } from '@/components/ai/AIChatDialog'
 import { PageInstructions } from '@/components/PageInstructions'
 import { TableSkeleton } from '@/components/ui/SkeletonLoaders'
 import { EmptyAssets, EmptySearch } from '@/components/ui/EmptyState'
@@ -469,6 +470,9 @@ export function Assets() {
   const [sqlError, setSqlError] = useState('')
   const [sqlExecuting, setSqlExecuting] = useState(false)
   const [sqlExecutionTime, setSqlExecutionTime] = useState<number | null>(null)
+
+  // AI 聊天状态
+  const [showAIChat, setShowAIChat] = useState(false)
 
   // 是否为管理员
   const isAdmin = currentUser?.role === 'ADMIN'
@@ -1129,6 +1133,18 @@ export function Assets() {
               >
                 <Code2 className="w-4 h-4 mr-1" />
                 {t('sqlQuery.button')}
+              </Button>
+            )}
+
+            {/* AI 助手按钮 - 仅管理员可见 */}
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => setShowAIChat(true)}
+                title={t('ai.title')}
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                {t('ai.button')}
               </Button>
             )}
           </div>
@@ -1857,6 +1873,12 @@ export function Assets() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI 聊天对话框 */}
+      <AIChatDialog
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
+      />
     </div>
   )
 }

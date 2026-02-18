@@ -12,6 +12,7 @@ import usersRouter from './users'
 import backupRouter from './backup'
 import systemConfigRouter from './system-config'
 import sqlQueryRouter from './sql-query'
+import aiRouter from './ai'
 
 const router = Router()
 
@@ -62,5 +63,8 @@ router.use('/system-config', systemConfigRouter)
 
 // SQL 查询路由（仅管理员）
 router.use('/sql-query', sqlQueryRouter)
+
+// AI 助手路由
+router.use('/ai', aiRouter)
 
 export default router

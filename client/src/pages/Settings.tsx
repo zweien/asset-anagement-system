@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload, Sparkles, Eye as EyeIcon } from 'lucide-react'
 import { fieldApi, FIELD_TYPES, systemConfigApi, hasPermission, getStoredUser } from '../lib/api'
+import { aiApi } from '../lib/ai-api'
 import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto, UserRole } from '../lib/api'
+import type { AIConfig } from '../lib/ai-api'
 import { showSuccess, showError, showWarning } from '../lib/toast'
 import { PageInstructions } from '@/components/PageInstructions'
 import { Button } from '@/components/ui/button'
@@ -223,6 +225,17 @@ export function Settings() {
   const [savingName, setSavingName] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
 
+  // AI 配置状态
+  const [aiConfig, setAIConfig] = useState<AIConfig | null>(null)
+  const [aiConfigForm, setAIConfigForm] = useState({
+    apiKey: '',
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-chat',
+    maxTokens: 2000,
+  })
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [savingAIConfig, setSavingAIConfig] = useState(false)
+
   // 权限检查
   const currentUser = getStoredUser()
   const isAdmin = hasPermission(currentUser?.role as UserRole, 'user:manage')
@@ -238,6 +251,60 @@ export function Settings() {
       }
     } catch (err) {
       console.error('加载系统配置失败:', err)
+    }
+  }
+
+  // 加载 AI 配置
+  const loadAIConfig = async () => {
+    try {
+      const response = await aiApi.getConfig()
+      if (response.success && response.data) {
+        setAIConfig(response.data)
+        setAIConfigForm({
+          apiKey: '', // 不显示实际 API Key
+          baseUrl: response.data.baseUrl,
+          model: response.data.model,
+          maxTokens: response.data.maxTokens,
+        })
+      }
+    } catch (err) {
+      console.error('加载 AI 配置失败:', err)
+    }
+  }
+
+  // 保存 AI 配置
+  const handleSaveAIConfig = async () => {
+    setSavingAIConfig(true)
+    try {
+      const updateData: Partial<{
+        apiKey: string
+        baseUrl: string
+        model: string
+        maxTokens: number
+      }> = {
+        baseUrl: aiConfigForm.baseUrl,
+        model: aiConfigForm.model,
+        maxTokens: aiConfigForm.maxTokens,
+      }
+
+      // 只有输入了新的 API Key 才更新
+      if (aiConfigForm.apiKey.trim()) {
+        updateData.apiKey = aiConfigForm.apiKey.trim()
+      }
+
+      const response = await aiApi.updateConfig(updateData)
+      if (response.success) {
+        showSuccess(t('settings.aiConfigSaveSuccess'))
+        loadAIConfig()
+        // 清空 API Key 输入
+        setAIConfigForm(prev => ({ ...prev, apiKey: '' }))
+      } else {
+        showError(response.error || t('settings.aiConfigSaveFailed'))
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : t('settings.aiConfigSaveFailed'))
+    } finally {
+      setSavingAIConfig(false)
     }
   }
 
@@ -313,6 +380,9 @@ export function Settings() {
   useEffect(() => {
     loadFields()
     loadSystemConfig()
+    if (isAdmin) {
+      loadAIConfig()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -463,6 +533,115 @@ export function Settings() {
                   {savingName ? t('common.processing') : t('common.save')}
                 </Button>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* AI 配置卡片（仅管理员可见） */}
+      {isAdmin && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              {t('settings.aiConfig')}
+            </CardTitle>
+            {aiConfig?.hasApiKey && (
+              <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                {t('settings.aiConfigured')}
+              </Badge>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* API Key */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-api-key" className="text-sm font-medium">
+                API Key
+              </Label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 max-w-xs">
+                  <Input
+                    id="ai-api-key"
+                    type={showApiKey ? 'text' : 'password'}
+                    value={aiConfigForm.apiKey}
+                    onChange={(e) => setAIConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
+                    placeholder={aiConfig?.hasApiKey ? '••••••••••••••••' : t('settings.aiApiKeyPlaceholder')}
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {aiConfig?.hasApiKey
+                  ? t('settings.aiApiKeyHint')
+                  : t('settings.aiApiKeyHintEmpty')}
+              </p>
+            </div>
+
+            {/* Base URL */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-base-url" className="text-sm font-medium">
+                {t('settings.aiBaseUrl')}
+              </Label>
+              <Input
+                id="ai-base-url"
+                value={aiConfigForm.baseUrl}
+                onChange={(e) => setAIConfigForm(prev => ({ ...prev, baseUrl: e.target.value }))}
+                placeholder="https://api.deepseek.com"
+                className="max-w-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('settings.aiBaseUrlHint')}
+              </p>
+            </div>
+
+            {/* 模型名称 */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-model" className="text-sm font-medium">
+                {t('settings.aiModel')}
+              </Label>
+              <Input
+                id="ai-model"
+                value={aiConfigForm.model}
+                onChange={(e) => setAIConfigForm(prev => ({ ...prev, model: e.target.value }))}
+                placeholder="deepseek-chat"
+                className="max-w-xs"
+              />
+            </div>
+
+            {/* 最大 Tokens */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-max-tokens" className="text-sm font-medium">
+                {t('settings.aiMaxTokens')}
+              </Label>
+              <Input
+                id="ai-max-tokens"
+                type="number"
+                value={aiConfigForm.maxTokens}
+                onChange={(e) => setAIConfigForm(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || 2000 }))}
+                min={100}
+                max={10000}
+                className="max-w-xs"
+              />
+            </div>
+
+            {/* 保存按钮 */}
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleSaveAIConfig}
+                disabled={savingAIConfig}
+              >
+                <Save className="w-4 h-4 mr-1" />
+                {savingAIConfig ? t('common.processing') : t('common.save')}
+              </Button>
             </div>
           </CardContent>
         </Card>

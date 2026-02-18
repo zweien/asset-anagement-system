@@ -2,6 +2,66 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-18 - 会话 10 (AI 功能集成)
+
+### 完成的工作
+- [x] AI-001: AI 助手集成 - Vercel AI SDK 流式对话
+- [x] AI-002: 前端 LLM 配置界面
+
+### 实现细节
+
+**AI-001 AI 助手集成**
+- 后端实现：
+  - `server/src/services/ai.service.ts` - AI 服务核心，使用 streamText 实现流式响应
+  - `server/src/controllers/ai.controller.ts` - AI 控制器，处理 SSE 流式响应
+  - `server/src/routes/ai.ts` - AI 路由定义
+  - `server/src/middleware/ai-rate-limit.ts` - 限流中间件（分钟级 + 每日限额）
+  - `server/src/prompts/system-prompt.ts` - 系统提示词（包含数据库 schema）
+- 前端实现：
+  - `client/src/lib/ai-api.ts` - AI API 封装，支持流式聊天
+  - `client/src/components/ai/AIChatDialog.tsx` - AI 聊天对话框组件
+- 功能特性：
+  - 流式消息展示
+  - SQL 查询工具调用
+  - 快捷问题按钮
+  - 清空对话
+
+**AI-002 前端 LLM 配置**
+- 后端扩展：
+  - `SystemConfigService.getAIConfig()` - 获取 AI 配置
+  - `SystemConfigService.setAIConfig()` - 更新 AI 配置
+  - `GET/PUT /api/ai/config` - AI 配置 API
+- 前端实现：
+  - Settings 页面添加 AI 模型配置卡片
+  - 配置项：API Key、Base URL、模型名称、最大 Token 数
+  - 支持 OpenAI 兼容的 API（DeepSeek、硅基流动等）
+  - 配置实时生效，无需重启服务
+
+### API 端点
+| 方法 | 路径 | 功能 |
+|------|------|------|
+| POST | /api/ai/chat | AI 流式聊天 |
+| GET | /api/ai/status | 获取 AI 状态 |
+| GET | /api/ai/config | 获取 AI 配置（管理员） |
+| PUT | /api/ai/config | 更新 AI 配置（管理员） |
+
+### 技术栈
+- Vercel AI SDK v6
+- @ai-sdk/openai（兼容 DeepSeek）
+- SSE（Server-Sent Events）流式传输
+
+### Git 提交记录
+1. feat(ai): add AI assistant integration with Vercel AI SDK
+2. feat(ai): add frontend LLM configuration interface
+
+### 当前状态
+- 进度: 66/66 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.1.0
+
+---
+
 ## 2026-02-18 - 会话 9 (SQL查询功能)
 
 ### 完成的工作

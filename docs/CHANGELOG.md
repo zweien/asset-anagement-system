@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-18
+
+### Added
+- **AI Assistant Integration** - Natural language interaction with asset data using LLM
+  - Streaming chat interface with real-time responses
+  - SQL query execution tool for data retrieval
+  - Quick question buttons for common queries
+  - Rate limiting (20 requests/minute, 100 requests/day)
+- **AI Model Configuration** - Frontend configuration for LLM settings
+  - Configure API Key, Base URL, Model name, Max Tokens
+  - Support for OpenAI-compatible APIs (DeepSeek, SiliconFlow, etc.)
+  - Settings stored in database, no server restart required
+- **SQL Query Feature** - Direct SQL query capability for admin users
+  - Safe SELECT-only queries with SQL injection protection
+  - Table whitelist and sensitive field filtering
+  - Query results displayed in table format
+
+### Technical Details
+- Backend: Vercel AI SDK v6 with streamText and tool calling
+- Frontend: Custom streaming chat component with SSE support
+- Security: JWT authentication, rate limiting, SQL validation
+
 ## [1.0.3] - 2026-02-18
 
 ### Added
@@ -104,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.1.0 | 2026-02-18 | AI assistant integration, frontend LLM configuration |
 | 1.0.3 | 2026-02-18 | User avatar, system branding, filter enhancements |
 | 1.0.2 | 2026-02-18 | Batch selection and delete feature |
 | 1.0.1 | 2026-02-17 | Bug fixes for image upload and UI |
@@ -113,14 +136,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Future Plans
 
-### [1.1.0] - Planned
+### [1.2.0] - Planned
 - Redis caching for improved performance
 - Real-time notifications with WebSockets
 - Advanced reporting with export to PDF
 - Batch operations with progress tracking
-- API rate limiting
 
-### [1.2.0] - Planned
+### [1.3.0] - Planned
 - Docker containerization
 - CI/CD pipeline with GitHub Actions
 - Plugin system for custom extensions
@@ -129,7 +151,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.0.3]: https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.3
+[1.1.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.1.0
+[1.0.3]: https://github.com/zweien/asset-management-system/releases/tag/v1.0.3
 [1.0.2]: https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.2
 [1.0.1]: https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.1
 [1.0.0]: https://github.com/zweien/asset-anagement-system/releases/tag/v1.0.0

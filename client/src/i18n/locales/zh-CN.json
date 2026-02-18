@@ -180,7 +180,18 @@
     "logoUploadSuccess": "Logo上传成功",
     "logoUploadFailed": "Logo上传失败",
     "systemNameUpdateSuccess": "系统名称更新成功",
-    "systemNameUpdateFailed": "系统名称更新失败"
+    "systemNameUpdateFailed": "系统名称更新失败",
+    "aiConfig": "AI 模型配置",
+    "aiConfigured": "已配置",
+    "aiApiKeyPlaceholder": "请输入 API Key",
+    "aiApiKeyHint": "API Key 已配置，留空则保持原值",
+    "aiApiKeyHintEmpty": "请输入您的 API Key",
+    "aiBaseUrl": "API 地址",
+    "aiBaseUrlHint": "支持 OpenAI 兼容的 API，如 DeepSeek、硅基流动等",
+    "aiModel": "模型名称",
+    "aiMaxTokens": "最大 Token 数",
+    "aiConfigSaveSuccess": "AI 配置保存成功",
+    "aiConfigSaveFailed": "AI 配置保存失败"
   },
   "users": {
     "title": "用户管理",
@@ -467,5 +478,25 @@
     "noResults": "查询成功，但没有返回数据",
     "resultLimited": "仅显示前 {{count}} 条（共 {{total}} 条）",
     "allowedTables": "允许查询的表"
+  },
+  "ai": {
+    "title": "AI 智能助手",
+    "assistant": "AI助手",
+    "inputPlaceholder": "输入问题，例如：显示所有在用资产",
+    "thinking": "思考中...",
+    "welcome": "您好！我可以帮您查询和分析资产数据。请输入您的问题，或点击下方的快捷问题开始。",
+    "sendFailed": "发送失败，请重试",
+    "errorOccurred": "抱歉，发生了错误",
+    "clearChat": "清空对话",
+    "sqlResult": "查询结果：{{count}} 条记录",
+    "executionTime": "耗时 {{time}}ms",
+    "resultLimited": "仅显示前 {{count}} 条（共 {{total}} 条）",
+    "button": "AI助手",
+    "quickQuestions": {
+      "status": "各状态资产数量",
+      "recent": "最近新增的资产",
+      "category": "按分类统计",
+      "statistics": "资产总体分析"
+    }
   }
 }

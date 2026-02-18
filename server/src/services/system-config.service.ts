@@ -83,4 +83,36 @@ export const SystemConfigService = {
     await this.set('system_name', name, '系统名称')
     return { success: true, data: { name } }
   },
+
+  // AI 配置相关
+  async getAIConfig() {
+    const config = {
+      apiKey: await this.get('ai_api_key') || '',
+      baseUrl: await this.get('ai_base_url') || 'https://api.deepseek.com',
+      model: await this.get('ai_model') || 'deepseek-chat',
+      maxTokens: parseInt(await this.get('ai_max_tokens') || '2000', 10),
+    }
+    return config
+  },
+
+  async setAIConfig(data: {
+    apiKey?: string
+    baseUrl?: string
+    model?: string
+    maxTokens?: number
+  }) {
+    if (data.apiKey !== undefined) {
+      await this.set('ai_api_key', data.apiKey, 'AI API Key')
+    }
+    if (data.baseUrl !== undefined) {
+      await this.set('ai_base_url', data.baseUrl, 'AI Base URL')
+    }
+    if (data.model !== undefined) {
+      await this.set('ai_model', data.model, 'AI 模型名称')
+    }
+    if (data.maxTokens !== undefined) {
+      await this.set('ai_max_tokens', String(data.maxTokens), 'AI 最大 Token 数')
+    }
+    return { success: true, data: await this.getAIConfig() }
+  },
 }
