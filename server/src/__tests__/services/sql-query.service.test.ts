@@ -127,8 +127,9 @@ describe('SqlQueryService', () => {
     })
 
     it('应该返回列名信息', async () => {
+      // 使用不依赖表数据的查询来测试列名返回
       const result = await SqlQueryService.executeQuery(
-        'SELECT id, name, status FROM assets LIMIT 1'
+        "SELECT 1 as id, 'test' as name, 'ACTIVE' as status"
       )
 
       expect(result.success).toBe(true)
