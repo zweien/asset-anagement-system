@@ -1,5 +1,22 @@
 import { SqlQueryService } from '../services/sql-query.service'
 
+// 自定义字段配置接口
+interface FieldConfig {
+  name: string
+  label: string
+  type: string
+  options?: string | null
+  defaultValue?: string | null
+}
+
+// 获取自定义字段配置
+async function getFieldConfigs(): Promise<FieldConfig[]> {
+  const result = await SqlQueryService.executeQuery(
+    "SELECT name, label, type, options, defaultValue FROM field_configs WHERE visible = 1 ORDER BY \"order\""
+  )
+  return (result.data as unknown as FieldConfig[]) || []
+}
+
 // 获取系统提示词
 export async function getSystemPrompt(): Promise<string> {
   const allowedTables = SqlQueryService.getAllowedTables()
@@ -14,6 +31,57 @@ export async function getSystemPrompt(): Promise<string> {
     }
   }
 
+  // 获取自定义字段配置
+  const fieldConfigs = await getFieldConfigs()
+
+  // 构建自定义字段表格
+  let fieldConfigsSection = ''
+  if (fieldConfigs.length > 0) {
+    const fieldRows = fieldConfigs.map(field => {
+      const optionsDisplay = field.type === 'SELECT' || field.type === 'MULTISELECT'
+        ? (field.options || '-')
+        : '-'
+      return `| ${field.name} | ${field.label} | ${field.type} | ${optionsDisplay} |`
+    }).join('\n')
+
+    fieldConfigsSection = `
+## 自定义字段配置
+
+以下是资产表中可用的自定义字段（存储在 assets.data JSON 字段中）：
+
+| 字段名 | 显示名称 | 类型 | 选项值 |
+|--------|----------|------|--------|
+${fieldRows}
+
+## 自定义字段查询方法
+
+在 SQLite 中查询 data JSON 字段时，使用 json_extract 函数：
+
+\`\`\`sql
+-- 查询指定自定义字段
+SELECT name, json_extract(data, '$.字段名') as 字段名
+FROM assets
+WHERE json_extract(data, '$.字段名') = '值'
+
+-- 示例：查询类型为 A 的所有资产
+SELECT id, name, code, json_extract(data, '$.type1') as type1
+FROM assets
+WHERE json_extract(data, '$.type1') = 'A'
+
+-- 统计自定义字段值分布
+SELECT json_extract(data, '$.字段名') as 字段名, COUNT(*) as count
+FROM assets
+GROUP BY json_extract(data, '$.字段名')
+\`\`\`
+
+**注意事项：**
+- 字段名使用实际存储的 name 值（如 type1），而非显示标签（如 类型）
+- json_extract 返回的值可能是 NULL（字段未设置）
+- 对于数值比较，使用 CAST(json_extract(...) AS REAL)
+- 对于多选字段（MULTISELECT），值存储为逗号分隔的字符串
+`
+  }
+
   return `你是一个资产管理系统的 AI 助手。你的任务是帮助用户通过自然语言查询和分析资产数据。
 
 ## 数据库结构
@@ -21,7 +89,7 @@ export async function getSystemPrompt(): Promise<string> {
 以下是允许查询的表及其字段：
 
 ${tableSchemas.join('\n\n')}
-
+${fieldConfigsSection}
 ## 重要规则
 
 1. **只使用 SELECT 查询**：你只能执行 SELECT 查询，不能执行 INSERT、UPDATE、DELETE 等修改操作。
