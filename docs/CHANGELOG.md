@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-19
+
+### Added
+- **Docker Containerization** - Full Docker support for easy deployment
+  - Multi-stage Dockerfile for optimized production builds
+  - Docker Compose configuration with volume mounts
+  - One-command deployment: `docker-compose up -d`
+  - Health checks and automatic restarts
+- **Frontend Unit Testing** - Vitest + Testing Library setup
+  - 19 test cases for utils and EmptyState component
+  - Test coverage reporting with v8
+  - Watch mode and UI mode for development
+- **Image Lazy Loading & Optimization** - Performance improvements for image handling
+  - Native `loading="lazy"` attribute for images
+  - Canvas-based image compression (max 1920x1080, 0.8 quality)
+  - Full-screen image preview dialog
+- **Keyboard Shortcuts** - Productivity boost with keyboard navigation
+  - `Alt+N` - Create new asset
+  - `Alt+K` - Focus search input
+  - `Alt+S` - Save form
+  - `Alt+/` - Show keyboard shortcuts help
+  - `Escape` - Close dialogs
+- **AI Provider Presets** - Quick configuration for popular LLM providers
+  - DeepSeek (default), OpenAI, Moonshot, Anthropic, GLM, Qwen, SiliconFlow
+  - Auto-fill Base URL and model list based on provider selection
+
+### Fixed
+- **Keyboard Shortcut Conflicts** - Changed from Ctrl to Alt to avoid browser conflicts
+- **Logo Background** - Transparent PNG logos now display correctly in both themes
+- **Page Instructions** - Updated all pages with keyboard shortcut hints
+
+### Technical Details
+- Added `vitest`, `@testing-library/react`, `@testing-library/jest-dom` for testing
+- Created `useKeyboard` hook for keyboard event handling
+- Created `LazyImage` and `ImagePreview` components
+- Updated `init.sh` with Docker commands
+
 ## [1.3.0] - 2026-02-19
 
 ### Added
@@ -175,6 +212,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.4.0 | 2026-02-19 | Docker deployment, frontend testing, image optimization, keyboard shortcuts |
 | 1.3.0 | 2026-02-19 | AI custom field queries, user batch import |
 | 1.2.0 | 2026-02-18 | API endpoint selection, Markdown rendering, Chat export |
 | 1.1.0 | 2026-02-18 | AI assistant integration, frontend LLM configuration |
@@ -187,14 +225,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Future Plans
 
-### [1.2.0] - Planned
+### [1.5.0] - Planned
 - Redis caching for improved performance
 - Real-time notifications with WebSockets
 - Advanced reporting with export to PDF
 - Batch operations with progress tracking
 
-### [1.4.0] - Planned
-- Docker containerization
+### [2.0.0] - Planned
 - CI/CD pipeline with GitHub Actions
 - Plugin system for custom extensions
 - Advanced audit log with data comparison
@@ -202,6 +239,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.4.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.4.0
 [1.3.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.3.0
 [1.2.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.2.0
 [1.1.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.1.0
