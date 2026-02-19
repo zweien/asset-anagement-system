@@ -428,7 +428,6 @@ export function UserManagement() {
           t('users.instruction3'),
           t('users.instruction4'),
           t('users.instruction5'),
-          t('users.instruction6'),
         ]}
       />
 

@@ -94,11 +94,11 @@ export function Dashboard() {
 
       {/* 使用说明 */}
       <PageInstructions
-        title={t('dashboard.title')}
+        title={t('dashboard.instructions.title')}
         instructions={[
-          t('dashboard.totalAssets'),
-          t('dashboard.quickActions'),
-          t('dashboard.manageAssets'),
+          t('dashboard.instructions.1'),
+          t('dashboard.instructions.2'),
+          t('dashboard.instructions.3'),
         ]}
       />
 
