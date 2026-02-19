@@ -595,6 +595,7 @@ export function Assets() {
     const searchQuery = searchParams.get('search')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
+    const action = searchParams.get('action')
 
     if (status) {
       setStatusFilter(status)
@@ -605,7 +606,15 @@ export function Assets() {
     if (startDate || endDate) {
       setDateRangeFilter({ startDate: startDate || undefined, endDate: endDate || undefined })
     }
-  }, [searchParams])
+
+    // 处理快捷键触发的 action=new
+    if (action === 'new' && canCreate) {
+      setEditingAsset(null)
+      setShowAssetForm(true)
+      // 清除 action 参数，避免刷新页面时重复打开
+      navigate('/assets', { replace: true })
+    }
+  }, [searchParams, canCreate])
 
   useEffect(() => {
     loadData()
