@@ -97,6 +97,21 @@ cd client && npm run test:ui       # UI 界面
 - ✅ 前端单元测试 19 个用例全部通过
 - ✅ 测试覆盖率: utils.ts 100%, EmptyState.tsx 75%
 
+### Bug 修复
+- **Ctrl+N 快捷键不打开模态框**
+  - 原因: Layout.tsx 中 Ctrl+N 只导航到 /assets?action=new，但 Assets.tsx 没有处理该参数
+  - 解决: 在 Assets.tsx 的 useEffect 中添加 action=new 参数处理，自动打开模态框并清除参数
+
+### 浏览器测试验证
+- ✅ Ctrl+N 打开新增资产模态框
+- ✅ Escape 关闭模态框
+- ✅ Shift+? 显示快捷键帮助弹窗
+- ✅ Ctrl+S 保存表单（显示验证错误）
+
+### Git 提交记录
+1. feat: implement 4 improvements (Docker/Tests/Images/Shortcuts)
+2. fix(ui): handle Ctrl+N keyboard shortcut for new asset modal
+
 ### 当前状态
 - 进度: 72/72 功能通过 (100%) ✅
 - 后端服务: http://localhost:3002
