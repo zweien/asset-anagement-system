@@ -102,11 +102,12 @@
     "pageInfo": "Page {{page}} / {{total}}",
     "instructions": {
       "title": "Asset Management Instructions",
-      "1": "Click 'Add Asset' button to add new asset records",
+      "1": "Alt+N New Asset | Alt+K Focus Search | Alt+/ Keyboard Help",
       "2": "Supports both list view and group view modes",
-      "3": "Use search box to quickly find assets",
+      "3": "Use search box to quickly find assets, press Enter to search",
       "4": "Click column headers to sort, use column settings to show/hide columns",
-      "5": "Actions column provides view details, edit, add photo and delete functions"
+      "5": "Actions column provides view details, edit, add photo and delete functions",
+      "6": "Filter panel supports multi-condition filtering by status, category, date range, etc."
     }
   },
   "filter": {
@@ -389,11 +390,11 @@
     "errorDetails": "Error Details",
     "instructions": {
       "title": "Data Import Instructions",
-      "1": "Supports both Excel file import and database import",
-      "2": "Excel import: upload .xlsx file, map fields, then execute import",
-      "3": "Database import: configure database connection then select table to import",
-      "4": "You can download template first, fill data according to template format, then import",
-      "5": "Please ensure field mapping is correct before import to avoid data errors"
+      "1": "Supports Excel file import and database import",
+      "2": "Excel import: upload .xlsx file, map fields, batch import assets",
+      "3": "Download template first, fill data according to template format, then import",
+      "4": "Ensure field mapping is correct before import to avoid data errors",
+      "5": "Import results show success, skipped and failed record counts"
     }
   },
   "reports": {

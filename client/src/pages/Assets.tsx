@@ -1009,6 +1009,7 @@ export function Assets() {
           t('assets.instructions.3'),
           t('assets.instructions.4'),
           t('assets.instructions.5'),
+          t('assets.instructions.6'),
         ]}
       />
 
