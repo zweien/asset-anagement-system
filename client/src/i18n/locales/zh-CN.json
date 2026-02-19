@@ -31,6 +31,7 @@
     "remove": "移除"
   },
   "nav": {
+    "menu": "导航菜单",
     "dashboard": "仪表盘",
     "assets": "资产管理",
     "import": "数据导入",

@@ -2,6 +2,53 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-19 - 会话 15 (侧边栏导航重构)
+
+### 完成的工作
+- [x] UI-009: 顶部导航改为侧边栏导航
+
+### 实现细节
+**UI-009 侧边栏导航重构**
+- 安装 shadcn-ui sidebar、breadcrumb、collapsible 组件
+- 创建 `client/src/components/layout/AppSidebar.tsx` - 侧边栏组件
+  - SidebarHeader: 系统Logo和名称
+  - SidebarContent: 导航菜单项（根据权限过滤）
+  - SidebarFooter: 用户信息下拉菜单（头像上传、修改密码、退出登录）
+- 修改 `client/src/components/layout/Layout.tsx` - 集成侧边栏布局
+  - 使用 SidebarProvider、SidebarInset、SidebarTrigger
+  - 顶部面包屑导航 + 语言切换 + 主题切换
+- 修复 `client/@/components/ui/sidebar.tsx` Math.random 问题
+- 创建 `client/src/hooks/use-mobile.ts` - 移动端检测 hook
+- 添加 i18n 翻译: `nav.menu`
+
+### 功能特性
+- 桌面端：固定侧边栏，可折叠为图标模式
+- 移动端：抽屉式侧边栏，点击按钮展开
+- 导航项根据用户权限自动过滤
+- 当前页面高亮显示
+- 用户菜单集成到侧边栏底部
+- GitHub 链接集成到系统名称下拉菜单
+
+### 测试验证
+- ✅ 桌面端侧边栏正常显示
+- ✅ 侧边栏可折叠为图标模式
+- ✅ 移动端抽屉式侧边栏正常
+- ✅ 导航项权限过滤正确
+- ✅ 用户菜单功能正常
+- ✅ lint 检查通过
+- ✅ build 构建成功
+
+### Git 提交记录
+1. feat(ui): refactor navigation to sidebar layout
+
+### 当前状态
+- 进度: 68/68 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.3.0
+
+---
+
 ## 2026-02-19 - 会话 14 (GitHub 链接)
 
 ### 完成的工作

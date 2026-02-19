@@ -31,6 +31,7 @@
     "remove": "Remove"
   },
   "nav": {
+    "menu": "Navigation",
     "dashboard": "Dashboard",
     "assets": "Assets",
     "import": "Import",
