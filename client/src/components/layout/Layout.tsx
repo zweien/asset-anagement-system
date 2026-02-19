@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from './AppSidebar'
 import { Separator } from '@/components/ui/separator'
@@ -7,6 +7,9 @@ import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useKeyboard } from '@/hooks/useKeyboard'
+import { ShortcutHelp } from '@/components/ui/shortcut-help'
+import { useState } from 'react'
 
 // 路由到面包屑的映射
 const routeToBreadcrumb: Record<string, string> = {
@@ -22,8 +25,18 @@ const routeToBreadcrumb: Record<string, string> = {
 export function Layout() {
   const location = useLocation()
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false)
 
   const breadcrumbKey = routeToBreadcrumb[location.pathname] || 'nav.dashboard'
+
+  // 注册全局快捷键
+  useKeyboard([
+    { key: 'k', ctrl: true, handler: () => { /* TODO: 打开搜索 */ } },
+    { key: 'n', ctrl: true, handler: () => navigate('/assets?action=new') },
+    { key: 'Escape', handler: () => setShortcutHelpOpen(false) },
+    { key: '/', shift: true, handler: () => setShortcutHelpOpen(true) },
+  ])
 
   return (
     <SidebarProvider>
@@ -48,6 +61,7 @@ export function Layout() {
           <Outlet />
         </main>
       </SidebarInset>
+      <ShortcutHelp open={shortcutHelpOpen} onOpenChange={setShortcutHelpOpen} />
     </SidebarProvider>
   )
 }

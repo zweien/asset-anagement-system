@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Modal } from './ui/Modal'
 import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
 import type { Asset, FieldConfig, CreateAssetDto, UpdateAssetDto, AssetStatus } from '../lib/api'
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useKeyboard } from '@/hooks/useKeyboard'
 
 const API_BASE = 'http://localhost:3002/api'
 
@@ -74,53 +75,8 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     f.visible !== false && !systemFieldNames.includes(f.name)
   )
 
-  // 加载图片
-  const loadImages = async () => {
-    if (!asset) return
-    try {
-      const response = await fetch(`${API_BASE}/assets/${asset.id}/images`)
-      const result = await response.json()
-      if (result.success) {
-        setImages(result.data)
-      }
-    } catch (err) {
-      console.error('加载图片失败:', err)
-    }
-  }
-
-  // 初始化表单数据
-  useEffect(() => {
-    if (asset) {
-      let data = {}
-      try {
-        data = JSON.parse(asset.data || '{}')
-      } catch {
-        data = {}
-      }
-      setFormData({
-        name: asset.name,
-        code: asset.code || '',
-        status: (asset.status || 'IDLE') as AssetStatus,
-        data,
-      })
-      // 加载图片
-      if (isOpen) {
-        loadImages()
-      }
-    } else {
-      setFormData({
-        name: '',
-        code: '',
-        status: 'IDLE' as AssetStatus,
-        data: {},
-      })
-      setImages([])
-    }
-    setError('')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [asset, isOpen])
-
-  const handleSubmit = async () => {
+  // 使用 useCallback 包裹 handleSubmit，以便在 useKeyboard 中引用
+  const handleSubmit = useCallback(async () => {
     if (!formData.name.trim()) {
       setError('资产名称不能为空')
       return
@@ -176,7 +132,58 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     } finally {
       setLoading(false)
     }
+  }, [formData, visibleFields, isEditMode, asset, onSuccess, onClose])
+
+  // 注册 Ctrl+S 保存快捷键
+  useKeyboard([
+    { key: 's', ctrl: true, handler: () => { if (isOpen) handleSubmit() } },
+  ])
+
+  // 加载图片
+  const loadImages = async () => {
+    if (!asset) return
+    try {
+      const response = await fetch(`${API_BASE}/assets/${asset.id}/images`)
+      const result = await response.json()
+      if (result.success) {
+        setImages(result.data)
+      }
+    } catch (err) {
+      console.error('加载图片失败:', err)
+    }
   }
+
+  // 初始化表单数据
+  useEffect(() => {
+    if (asset) {
+      let data = {}
+      try {
+        data = JSON.parse(asset.data || '{}')
+      } catch {
+        data = {}
+      }
+      setFormData({
+        name: asset.name,
+        code: asset.code || '',
+        status: (asset.status || 'IDLE') as AssetStatus,
+        data,
+      })
+      // 加载图片
+      if (isOpen) {
+        loadImages()
+      }
+    } else {
+      setFormData({
+        name: '',
+        code: '',
+        status: 'IDLE' as AssetStatus,
+        data: {},
+      })
+      setImages([])
+    }
+    setError('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asset, isOpen])
 
   const updateDataField = (fieldName: string, value: string | number | string[] | null) => {
     setFormData((prev) => ({

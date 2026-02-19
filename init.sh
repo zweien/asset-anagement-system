@@ -68,6 +68,104 @@ test() {
     fi
 }
 
+# 数据库操作
+db_push() {
+    log_info "推送数据库 schema..."
+    cd server && npm run db:push
+    log_success "数据库 schema 已更新"
+}
+
+db_studio() {
+    log_info "启动 Prisma Studio..."
+    cd server && npm run db:studio
+}
+
+db_reset() {
+    log_warning "这将删除所有数据！"
+    read -p "确认重置数据库？(y/N) " confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        rm -f data/assets.db
+        rm -f data/assets.db-journal 2>/dev/null || true
+        cd server && npm run db:push && cd ..
+        log_success "数据库已重置"
+    else
+        log_info "操作已取消"
+    fi
+}
+
+# 构建项目
+build() {
+    log_info "构建后端..."
+    cd server && npm run build && cd ..
+    log_success "后端构建完成"
+
+    log_info "构建前端..."
+    cd client && npm run build && cd ..
+    log_success "前端构建完成"
+
+    log_success "全部构建完成!"
+}
+
+# 代码检查
+lint() {
+    log_info "检查后端代码..."
+    cd server && npm run lint 2>/dev/null || log_warning "后端 lint 未配置" && cd ..
+
+    log_info "检查前端代码..."
+    cd client && npm run lint 2>/dev/null || log_warning "前端 lint 未配置" && cd ..
+
+    log_success "代码检查完成"
+}
+
+# E2E 测试
+e2e() {
+    log_info "运行 E2E 测试..."
+    npx playwright test
+}
+
+e2e_ui() {
+    log_info "启动 E2E 测试 UI..."
+    npx playwright test --ui
+}
+
+# Docker 命令
+docker_build() {
+    log_info "构建 Docker 镜像..."
+    docker-compose build
+    log_success "Docker 镜像构建完成"
+}
+
+docker_up() {
+    log_info "启动 Docker 容器..."
+    docker-compose up -d
+    log_success "Docker 容器已启动"
+    log_info "访问地址: http://localhost:3002"
+}
+
+docker_down() {
+    log_info "停止 Docker 容器..."
+    docker-compose down
+    log_success "Docker 容器已停止"
+}
+
+docker_logs() {
+    if [ -n "$2" ]; then
+        docker-compose logs -f --tail="$2"
+    else
+        docker-compose logs -f --tail=100
+    fi
+}
+
+docker_ps() {
+    docker-compose ps
+}
+
+docker_restart() {
+    log_info "重启 Docker 容器..."
+    docker-compose restart
+    log_success "Docker 容器已重启"
+}
+
 # 检查项目状态
 status() {
     echo ""
@@ -143,16 +241,83 @@ case "${1:-help}" in
     status)
         status
         ;;
+    # 数据库操作
+    db:push)
+        db_push
+        ;;
+    db:studio)
+        db_studio
+        ;;
+    db:reset)
+        db_reset
+        ;;
+    # 构建和检查
+    build)
+        build
+        ;;
+    lint)
+        lint
+        ;;
+    # E2E 测试
+    e2e)
+        e2e
+        ;;
+    e2e:ui)
+        e2e_ui
+        ;;
+    # Docker 命令
+    docker:build)
+        docker_build
+        ;;
+    docker:up)
+        docker_up
+        ;;
+    docker:down)
+        docker_down
+        ;;
+    docker:logs)
+        docker_logs "$@"
+        ;;
+    docker:ps)
+        docker_ps
+        ;;
+    docker:restart)
+        docker_restart
+        ;;
     help|*)
         echo "用法: ./init.sh [command]"
         echo ""
-        echo "命令:"
-        echo "  server    启动后端服务"
-        echo "  client    启动前端服务"
-        echo "  start     显示启动说明"
-        echo "  test      运行测试"
-        echo "  setup     安装所有依赖"
-        echo "  status    检查项目状态"
-        echo "  help      显示此帮助信息"
+        echo "服务命令:"
+        echo "  server      启动后端服务 (port 3002)"
+        echo "  client      启动前端服务 (port 5173)"
+        echo "  start       显示启动说明"
+        echo ""
+        echo "环境命令:"
+        echo "  setup       安装所有依赖"
+        echo "  status      检查项目状态"
+        echo ""
+        echo "数据库命令:"
+        echo "  db:push     推送 schema 变更到数据库"
+        echo "  db:studio   打开 Prisma Studio GUI"
+        echo "  db:reset    重置数据库 (删除所有数据)"
+        echo ""
+        echo "测试命令:"
+        echo "  test        运行后端单元测试"
+        echo "  e2e         运行 E2E 测试 (Playwright)"
+        echo "  e2e:ui      带 UI 的 E2E 测试"
+        echo ""
+        echo "构建命令:"
+        echo "  build       构建前后端生产版本"
+        echo "  lint        运行代码检查"
+        echo ""
+        echo "Docker 命令:"
+        echo "  docker:build 构建 Docker 镜像"
+        echo "  docker:up    启动 Docker 容器"
+        echo "  docker:down  停止 Docker 容器"
+        echo "  docker:logs  查看 Docker 日志 [行数]"
+        echo "  docker:ps    查看 Docker 容器状态"
+        echo "  docker:restart 重启 Docker 容器"
+        echo ""
+        echo "  help        显示此帮助信息"
         ;;
 esac

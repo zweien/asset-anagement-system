@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: asset-management
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./uploads:/app/server/uploads
+      - ./data:/app/server/data
+      - ./logs:/app/server/logs
+    environment:
+      - PORT=3002
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - DATABASE_URL=file:/app/server/data/assets.db
+      - UPLOAD_DIR=uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

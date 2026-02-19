@@ -1,6 +1,54 @@
 import { useState, useRef } from 'react'
 import { Upload, X, Camera } from 'lucide-react'
 import { getToken } from '@/lib/api'
+import { LazyImage } from '@/components/ui/lazy-image'
+
+// 压缩配置
+const MAX_WIDTH = 1920
+const MAX_HEIGHT = 1080
+const QUALITY = 0.8
+
+// 压缩函数
+const compressImage = (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+
+    img.onload = () => {
+      let { width, height } = img
+
+      // 计算缩放比例
+      if (width > MAX_WIDTH) {
+        height = (height * MAX_WIDTH) / width
+        width = MAX_WIDTH
+      }
+      if (height > MAX_HEIGHT) {
+        width = (width * MAX_HEIGHT) / height
+        height = MAX_HEIGHT
+      }
+
+      canvas.width = width
+      canvas.height = height
+      ctx?.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error('压缩失败'))
+          }
+        },
+        'image/jpeg',
+        QUALITY
+      )
+    }
+
+    img.onerror = () => reject(new Error('图片加载失败'))
+    img.src = URL.createObjectURL(file)
+  })
+}
 
 interface ImageInfo {
   id: string
@@ -33,8 +81,15 @@ export function ImageUploader({ assetId, images, onImagesChange }: ImageUploader
     setError('')
 
     try {
+      // 压缩图片
+      const compressedBlob = await compressImage(file)
+      const compressedFile = new File([compressedBlob], file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      })
+
       const formData = new FormData()
-      formData.append('image', file)
+      formData.append('image', compressedFile)
 
       const token = getToken()
       const response = await fetch(`${API_BASE}/assets/${assetId}/images`, {
@@ -109,7 +164,7 @@ export function ImageUploader({ assetId, images, onImagesChange }: ImageUploader
               key={image.id}
               className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
             >
-              <img
+              <LazyImage
                 src={`${API_BASE}/images/${image.id}`}
                 alt={image.originalName}
                 className="w-full h-32 object-cover"

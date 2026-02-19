@@ -2,6 +2,109 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-19 - 会话 17 (系统改进 - Docker/测试/图片优化/快捷键)
+
+### 完成的工作
+- [x] DOCKER-001: Docker 容器化部署
+- [x] TEST-004: 前端单元测试框架
+- [x] IMAGE-004: 图片懒加载与优化
+- [x] UI-010: 键盘快捷键支持
+
+### 实现细节
+
+**DOCKER-001 Docker 容器化部署**
+- 创建 `Dockerfile` - 多阶段构建
+  - 阶段1: 前端构建 (node:20-alpine)
+  - 阶段2: 后端构建
+  - 阶段3: 生产镜像（含健康检查、Prisma）
+- 创建 `docker-compose.yml`
+  - 端口映射 3002
+  - 卷挂载 uploads/data/logs
+  - 环境变量配置
+  - 健康检查配置
+- 创建 `.dockerignore` - 优化构建上下文
+- 更新 `init.sh` - 添加 docker 命令
+  - docker:build, docker:up, docker:down, docker:logs, docker:ps, docker:restart
+
+**TEST-004 前端单元测试框架**
+- 安装测试依赖
+  - vitest, @testing-library/react, @testing-library/jest-dom
+  - @testing-library/user-event, jsdom, @vitest/coverage-v8
+- 创建 `client/vitest.config.ts` - Vitest 配置
+- 创建 `client/src/__tests__/setup.ts` - 测试设置
+- 创建测试用例
+  - `client/src/__tests__/lib/utils.test.ts` - 工具函数测试 (6 个用例)
+  - `client/src/__tests__/components/EmptyState.test.tsx` - 组件测试 (13 个用例)
+- 更新 `client/package.json` - 添加测试脚本
+  - test, test:run, test:coverage, test:ui
+
+**IMAGE-004 图片懒加载与优化**
+- 创建 `client/src/components/ui/lazy-image.tsx` - LazyImage 组件
+  - 原生 loading="lazy" 属性
+  - 加载中占位图
+  - 加载失败处理
+- 创建 `client/src/components/ui/image-preview.tsx` - ImagePreview 组件
+  - 使用 Dialog 实现全屏预览
+- 修改 `client/src/components/ImageUploader.tsx` - 添加图片压缩
+  - 最大宽度 1920px，最大高度 1080px
+  - JPEG 质量 0.8
+  - Canvas 压缩实现
+- 在 AssetDetail.tsx 中应用懒加载
+
+**UI-010 键盘快捷键支持**
+- 创建 `client/src/hooks/useKeyboard.ts` - useKeyboard hook
+  - 支持 Ctrl/Meta/Shift 组合键
+  - 自动忽略输入框中的非控制键组合
+  - 导出 SHORTCUTS 常量
+- 创建 `client/src/components/ui/shortcut-help.tsx` - 快捷键帮助弹窗
+- 修改 `client/src/components/layout/Layout.tsx` - 注册全局快捷键
+  - Ctrl+K: 全局搜索
+  - Ctrl+N: 新增资产
+  - Escape: 关闭弹窗
+  - Shift+?: 显示快捷键帮助
+- 修改 `client/src/components/AssetForm.tsx` - 保存快捷键
+  - Ctrl+S: 保存表单
+
+### 支持的键盘快捷键
+| 快捷键 | 功能 |
+|--------|------|
+| Ctrl/Cmd + K | 打开全局搜索 |
+| Ctrl/Cmd + N | 新增资产 |
+| Ctrl/Cmd + S | 保存表单 |
+| Esc | 关闭弹窗 |
+| Shift + ? | 显示快捷键帮助 |
+
+### 新增命令
+```bash
+# Docker 部署
+./init.sh docker:build   # 构建 Docker 镜像
+./init.sh docker:up      # 启动 Docker 容器
+./init.sh docker:down    # 停止 Docker 容器
+./init.sh docker:logs    # 查看 Docker 日志
+./init.sh docker:ps      # 查看容器状态
+./init.sh docker:restart # 重启容器
+
+# 前端测试
+cd client && npm run test          # 监视模式
+cd client && npm run test:run      # 单次运行
+cd client && npm run test:coverage # 覆盖率报告
+cd client && npm run test:ui       # UI 界面
+```
+
+### 测试验证
+- ✅ lint 检查通过 (0 错误)
+- ✅ build 构建成功
+- ✅ 前端单元测试 19 个用例全部通过
+- ✅ 测试覆盖率: utils.ts 100%, EmptyState.tsx 75%
+
+### 当前状态
+- 进度: 72/72 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.3.0
+
+---
+
 ## 2026-02-19 - 会话 16 (AI 模型配置增强)
 
 ### 完成的工作

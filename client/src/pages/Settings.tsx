@@ -367,21 +367,23 @@ export function Settings() {
         const normalizedUrl = response.data.baseUrl.replace(/\/v\d*\/?$/, '').replace(/\/$/, '')
         const matchedProvider = AI_PROVIDERS.find(p => {
           const normalizedProviderUrl = p.baseUrl.replace(/\/$/, '')
-          return normalizedUrl === normalizedProviderUrl || response.data.baseUrl.startsWith(p.baseUrl)
+          const baseUrl = response.data?.baseUrl ?? ''
+          return normalizedUrl === normalizedProviderUrl || baseUrl.startsWith(p.baseUrl)
         })
         const providerId = matchedProvider?.id || 'custom'
-        const isCustomModel = matchedProvider && !matchedProvider.models.includes(response.data.model)
+        const model = response.data?.model ?? ''
+        const isCustomModel = matchedProvider && !matchedProvider.models.includes(model)
 
         setAIConfigForm({
           apiKey: '', // 不显示实际 API Key
           provider: providerId,
           baseUrl: response.data.baseUrl,
-          model: isCustomModel ? '' : response.data.model,
+          model: isCustomModel ? '' : model,
           maxTokens: response.data.maxTokens,
           apiType: response.data.apiType || 'chat',
         })
         if (isCustomModel && matchedProvider) {
-          setCustomModel(response.data.model)
+          setCustomModel(model)
         }
       }
     } catch (err) {

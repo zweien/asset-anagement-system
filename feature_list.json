@@ -1284,5 +1284,79 @@
       "导入失败时显示具体错误原因"
     ],
     "passes": true
+  },
+  {
+    "id": "DOCKER-001",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "Docker 容器化部署",
+    "steps": [
+      "创建多阶段构建 Dockerfile (前端构建 → 后端构建 → 生产镜像)",
+      "创建 docker-compose.yml 配置服务",
+      "创建 .dockerignore 优化构建",
+      "在 init.sh 添加 docker 命令支持"
+    ],
+    "acceptance_criteria": [
+      "docker-compose up --build 成功启动",
+      "访问 http://localhost:3002 正常",
+      "卷挂载正确（uploads、data、logs）"
+    ],
+    "passes": true
+  },
+  {
+    "id": "TEST-004",
+    "category": "infrastructure",
+    "priority": "high",
+    "description": "前端单元测试框架",
+    "steps": [
+      "安装 vitest 和 testing-library 依赖",
+      "配置 vitest.config.ts",
+      "创建测试设置文件",
+      "编写工具函数测试用例",
+      "编写组件测试用例"
+    ],
+    "acceptance_criteria": [
+      "npm run test 运行测试",
+      "测试用例全部通过",
+      "测试覆盖率 > 60%"
+    ],
+    "passes": true
+  },
+  {
+    "id": "IMAGE-004",
+    "category": "functional",
+    "priority": "medium",
+    "description": "图片懒加载与优化",
+    "steps": [
+      "创建 LazyImage 组件（原生 loading='lazy'）",
+      "创建 ImagePreview 全屏预览组件",
+      "在 ImageUploader 添加图片压缩功能",
+      "在 AssetDetail 应用懒加载"
+    ],
+    "acceptance_criteria": [
+      "图片懒加载生效",
+      "大图上传自动压缩",
+      "点击图片可全屏预览"
+    ],
+    "passes": true
+  },
+  {
+    "id": "UI-010",
+    "category": "ui",
+    "priority": "medium",
+    "description": "键盘快捷键支持",
+    "steps": [
+      "创建 useKeyboard hook",
+      "创建快捷键帮助弹窗组件",
+      "在 Layout 注册全局快捷键",
+      "在 AssetForm 注册保存快捷键"
+    ],
+    "acceptance_criteria": [
+      "Ctrl+K 打开全局搜索",
+      "Ctrl+N 新增资产",
+      "Ctrl+S 保存表单",
+      "Shift+? 显示快捷键帮助"
+    ],
+    "passes": true
   }
 ]

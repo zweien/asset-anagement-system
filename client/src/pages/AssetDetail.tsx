@@ -5,6 +5,7 @@ import { assetApi, ASSET_STATUS_LABELS, getToken } from '../lib/api'
 import type { Asset, AssetStatus, FieldConfig } from '../lib/api'
 import { fieldApi } from '../lib/api'
 import { ImageUploader } from '../components/ImageUploader'
+import { ImagePreview } from '../components/ui/image-preview'
 
 const API_BASE = 'http://localhost:3002/api'
 
@@ -469,13 +470,12 @@ export function AssetDetail() {
             {images.map((image) => (
               <div
                 key={image.id}
-                className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer"
-                onClick={() => window.open(`${API_BASE}/images/${image.id}`, '_blank')}
+                className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
               >
-                <img
+                <ImagePreview
                   src={`${API_BASE}/images/${image.id}`}
                   alt={image.originalName}
-                  className="w-full h-24 object-cover"
+                  thumbnailClassName="w-full h-24 object-cover"
                 />
                 <div className="p-2 text-xs text-gray-500 dark:text-gray-400 truncate">
                   {image.originalName}
