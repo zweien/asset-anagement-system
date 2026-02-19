@@ -2,6 +2,139 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-19 - 会话 14 (GitHub 链接)
+
+### 完成的工作
+- [x] UI-008: 导航栏添加 GitHub 链接
+
+### 实现细节
+**UI-008 导航栏添加 GitHub 链接**
+- 修改 `client/src/components/layout/Header.tsx`
+- 导入 Github 图标 (lucide-react)
+- 桌面端导航：在导航项后添加 GitHub 外部链接
+- 移动端菜单：在侧边栏菜单中添加 GitHub 链接
+- 链接地址：https://github.com/zweien/asset-anagement-system
+- 新窗口打开 (target="_blank")
+
+### 测试验证
+- ✅ 桌面端导航栏显示 GitHub 链接
+- ✅ 移动端侧边栏菜单显示 GitHub 链接
+- ✅ 链接可点击，正确跳转到 GitHub 仓库
+- ✅ lint 检查通过
+- ✅ build 构建成功
+
+### Git 提交记录
+1. feat(ui): add GitHub link to navigation bar
+
+### 当前状态
+- 进度: 68/68 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.3.0
+
+---
+
+## 2026-02-19 - 会话 13 (v1.3.0 发布)
+
+### 完成的工作
+- [x] AI-007: AI 自定义字段查询支持
+- [x] USER-004: 用户批量导入功能
+- [x] BUG 修复: Markdown 渲染空白问题
+- [x] BUG 修复: i18n 翻译缺失问题
+
+### 实现细节
+
+**AI-007 AI 自定义字段查询支持**
+- 修改 `server/src/prompts/system-prompt.ts`
+  - 添加 FieldConfig 接口
+  - 添加 getFieldConfigs() 函数获取可见字段配置
+  - 增强系统提示词，包含自定义字段表格
+  - 添加 SQLite json_extract() 查询指导
+
+**USER-004 用户批量导入功能**
+- 后端实现：
+  - `server/src/controllers/user.controller.ts` - 添加 downloadTemplate 和 importUsers 方法
+  - `server/src/routes/users.ts` - 添加 multer 文件上传配置和路由
+  - 使用 xlsx 库解析 Excel 文件
+- 前端实现：
+  - `client/src/lib/api.ts` - 添加 downloadTemplate 和 importUsers API
+  - `client/src/pages/UserManagement.tsx` - 添加导入按钮和导入对话框
+- 功能特性：
+  - 三步引导式导入（下载模板 → 填写数据 → 上传导入）
+  - Excel 模板包含用户名、姓名、邮箱、角色、密码列
+  - 批量导入用户并显示结果
+  - 导入失败显示具体错误原因
+
+**BUG 修复**
+- Markdown 渲染空白问题
+  - 将 whitespace-pre-wrap 移到用户消息
+  - 添加 .replace(/\n{3,}/g, '\n\n') 压缩多余换行
+- i18n 翻译缺失问题
+  - 添加 common.close 和 common.remove 翻译键
+
+### 发布信息
+- 版本: v1.3.0
+- 发布时间: 2026-02-19
+- GitHub Release: https://github.com/zweien/asset-anagement-system/releases/tag/v1.3.0
+
+### Git 提交记录
+1. feat(ai): add custom field config to AI system prompt
+2. fix(ai): remove extra whitespace before markdown tables in AI chat
+3. feat(user): add batch import users feature
+4. fix(i18n): add missing close and remove translations
+5. docs: update to v1.3.0
+
+### 当前状态
+- 进度: 68/68 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.3.0
+
+---
+
+## 2026-02-19 - 会话 12 (用户批量导入)
+
+### 完成的工作
+- [x] USER-004: 用户批量导入功能
+
+### 实现细节
+
+**USER-004 用户批量导入功能**
+- 后端实现：
+  - `server/src/controllers/user.controller.ts` - 添加 downloadTemplate 和 importUsers 方法
+  - `server/src/routes/users.ts` - 添加 multer 文件上传配置和路由
+  - 使用 xlsx 库解析 Excel 文件
+- 前端实现：
+  - `client/src/lib/api.ts` - 添加 downloadTemplate 和 importUsers API
+  - `client/src/pages/UserManagement.tsx` - 添加导入按钮和导入对话框
+- 功能特性：
+  - 三步引导式导入（下载模板 → 填写数据 → 上传导入）
+  - Excel 模板包含用户名、姓名、邮箱、角色、密码列
+  - 批量导入用户并显示结果
+  - 导入失败显示具体错误原因（行号、用户名、错误信息）
+  - 支持中英文国际化
+
+### API 端点
+| 方法 | 路径 | 功能 |
+|------|------|------|
+| GET | /api/users/template | 下载用户导入模板 |
+| POST | /api/users/import | 批量导入用户 |
+
+### 测试验证
+- ✅ 导入按钮显示正常
+- ✅ 导入对话框正常显示（三步引导）
+- ✅ 下载模板功能正常（生成 user_import_template.xlsx）
+
+### Git 提交记录
+1. feat(user): add batch import users feature
+
+### 当前状态
+- 进度: 67/67 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+
+---
+
 ## 2026-02-18 - 会话 11 (AI 功能增强)
 
 ### 完成的工作

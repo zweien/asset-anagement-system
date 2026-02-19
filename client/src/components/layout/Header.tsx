@@ -15,7 +15,8 @@ import {
   KeyRound,
   Check,
   XCircle,
-  Camera
+  Camera,
+  Github
 } from 'lucide-react'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi, systemConfigApi, avatarApi } from '../../lib/api'
@@ -283,6 +284,15 @@ export function Header() {
                 </Link>
               )
             })}
+            <a
+              href="https://github.com/zweien/asset-anagement-system"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              title="GitHub"
+            >
+              <Github className="w-5 h-5" />
+            </a>
           </nav>
 
           {/* Right side */}
@@ -374,6 +384,17 @@ export function Header() {
                       </Link>
                     )
                   })}
+                  <a
+                    href="https://github.com/zweien/asset-anagement-system"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title="GitHub"
+                  >
+                    <Github className="w-5 h-5" />
+                    GitHub
+                  </a>
                 </nav>
               </SheetContent>
             </Sheet>
