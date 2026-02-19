@@ -225,7 +225,7 @@ export function AppSidebar() {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <div className={`flex aspect-square size-8 items-center justify-center rounded-lg ${systemLogo ? 'bg-transparent' : 'bg-primary text-primary-foreground'}`}>
                     {systemLogo ? (
                       <img
                         src={`${API_BASE}${systemLogo}`}
