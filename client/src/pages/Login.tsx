@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Package, Github } from 'lucide-react'
 import { authApi } from '../lib/api'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -66,10 +67,13 @@ export function Login() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link to="/" className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('login.appName')}
-            </Link>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Package className="w-8 h-8 text-blue-500" />
+              <Link to="/" className="text-2xl font-bold text-gray-900 dark:text-white">
+                {t('login.appName')}
+              </Link>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">
               {isLogin ? t('login.loginTitle') : t('login.registerTitle')}
             </p>
           </div>
@@ -192,6 +196,22 @@ export function Login() {
             <p>{t('login.username')}: admin</p>
             <p>{t('login.password')}: admin123</p>
           </div>
+        </div>
+
+        {/* 版权信息 */}
+        <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="flex items-center justify-center gap-1">
+            © {new Date().getFullYear()} Asset Management System
+          </p>
+          <a
+            href="https://github.com/zweien/asset-anagement-system"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 mt-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          >
+            <Github className="w-4 h-4" />
+            GitHub
+          </a>
         </div>
       </div>
     </div>
