@@ -3,6 +3,7 @@ import { useEffect, useCallback } from 'react'
 export interface ShortcutConfig {
   key: string
   ctrl?: boolean
+  alt?: boolean
   meta?: boolean
   shift?: boolean
   handler: () => void
@@ -13,6 +14,7 @@ export interface ShortcutConfig {
 export interface ShortcutDisplay {
   key: string
   ctrl?: boolean
+  alt?: boolean
   meta?: boolean
   shift?: boolean
   description: string
@@ -35,13 +37,21 @@ export function useKeyboard(shortcuts: ShortcutConfig[]) {
       }
 
       for (const shortcut of shortcuts) {
+        // 检查 Ctrl/Meta 键
         const ctrlMatch = shortcut.ctrl
           ? event.ctrlKey || event.metaKey
           : !event.ctrlKey && !event.metaKey
+
+        // 检查 Alt 键
+        const altMatch = shortcut.alt ? event.altKey : !event.altKey
+
+        // 检查 Shift 键
         const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey
+
+        // 检查按键
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase()
 
-        if (ctrlMatch && shiftMatch && keyMatch) {
+        if (ctrlMatch && altMatch && shiftMatch && keyMatch) {
           event.preventDefault()
           shortcut.handler()
           return
@@ -58,10 +68,11 @@ export function useKeyboard(shortcuts: ShortcutConfig[]) {
 }
 
 // 快捷键列表（用于显示帮助）
+// 注意：使用 Alt 组合键避免与浏览器快捷键冲突
 export const SHORTCUTS: ShortcutDisplay[] = [
   { key: 'k', ctrl: true, description: '全局搜索' },
-  { key: 'n', ctrl: true, description: '新增资产' },
+  { key: 'a', alt: true, description: '新增资产' },
   { key: 's', ctrl: true, description: '保存表单' },
   { key: 'Escape', description: '关闭弹窗' },
-  { key: '/', shift: true, description: '显示快捷键帮助' },
+  { key: '/', ctrl: true, description: '显示快捷键帮助' },
 ]

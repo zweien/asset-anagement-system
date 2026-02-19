@@ -29,6 +29,7 @@ export function ShortcutHelp({ open, onOpenChange }: ShortcutHelpProps) {
               </span>
               <kbd className="px-2 py-1 text-xs font-mono bg-muted rounded">
                 {shortcut.ctrl && 'Ctrl + '}
+                {shortcut.alt && 'Alt + '}
                 {shortcut.shift && 'Shift + '}
                 {shortcut.key}
               </kbd>

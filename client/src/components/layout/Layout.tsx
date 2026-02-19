@@ -33,9 +33,9 @@ export function Layout() {
   // 注册全局快捷键
   useKeyboard([
     { key: 'k', ctrl: true, handler: () => { /* TODO: 打开搜索 */ } },
-    { key: 'n', ctrl: true, handler: () => navigate('/assets?action=new') },
+    { key: 'a', alt: true, handler: () => navigate('/assets?action=new') },
     { key: 'Escape', handler: () => setShortcutHelpOpen(false) },
-    { key: '/', shift: true, handler: () => setShortcutHelpOpen(true) },
+    { key: '/', ctrl: true, handler: () => setShortcutHelpOpen(true) },
   ])
 
   return (
