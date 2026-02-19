@@ -452,6 +452,9 @@ export function Assets() {
 
   // 分组视图状态
   const [viewMode, setViewMode] = useState<'list' | 'group'>('list')
+
+  // 搜索框 ref（用于快捷键聚焦）
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [groupBy, setGroupBy] = useState<string>('status')
   const [groupedData, setGroupedData] = useState<GroupedAssets | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
@@ -614,7 +617,18 @@ export function Assets() {
       // 清除 action 参数，避免刷新页面时重复打开
       navigate('/assets', { replace: true })
     }
-  }, [searchParams, canCreate])
+
+    // 处理快捷键触发的 focus=search
+    const focus = searchParams.get('focus')
+    if (focus === 'search') {
+      // 延迟聚焦以确保 DOM 已渲染
+      setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 100)
+      // 清除 focus 参数
+      navigate('/assets', { replace: true })
+    }
+  }, [searchParams, canCreate, navigate])
 
   useEffect(() => {
     loadData()
@@ -1004,6 +1018,7 @@ export function Assets() {
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex-1 flex items-center gap-2 min-w-[200px]">
               <Input
+                ref={searchInputRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

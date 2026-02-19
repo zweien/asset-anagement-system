@@ -32,8 +32,11 @@ export function Layout() {
 
   // 注册全局快捷键
   useKeyboard([
-    { key: 'k', alt: true, handler: () => { /* TODO: 打开搜索 */ } },
-    { key: 'a', alt: true, handler: () => navigate('/assets?action=new') },
+    { key: 'k', alt: true, handler: () => {
+      // 跳转到资产页面并聚焦搜索框
+      navigate('/assets?focus=search')
+    }},
+    { key: 'n', alt: true, handler: () => navigate('/assets?action=new') },
     { key: 'Escape', handler: () => setShortcutHelpOpen(false) },
     { key: '/', alt: true, handler: () => setShortcutHelpOpen(true) },
   ])
