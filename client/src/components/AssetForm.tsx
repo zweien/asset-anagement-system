@@ -134,9 +134,9 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
     }
   }, [formData, visibleFields, isEditMode, asset, onSuccess, onClose])
 
-  // 注册 Ctrl+S 保存快捷键
+  // 注册 Alt+S 保存快捷键
   useKeyboard([
-    { key: 's', ctrl: true, handler: () => { if (isOpen) handleSubmit() } },
+    { key: 's', alt: true, handler: () => { if (isOpen) handleSubmit() } },
   ])
 
   // 加载图片

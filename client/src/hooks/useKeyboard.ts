@@ -70,9 +70,9 @@ export function useKeyboard(shortcuts: ShortcutConfig[]) {
 // 快捷键列表（用于显示帮助）
 // 注意：使用 Alt 组合键避免与浏览器快捷键冲突
 export const SHORTCUTS: ShortcutDisplay[] = [
-  { key: 'k', ctrl: true, description: '全局搜索' },
+  { key: 'k', alt: true, description: '全局搜索' },
   { key: 'a', alt: true, description: '新增资产' },
-  { key: 's', ctrl: true, description: '保存表单' },
+  { key: 's', alt: true, description: '保存表单' },
   { key: 'Escape', description: '关闭弹窗' },
-  { key: '/', ctrl: true, description: '显示快捷键帮助' },
+  { key: '/', alt: true, description: '显示快捷键帮助' },
 ]

@@ -32,10 +32,10 @@ export function Layout() {
 
   // 注册全局快捷键
   useKeyboard([
-    { key: 'k', ctrl: true, handler: () => { /* TODO: 打开搜索 */ } },
+    { key: 'k', alt: true, handler: () => { /* TODO: 打开搜索 */ } },
     { key: 'a', alt: true, handler: () => navigate('/assets?action=new') },
     { key: 'Escape', handler: () => setShortcutHelpOpen(false) },
-    { key: '/', ctrl: true, handler: () => setShortcutHelpOpen(true) },
+    { key: '/', alt: true, handler: () => setShortcutHelpOpen(true) },
   ])
 
   return (
