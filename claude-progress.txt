@@ -2,6 +2,53 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-19 - 会话 16 (AI 模型配置增强)
+
+### 完成的工作
+- [x] AI-001: 增强 AI 模型配置功能
+
+### 实现细节
+**AI-001 AI 模型配置增强**
+- 修改 `client/src/pages/Settings.tsx`
+- 添加预设 AI Provider 配置：
+  - DeepSeek（默认）
+  - OpenAI
+  - Moonshot（月之暗面）
+  - Anthropic (Claude)
+  - 智谱 AI (GLM)
+  - 阿里云通义千问
+  - SiliconFlow（硅基流动）
+  - 自定义（OpenAI 兼容）
+- 新增功能：
+  - Provider 选择下拉框
+  - 根据 Provider 自动填充 Base URL 和模型列表
+  - 模型选择下拉框（支持自定义模型输入）
+  - 智能 URL 匹配（支持带 /v1 后缀的 URL）
+- 添加 i18n 翻译：
+  - aiProvider, aiBaseUrlAutoHint
+  - aiModelPlaceholder, aiModelCustom, aiModelCustomPlaceholder
+
+### 参考文档
+- Vercel AI SDK: https://ai-sdk.dev
+- 支持多种 OpenAI 兼容的 API Provider
+
+### 测试验证
+- ✅ Provider 下拉框正常显示所有选项
+- ✅ 模型选择功能正常
+- ✅ lint 检查通过
+- ✅ build 构建成功
+
+### Git 提交记录
+1. feat(ai): enhance AI model configuration with provider presets
+
+### 当前状态
+- 进度: 68/68 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.3.0
+
+---
+
 ## 2026-02-19 - 会话 15 (侧边栏导航重构)
 
 ### 完成的工作

@@ -200,7 +200,12 @@
     "aiTest": "测试连接",
     "aiTesting": "测试中...",
     "aiTestSuccess": "AI 配置验证成功",
-    "aiTestFailed": "AI 配置验证失败"
+    "aiTestFailed": "AI 配置验证失败",
+    "aiProvider": "AI 服务商",
+    "aiBaseUrlAutoHint": "选择服务商后自动填充，如需修改请选择「自定义」",
+    "aiModelPlaceholder": "选择模型",
+    "aiModelCustom": "自定义模型...",
+    "aiModelCustomPlaceholder": "输入自定义模型名称"
   },
   "users": {
     "title": "用户管理",

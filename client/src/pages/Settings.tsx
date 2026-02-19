@@ -37,6 +37,83 @@ import { Textarea } from '@/components/ui/textarea'
 
 const API_BASE = 'http://localhost:3002'
 
+// 预设的 AI Provider 配置
+interface ProviderPreset {
+  id: string
+  name: string
+  baseUrl: string
+  models: string[]
+  description: string
+  apiKeyPlaceholder: string
+}
+
+const AI_PROVIDERS: ProviderPreset[] = [
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    baseUrl: 'https://api.deepseek.com',
+    models: ['deepseek-chat', 'deepseek-coder', 'deepseek-reasoner'],
+    description: 'DeepSeek AI - 高性价比的国产大模型',
+    apiKeyPlaceholder: 'sk-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    baseUrl: 'https://api.openai.com',
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo', 'o1', 'o1-mini', 'o1-preview'],
+    description: 'OpenAI GPT 系列模型',
+    apiKeyPlaceholder: 'sk-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'moonshot',
+    name: 'Moonshot (月之暗面)',
+    baseUrl: 'https://api.moonshot.cn',
+    models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    description: 'Kimi 大模型，支持超长上下文',
+    apiKeyPlaceholder: 'sk-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic (Claude)',
+    baseUrl: 'https://api.anthropic.com',
+    models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
+    description: 'Claude 系列模型（需要配置 /v1 代理）',
+    apiKeyPlaceholder: 'sk-ant-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'zhipu',
+    name: '智谱 AI (GLM)',
+    baseUrl: 'https://open.bigmodel.cn',
+    models: ['glm-4-plus', 'glm-4-0520', 'glm-4', 'glm-4-air', 'glm-4-airx', 'glm-4-flash'],
+    description: '智谱 GLM 系列模型',
+    apiKeyPlaceholder: 'xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'qwen',
+    name: '阿里云通义千问',
+    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode',
+    models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-max-longcontext'],
+    description: '阿里云通义千问系列模型',
+    apiKeyPlaceholder: 'sk-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'siliconflow',
+    name: 'SiliconFlow (硅基流动)',
+    baseUrl: 'https://api.siliconflow.cn',
+    models: ['deepseek-ai/DeepSeek-V3', 'Qwen/Qwen2.5-72B-Instruct', 'meta-llama/Meta-Llama-3.1-70B-Instruct'],
+    description: '多种开源模型的统一 API',
+    apiKeyPlaceholder: 'sk-xxxxxxxxxxxxxxxx',
+  },
+  {
+    id: 'custom',
+    name: '自定义 (OpenAI 兼容)',
+    baseUrl: '',
+    models: [],
+    description: '自定义 OpenAI 兼容的 API 端点',
+    apiKeyPlaceholder: '输入你的 API Key',
+  },
+]
+
 // 字段表单组件
 function FieldForm({
   field,
@@ -229,11 +306,13 @@ export function Settings() {
   const [aiConfig, setAIConfig] = useState<AIConfig | null>(null)
   const [aiConfigForm, setAIConfigForm] = useState({
     apiKey: '',
+    provider: 'deepseek',
     baseUrl: 'https://api.deepseek.com',
     model: 'deepseek-chat',
     maxTokens: 2000,
     apiType: 'chat' as 'chat' | 'responses',
   })
+  const [customModel, setCustomModel] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
   const [savingAIConfig, setSavingAIConfig] = useState(false)
   const [testingAIConfig, setTestingAIConfig] = useState(false)
@@ -242,6 +321,23 @@ export function Settings() {
     message: string
     responseTime?: number
   } | null>(null)
+
+  // 获取当前选中的 Provider
+  const currentProvider = AI_PROVIDERS.find(p => p.id === aiConfigForm.provider) || AI_PROVIDERS[0]
+
+  // 处理 Provider 切换
+  const handleProviderChange = (providerId: string) => {
+    const provider = AI_PROVIDERS.find(p => p.id === providerId)
+    if (provider) {
+      setAIConfigForm(prev => ({
+        ...prev,
+        provider: providerId,
+        baseUrl: provider.baseUrl,
+        model: provider.models[0] || '',
+      }))
+      setCustomModel('')
+    }
+  }
 
   // 权限检查
   const currentUser = getStoredUser()
@@ -267,13 +363,26 @@ export function Settings() {
       const response = await aiApi.getConfig()
       if (response.success && response.data) {
         setAIConfig(response.data)
+        // 根据 baseUrl 匹配 provider（支持带 /v1 等后缀的 URL）
+        const normalizedUrl = response.data.baseUrl.replace(/\/v\d*\/?$/, '').replace(/\/$/, '')
+        const matchedProvider = AI_PROVIDERS.find(p => {
+          const normalizedProviderUrl = p.baseUrl.replace(/\/$/, '')
+          return normalizedUrl === normalizedProviderUrl || response.data.baseUrl.startsWith(p.baseUrl)
+        })
+        const providerId = matchedProvider?.id || 'custom'
+        const isCustomModel = matchedProvider && !matchedProvider.models.includes(response.data.model)
+
         setAIConfigForm({
           apiKey: '', // 不显示实际 API Key
+          provider: providerId,
           baseUrl: response.data.baseUrl,
-          model: response.data.model,
+          model: isCustomModel ? '' : response.data.model,
           maxTokens: response.data.maxTokens,
           apiType: response.data.apiType || 'chat',
         })
+        if (isCustomModel && matchedProvider) {
+          setCustomModel(response.data.model)
+        }
       }
     } catch (err) {
       console.error('加载 AI 配置失败:', err)
@@ -284,6 +393,9 @@ export function Settings() {
   const handleSaveAIConfig = async () => {
     setSavingAIConfig(true)
     try {
+      // 确定最终使用的模型
+      const finalModel = aiConfigForm.model === 'custom' ? customModel.trim() : aiConfigForm.model
+
       const updateData: Partial<{
         apiKey: string
         baseUrl: string
@@ -292,7 +404,7 @@ export function Settings() {
         apiType: 'chat' | 'responses'
       }> = {
         baseUrl: aiConfigForm.baseUrl,
-        model: aiConfigForm.model,
+        model: finalModel,
         maxTokens: aiConfigForm.maxTokens,
         apiType: aiConfigForm.apiType,
       }
@@ -325,10 +437,13 @@ export function Settings() {
     setTestingAIConfig(true)
     setTestResult(null)
     try {
+      // 确定最终使用的模型
+      const finalModel = aiConfigForm.model === 'custom' ? customModel.trim() : aiConfigForm.model
+
       // 构建测试配置
       const testConfig: Partial<{ apiKey: string; baseUrl: string; model: string; apiType: 'chat' | 'responses' }> = {
         baseUrl: aiConfigForm.baseUrl,
-        model: aiConfigForm.model,
+        model: finalModel,
         apiType: aiConfigForm.apiType,
       }
 
@@ -613,6 +728,31 @@ export function Settings() {
             )}
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Provider 选择 */}
+            <div className="space-y-2">
+              <Label htmlFor="ai-provider" className="text-sm font-medium">
+                {t('settings.aiProvider')}
+              </Label>
+              <Select
+                value={aiConfigForm.provider}
+                onValueChange={handleProviderChange}
+              >
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {AI_PROVIDERS.map((provider) => (
+                    <SelectItem key={provider.id} value={provider.id}>
+                      {provider.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {currentProvider.description}
+              </p>
+            </div>
+
             {/* API Key */}
             <div className="space-y-2">
               <Label htmlFor="ai-api-key" className="text-sm font-medium">
@@ -625,7 +765,7 @@ export function Settings() {
                     type={showApiKey ? 'text' : 'password'}
                     value={aiConfigForm.apiKey}
                     onChange={(e) => setAIConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                    placeholder={aiConfig?.hasApiKey ? '••••••••••••••••' : t('settings.aiApiKeyPlaceholder')}
+                    placeholder={aiConfig?.hasApiKey ? '••••••••••••••••' : currentProvider.apiKeyPlaceholder}
                     className="pr-10"
                   />
                   <Button
@@ -655,26 +795,67 @@ export function Settings() {
                 id="ai-base-url"
                 value={aiConfigForm.baseUrl}
                 onChange={(e) => setAIConfigForm(prev => ({ ...prev, baseUrl: e.target.value }))}
-                placeholder="https://api.deepseek.com"
+                placeholder={currentProvider.baseUrl || 'https://api.example.com'}
                 className="max-w-xs"
+                disabled={aiConfigForm.provider !== 'custom'}
               />
-              <p className="text-xs text-muted-foreground">
-                {t('settings.aiBaseUrlHint')}
-              </p>
+              {aiConfigForm.provider !== 'custom' && (
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.aiBaseUrlAutoHint')}
+                </p>
+              )}
             </div>
 
-            {/* 模型名称 */}
+            {/* 模型选择 */}
             <div className="space-y-2">
               <Label htmlFor="ai-model" className="text-sm font-medium">
                 {t('settings.aiModel')}
               </Label>
-              <Input
-                id="ai-model"
-                value={aiConfigForm.model}
-                onChange={(e) => setAIConfigForm(prev => ({ ...prev, model: e.target.value }))}
-                placeholder="deepseek-chat"
-                className="max-w-xs"
-              />
+              {currentProvider.models.length > 0 ? (
+                <div className="space-y-2">
+                  <Select
+                    value={aiConfigForm.model}
+                    onValueChange={(v) => {
+                      if (v === 'custom') {
+                        setAIConfigForm(prev => ({ ...prev, model: 'custom' }))
+                      } else {
+                        setAIConfigForm(prev => ({ ...prev, model: v }))
+                        setCustomModel('')
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="max-w-xs">
+                      <SelectValue placeholder={t('settings.aiModelPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentProvider.models.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="custom">
+                        {t('settings.aiModelCustom')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {aiConfigForm.model === 'custom' && (
+                    <Input
+                      value={customModel}
+                      onChange={(e) => setCustomModel(e.target.value)}
+                      placeholder={t('settings.aiModelCustomPlaceholder')}
+                      className="max-w-xs"
+                    />
+                  )}
+                </div>
+              ) : (
+                <Input
+                  id="ai-model"
+                  value={aiConfigForm.model}
+                  onChange={(e) => setAIConfigForm(prev => ({ ...prev, model: e.target.value }))}
+                  placeholder="model-name"
+                  className="max-w-xs"
+                />
+              )}
             </div>
 
             {/* API 端点类型 */}
@@ -714,7 +895,7 @@ export function Settings() {
                 value={aiConfigForm.maxTokens}
                 onChange={(e) => setAIConfigForm(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || 2000 }))}
                 min={100}
-                max={10000}
+                max={32000}
                 className="max-w-xs"
               />
             </div>

@@ -200,7 +200,12 @@
     "aiTest": "Test Connection",
     "aiTesting": "Testing...",
     "aiTestSuccess": "AI configuration verified successfully",
-    "aiTestFailed": "AI configuration verification failed"
+    "aiTestFailed": "AI configuration verification failed",
+    "aiProvider": "AI Provider",
+    "aiBaseUrlAutoHint": "Auto-filled based on provider. Select 'Custom' to modify.",
+    "aiModelPlaceholder": "Select model",
+    "aiModelCustom": "Custom model...",
+    "aiModelCustomPlaceholder": "Enter custom model name"
   },
   "users": {
     "title": "User Management",
