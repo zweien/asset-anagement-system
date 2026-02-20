@@ -1,15 +1,16 @@
 # Asset Management System
 
-[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.4.0)
+[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.5.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supported-336791.svg)](https://www.postgresql.org/)
 
 A modern, full-stack asset management system with dynamic field configuration, Excel import/export, AI assistant, and comprehensive reporting capabilities.
 
-**🎉 Version 1.4.0 Released!** - Added Docker deployment, frontend testing, image optimization, and keyboard shortcuts.
+**🎉 Version 1.5.0 Released!** - Added PostgreSQL database support with migration tools.
 
 [中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 
@@ -23,6 +24,7 @@ A modern, full-stack asset management system with dynamic field configuration, E
 - 📊 **Dynamic Field Configuration** - Create custom fields without modifying the database schema
 - 📥 **Excel Import/Export** - Batch import from Excel files with field mapping
 - 🗄️ **Database Migration** - Import data from external databases (MySQL, PostgreSQL, SQLite)
+- 🐘 **PostgreSQL Support** - Native PostgreSQL support with JSONB queries and data migration tools
 - 📈 **Visual Reports** - Charts and statistics with customizable report templates
 - 🔍 **SQL Query** - Admin users can execute safe SQL queries directly
 - 🌐 **Internationalization** - Full i18n support with Chinese and English translations
@@ -124,6 +126,17 @@ export JWT_SECRET=your-secure-secret-key-at-least-32-chars
 docker-compose up -d
 ```
 
+**PostgreSQL Deployment:**
+
+For larger scale deployments, use PostgreSQL:
+
+```bash
+# Start with PostgreSQL
+docker-compose up -d postgres app-postgres --build
+
+# Access at http://localhost:3002
+```
+
 **Common Docker Commands:**
 
 ```bash
@@ -132,6 +145,42 @@ docker-compose logs -f      # View logs
 docker-compose ps           # Check status
 docker-compose down         # Stop services
 docker-compose down -v      # Stop and remove volumes
+```
+
+### Database Options
+
+The system supports both SQLite and PostgreSQL:
+
+**SQLite (Default)**
+- Zero configuration, file-based storage
+- Ideal for small to medium deployments
+- Data stored in `data/assets.db`
+
+**PostgreSQL (Recommended for Production)**
+- Better performance for large datasets
+- Native JSONB queries for dynamic fields
+- Concurrent access support
+
+To switch to PostgreSQL:
+
+```bash
+# 1. Start PostgreSQL container
+docker-compose up -d postgres
+
+# 2. Copy PostgreSQL schema
+cp server/prisma/schema.postgresql.prisma server/prisma/schema.prisma
+
+# 3. Push schema to database
+cd server && npm run db:generate && npm run db:push
+
+# 4. Set environment variable
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/assets"
+
+# 5. (Optional) Migrate existing SQLite data
+npm run db:migrate-pg
+
+# 6. Start server
+npm run dev
 ```
 
 ### Configure AI Assistant (Optional)

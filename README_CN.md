@@ -1,15 +1,16 @@
 # 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.4.0)
+[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.5.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supported-336791.svg)](https://www.postgresql.org/)
 
 一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 版本 1.4.0 发布！** - 新增 Docker 部署、前端单元测试、图片优化、键盘快捷键。
+**🎉 版本 1.5.0 发布！** - 新增 PostgreSQL 数据库支持及数据迁移工具。
 
 [English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 
@@ -23,6 +24,7 @@
 - 📊 **动态字段配置** - 无需修改数据库结构即可创建自定义字段
 - 📥 **Excel 导入导出** - 支持字段映射的批量 Excel 导入
 - 🗄️ **数据库迁移** - 从外部数据库导入数据（MySQL、PostgreSQL、SQLite）
+- 🐘 **PostgreSQL 支持** - 原生 PostgreSQL 支持，含 JSONB 查询和数据迁移工具
 - 📈 **可视化报表** - 可自定义报表模板的图表和统计功能
 - 🔍 **SQL 查询** - 管理员可直接执行安全的 SQL 查询
 - 🌐 **国际化** - 完整的中英文翻译支持
@@ -124,6 +126,17 @@ export JWT_SECRET=your-secure-secret-key-at-least-32-chars
 docker-compose up -d
 ```
 
+**PostgreSQL 部署：**
+
+适合大规模部署，使用 PostgreSQL 数据库：
+
+```bash
+# 使用 PostgreSQL 启动
+docker-compose up -d postgres app-postgres --build
+
+# 访问地址 http://localhost:3002
+```
+
 **Docker 常用命令：**
 
 ```bash
@@ -132,6 +145,42 @@ docker-compose logs -f      # 查看日志
 docker-compose ps           # 查看状态
 docker-compose down         # 停止服务
 docker-compose down -v      # 停止并删除数据卷
+```
+
+### 数据库选择
+
+系统支持 SQLite 和 PostgreSQL 两种数据库：
+
+**SQLite（默认）**
+- 零配置，基于文件的存储
+- 适合中小规模部署
+- 数据存储在 `data/assets.db`
+
+**PostgreSQL（生产环境推荐）**
+- 大数据量下性能更优
+- 原生 JSONB 查询动态字段
+- 支持并发访问
+
+切换到 PostgreSQL：
+
+```bash
+# 1. 启动 PostgreSQL 容器
+docker-compose up -d postgres
+
+# 2. 复制 PostgreSQL schema
+cp server/prisma/schema.postgresql.prisma server/prisma/schema.prisma
+
+# 3. 推送 schema 到数据库
+cd server && npm run db:generate && npm run db:push
+
+# 4. 设置环境变量
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/assets"
+
+# 5. （可选）迁移现有 SQLite 数据
+npm run db:migrate-pg
+
+# 6. 启动服务
+npm run dev
 ```
 
 ### 配置 AI 助手（可选）

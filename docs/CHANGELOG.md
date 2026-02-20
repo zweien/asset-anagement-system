@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-02-20
+
+### Added
+- **PostgreSQL Database Support** - Native PostgreSQL support for enterprise deployments
+  - Auto-detect database type from `DATABASE_URL` environment variable
+  - PostgreSQL uses native JSONB type for dynamic fields with efficient queries
+  - SQLite remains the default for backward compatibility
+- **Database Migration Tool** - Seamless SQLite to PostgreSQL data migration
+  - `npm run db:migrate-pg` command for one-click migration
+  - Automatic JSON field conversion (String → Json)
+  - Migration report with success/failure summary
+- **Database Connection Layer** - Centralized PrismaClient management
+  - Singleton pattern to avoid connection pool issues
+  - Export `isPostgreSQL()`, `isSQLite()`, `getPrismaClient()` utilities
+- **JSON Query Adapter** - Database-agnostic JSON field queries
+  - `PostgresJsonQueryAdapter` for native JSONB queries
+  - `SqliteJsonQueryAdapter` for application-layer filtering
+  - Unified `evaluateJsonCondition()` for both databases
+- **Docker PostgreSQL Service** - Ready-to-use PostgreSQL container
+  - `app-postgres` service for PostgreSQL mode
+  - `postgres` service with PostgreSQL 16 Alpine
+  - Health checks for proper startup order
+  - Docker volume for data persistence
+
+### Changed
+- **Service Layer Refactoring** - All 12 service files now use shared PrismaClient
+  - Prevents connection pool exhaustion
+  - Consistent database access patterns
+- **SQL Query Service** - Enhanced for PostgreSQL compatibility
+  - `getTableSchema()` supports both PRAGMA and information_schema
+  - AI system prompt provides database-specific JSON query syntax
+- **init.sh** - Added new database commands
+  - `./init.sh db:detect` - Detect current database type
+  - `./init.sh db:migrate-pg` - Migrate SQLite data to PostgreSQL
+
+### Technical Details
+- Added `better-sqlite3` for migration script
+- Created `server/src/lib/database.ts` for database connection management
+- Created `server/src/lib/json-query.ts` for JSON query abstraction
+- Created `server/src/scripts/migrate-to-postgres.ts` for data migration
+- Added `server/prisma/schema.postgresql.prisma` for PostgreSQL schema
+- Added `server/.env.postgresql.example` for configuration reference
+
 ## [1.4.0] - 2026-02-19
 
 ### Added
