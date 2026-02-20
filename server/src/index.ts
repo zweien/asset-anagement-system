@@ -27,6 +27,21 @@ app.use(express.urlencoded({ extended: true }))
 // 静态文件服务 - 用于访问上传的文件（Logo、头像等）
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
+// 静态文件服务 - 用于生产环境服务前端构建产物
+if (process.env.NODE_ENV === 'production') {
+  const publicPath = path.join(process.cwd(), 'public')
+  app.use(express.static(publicPath))
+
+  // SPA fallback - 所有非 API 路由返回 index.html
+  app.get('*', (_req, res, next) => {
+    // 跳过 API 和静态资源路由
+    if (_req.path.startsWith('/api') || _req.path.startsWith('/uploads')) {
+      return next()
+    }
+    res.sendFile(path.join(publicPath, 'index.html'))
+  })
+}
+
 // 请求日志中间件
 app.use(requestLogger)
 

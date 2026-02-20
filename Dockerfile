@@ -18,8 +18,8 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-# 安装 curl 用于健康检查
-RUN apk add --no-cache curl
+# 安装 curl 和 openssl 用于健康检查和 Prisma
+RUN apk add --no-cache curl openssl openssl-dev
 
 # 安装生产依赖
 COPY server/package*.json ./server/
@@ -38,6 +38,10 @@ RUN cd /app/server && npx prisma generate
 # 创建必要的目录
 RUN mkdir -p /app/server/uploads /app/server/data /app/server/logs
 
+# 复制启动脚本
+COPY docker-entrypoint.sh /app/server/
+RUN chmod +x /app/server/docker-entrypoint.sh
+
 WORKDIR /app/server
 EXPOSE 3002
-CMD ["node", "dist/index.js"]
+CMD ["/app/server/docker-entrypoint.sh"]
