@@ -1,8 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import * as xlsx from 'xlsx'
 import { AssetService } from './asset.service'
-
-const prisma = new PrismaClient()
 
 export interface ImportResult {
   success: boolean

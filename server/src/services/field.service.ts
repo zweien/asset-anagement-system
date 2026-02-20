@@ -1,6 +1,5 @@
-import { PrismaClient, FieldConfig } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { FieldConfig } from '@prisma/client'
+import { prisma } from '../lib/database'
 
 // 字段类型枚举
 export enum FieldTypeEnum {

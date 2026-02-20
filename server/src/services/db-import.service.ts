@@ -1,8 +1,6 @@
 import mysql from 'mysql2/promise'
 import pg from 'pg'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/database'
 
 // 数据库连接配置
 export interface DBConnectionConfig {

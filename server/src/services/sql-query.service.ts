@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma, isPostgreSQL } from '../lib/database'
 
 // 允许查询的表白名单
 const ALLOWED_TABLES = [
@@ -199,23 +197,43 @@ export const SqlQueryService = {
     return [...ALLOWED_TABLES]
   },
 
-  // 获取表结构信息
+  // 获取表结构信息（支持 SQLite 和 PostgreSQL）
   async getTableSchema(tableName: string): Promise<{ success: boolean; columns?: Array<{ name: string; type: string }>; error?: string }> {
     if (!ALLOWED_TABLES.includes(tableName)) {
       return { success: false, error: `不允许查询表: ${tableName}` }
     }
 
     try {
-      const result = await prisma.$queryRawUnsafe(
-        `PRAGMA table_info(${tableName})`
-      ) as Array<{ name: string; type: string }>
+      if (isPostgreSQL()) {
+        // PostgreSQL: 使用 information_schema 查询
+        const result = await prisma.$queryRawUnsafe(
+          `SELECT column_name as name, data_type as type
+           FROM information_schema.columns
+           WHERE table_schema = 'public' AND table_name = $1
+           ORDER BY ordinal_position`,
+          tableName
+        ) as Array<{ name: string; type: string }>
 
-      return {
-        success: true,
-        columns: result.map(col => ({
-          name: col.name,
-          type: col.type,
-        })),
+        return {
+          success: true,
+          columns: result.map(col => ({
+            name: col.name,
+            type: col.type,
+          })),
+        }
+      } else {
+        // SQLite: 使用 PRAGMA 查询
+        const result = await prisma.$queryRawUnsafe(
+          `PRAGMA table_info(${tableName})`
+        ) as Array<{ name: string; type: string }>
+
+        return {
+          success: true,
+          columns: result.map(col => ({
+            name: col.name,
+            type: col.type,
+          })),
+        }
       }
     } catch (error) {
       return {

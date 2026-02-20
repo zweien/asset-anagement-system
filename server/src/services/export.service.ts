@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import * as xlsx from 'xlsx'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/database'
 
 export interface ExportOptions {
   fields: string[] // 要导出的字段 ID

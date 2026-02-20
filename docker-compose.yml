@@ -1,4 +1,18 @@
+# 资产管理系统 Docker Compose 配置
+# ================================
+#
+# 使用 SQLite (默认):
+#   docker-compose up -d app
+#
+# 使用 PostgreSQL:
+#   docker-compose up -d app-postgres postgres
+#
+# 注意：使用 PostgreSQL 前需要：
+#   1. 复制 server/prisma/schema.postgresql.prisma 到 server/prisma/schema.prisma
+#   2. 运行 npx prisma generate 和 npx prisma db push
+
 services:
+  # SQLite 模式（默认）
   app:
     build: .
     container_name: asset-management
@@ -21,3 +35,52 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # PostgreSQL 模式
+  app-postgres:
+    build: .
+    container_name: asset-management-postgres
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./uploads:/app/server/uploads
+      - ./logs:/app/server/logs
+    environment:
+      - PORT=3002
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-please-change-this-secret-in-production}
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/assets
+      - UPLOAD_DIR=uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL 数据库服务
+  postgres:
+    image: postgres:16-alpine
+    container_name: asset-management-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: assets
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d assets"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:

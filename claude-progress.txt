@@ -2,6 +2,129 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-20 - 会话 18 (PostgreSQL 多数据库支持)
+
+### 完成的工作
+- [x] DB-001: PostgreSQL 多数据库支持
+
+### 实现细节
+
+**DB-001 PostgreSQL 多数据库支持**
+
+1. **数据库连接层** (`server/src/lib/database.ts`)
+   - 从 `DATABASE_URL` 自动检测数据库类型（SQLite/PostgreSQL）
+   - PrismaClient 单例模式，避免连接池问题
+   - 导出便捷函数：`isPostgreSQL()`, `isSQLite()`, `getPrismaClient()`
+
+2. **JSON 查询适配层** (`server/src/lib/json-query.ts`)
+   - `PostgresJsonQueryAdapter`: 使用 PostgreSQL JSONB 原生查询
+   - `SqliteJsonQueryAdapter`: SQLite 应用层过滤（保持兼容）
+   - 统一的 `evaluateJsonCondition()` 条件评估函数
+
+3. **Prisma Schema 多数据库支持**
+   - 主 schema.prisma 保持 SQLite（向后兼容）
+   - 新增 schema.postgresql.prisma（使用 Json 类型）
+   - 新增 schema.sqlite.prisma（备份参考）
+   - 新增 .env.postgresql.example（配置示例）
+
+4. **服务层统一使用共享 PrismaClient**
+   - 修改 12 个服务文件，从独立 PrismaClient 改为共享单例
+   - 避免每个文件创建独立连接的问题
+
+5. **SQL 查询服务适配**
+   - `getTableSchema()` 支持 SQLite PRAGMA 和 PostgreSQL information_schema
+   - AI 系统提示根据数据库类型提供不同的 JSON 查询语法指南
+
+6. **Docker Compose 更新**
+   - 新增 `app-postgres` 服务（PostgreSQL 模式）
+   - 新增 `postgres` 服务（PostgreSQL 16 Alpine）
+   - 使用健康检查确保服务启动顺序
+   - 使用 Docker volume 持久化 PostgreSQL 数据
+
+7. **数据迁移脚本** (`server/src/scripts/migrate-to-postgres.ts`)
+   - 支持 SQLite → PostgreSQL 数据迁移
+   - 按依赖顺序迁移（用户→字段配置→分类→资产→...）
+   - 自动转换 JSON 字段（String → Json）
+   - 迁移报告和错误汇总
+
+8. **init.sh 新增命令**
+   - `./init.sh db:detect` - 检测当前数据库类型
+   - `./init.sh db:migrate-pg` - 迁移 SQLite 数据到 PostgreSQL
+
+### 新增文件
+```
+server/src/lib/database.ts           # 数据库连接层
+server/src/lib/json-query.ts         # JSON 查询适配层
+server/src/scripts/migrate-to-postgres.ts  # 迁移脚本
+server/prisma/schema.postgresql.prisma    # PostgreSQL schema
+server/prisma/schema.sqlite.prisma        # SQLite schema (备份)
+server/.env.postgresql.example            # PostgreSQL 配置示例
+```
+
+### 修改的服务文件 (12个)
+- asset.service.ts
+- auth.service.ts
+- db-import.service.ts
+- export.service.ts
+- field.service.ts
+- image.service.ts
+- import.service.ts
+- log.service.ts
+- report.service.ts
+- sql-query.service.ts
+- system-config.service.ts
+- user.service.ts
+
+### 使用方法
+
+**SQLite 模式（默认）**
+```bash
+# 无需配置，使用 file:../data/assets.db
+./init.sh server
+```
+
+**PostgreSQL 模式**
+```bash
+# 1. 启动 PostgreSQL 容器
+docker-compose up -d postgres
+
+# 2. 复制 PostgreSQL schema
+cp server/prisma/schema.postgresql.prisma server/prisma/schema.prisma
+
+# 3. 推送 schema 到数据库
+cd server && npm run db:generate && npm run db:push
+
+# 4. 设置环境变量
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/assets"
+
+# 5. （可选）迁移现有数据
+npm run db:migrate-pg
+
+# 6. 启动服务
+npm run dev
+```
+
+### 新增命令
+```bash
+./init.sh db:detect      # 检测当前数据库类型
+./init.sh db:migrate-pg  # 迁移 SQLite 数据到 PostgreSQL
+```
+
+### 测试验证
+- ✅ lint 检查通过 (0 错误, 82 警告)
+- ✅ build 构建成功
+
+### Git 提交记录
+1. feat(db): add PostgreSQL multi-database support
+
+### 当前状态
+- 进度: 73/73 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.4.0
+
+---
+
 ## 2026-02-19 - 会话 17 (系统改进 - Docker/测试/图片优化/快捷键)
 
 ### 完成的工作

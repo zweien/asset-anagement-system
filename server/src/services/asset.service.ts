@@ -1,6 +1,5 @@
-import { PrismaClient, Asset } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { Asset } from '@prisma/client'
+import { prisma } from '../lib/database'
 
 // 资产状态枚举
 export enum AssetStatusEnum {

@@ -1,22 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma Schema for SQLite (Backup Reference)
+// ===========================================
+// 这是主 schema.prisma 的备份副本
+// SQLite 使用 String 类型存储 JSON 数据
 //
-// 多数据库支持说明:
-// ==================
-// 本项目支持 SQLite 和 PostgreSQL 两种数据库。
-//
-// 使用 SQLite (默认):
+// 配置方法:
 //   DATABASE_URL="file:../data/assets.db"
-//   使用此 schema.prisma 文件
-//
-// 使用 PostgreSQL:
-//   DATABASE_URL="postgresql://user:password@localhost:5432/assets"
-//   使用 schema.postgresql.prisma 文件，或将 provider 改为 "postgresql"
-//   PostgreSQL schema 将 Asset.data 从 String 改为 Json 类型，支持原生 JSON 查询
-//
-// 切换数据库后需要:
-//   1. 运行 npx prisma generate 重新生成客户端
-//   2. 运行 npx prisma db push 推送 schema 到数据库
 
 generator client {
   provider = "prisma-client-js"
@@ -114,7 +102,7 @@ model OperationLog {
   @@map("operation_logs")
 }
 
-// 用户表 (后续扩展)
+// 用户表
 model User {
   id          String   @id @default(uuid())
   username    String   @unique

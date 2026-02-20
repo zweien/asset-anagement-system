@@ -1,4 +1,5 @@
 import { SqlQueryService } from '../services/sql-query.service'
+import { isPostgreSQL, getDatabaseTypeName } from '../lib/database'
 
 // 自定义字段配置接口
 interface FieldConfig {
@@ -44,16 +45,56 @@ export async function getSystemPrompt(): Promise<string> {
       return `| ${field.name} | ${field.label} | ${field.type} | ${optionsDisplay} |`
     }).join('\n')
 
-    fieldConfigsSection = `
-## 自定义字段配置
+    // 根据数据库类型提供不同的 JSON 查询指南
+    const jsonQueryGuide = isPostgreSQL()
+      ? `
+## 自定义字段查询方法 (PostgreSQL)
 
-以下是资产表中可用的自定义字段（存储在 assets.data JSON 字段中）：
+在 PostgreSQL 中查询 data JSONB 字段时，使用 -> 和 ->> 操作符：
 
-| 字段名 | 显示名称 | 类型 | 选项值 |
-|--------|----------|------|--------|
-${fieldRows}
+\`\`\`sql
+-- 查询指定自定义字段 (返回 JSON 值)
+SELECT name, data->'字段名' as 字段名
+FROM assets
 
-## 自定义字段查询方法
+-- 查询指定自定义字段 (返回文本值)
+SELECT name, data->>'字段名' as 字段名
+FROM assets
+
+-- 使用 JSON 字段作为筛选条件
+SELECT id, name, code, data->>'type1' as type1
+FROM assets
+WHERE data->>'type1' = 'A'
+
+-- 统计自定义字段值分布
+SELECT data->>'字段名' as 字段名, COUNT(*) as count
+FROM assets
+GROUP BY data->>'字段名'
+
+-- 数值比较
+SELECT id, name, (data->>'amount')::numeric as amount
+FROM assets
+WHERE (data->>'amount')::numeric > 100
+
+-- 检查字段是否存在
+SELECT id, name
+FROM assets
+WHERE data ? '字段名'
+
+-- 检查字段是否为非空
+SELECT id, name
+FROM assets
+WHERE data->>'字段名' IS NOT NULL AND data->>'字段名' != ''
+\`\`\`
+
+**PostgreSQL JSONB 操作符说明：**
+- \`->\` : 获取 JSON 对象字段（返回 JSON 类型）
+- \`->>\` : 获取 JSON 对象字段（返回文本类型）
+- \`?\` : 检查键是否存在
+- \`@>\` : 检查是否包含指定的 JSON 值
+`
+      : `
+## 自定义字段查询方法 (SQLite)
 
 在 SQLite 中查询 data JSON 字段时，使用 json_extract 函数：
 
@@ -80,9 +121,24 @@ GROUP BY json_extract(data, '$.字段名')
 - 对于数值比较，使用 CAST(json_extract(...) AS REAL)
 - 对于多选字段（MULTISELECT），值存储为逗号分隔的字符串
 `
+
+    fieldConfigsSection = `
+## 自定义字段配置
+
+以下是资产表中可用的自定义字段（存储在 assets.data JSON 字段中）：
+
+| 字段名 | 显示名称 | 类型 | 选项值 |
+|--------|----------|------|--------|
+${fieldRows}
+${jsonQueryGuide}
+`
   }
 
   return `你是一个资产管理系统的 AI 助手。你的任务是帮助用户通过自然语言查询和分析资产数据。
+
+## 当前数据库信息
+
+当前系统使用的是 **${getDatabaseTypeName()}** 数据库。请根据数据库类型使用正确的 SQL 语法。
 
 ## 数据库结构
 

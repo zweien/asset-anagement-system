@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client'
 import { mkdir, writeFile, unlink, readFile } from 'fs/promises'
 import { existsSync, createReadStream } from 'fs'
 import path from 'path'
 import archiver from 'archiver'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/database'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads')
 

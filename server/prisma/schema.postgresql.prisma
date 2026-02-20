@@ -1,29 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma Schema for PostgreSQL
+// ============================
+// 使用此 schema 连接 PostgreSQL 数据库
 //
-// 多数据库支持说明:
-// ==================
-// 本项目支持 SQLite 和 PostgreSQL 两种数据库。
+// 配置方法:
+//   1. 设置环境变量: DATABASE_URL="postgresql://user:password@host:5432/database"
+//   2. 复制此文件内容到 schema.prisma，或使用: npx prisma db push --schema=prisma/schema.postgresql.prisma
+//   3. 生成客户端: npx prisma generate --schema=prisma/schema.postgresql.prisma
 //
-// 使用 SQLite (默认):
-//   DATABASE_URL="file:../data/assets.db"
-//   使用此 schema.prisma 文件
-//
-// 使用 PostgreSQL:
-//   DATABASE_URL="postgresql://user:password@localhost:5432/assets"
-//   使用 schema.postgresql.prisma 文件，或将 provider 改为 "postgresql"
-//   PostgreSQL schema 将 Asset.data 从 String 改为 Json 类型，支持原生 JSON 查询
-//
-// 切换数据库后需要:
-//   1. 运行 npx prisma generate 重新生成客户端
-//   2. 运行 npx prisma db push 推送 schema 到数据库
+// PostgreSQL 优势:
+//   - Asset.data 使用 Json 类型，支持原生 JSONB 查询
+//   - 更好的并发性能
+//   - 支持更大数据量
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -56,10 +50,11 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children    Category[] @relation("CategoryTree")
   assets      Asset[]
 
+  @@index([parentId])
   @@map("categories")
 }
 
@@ -70,14 +65,18 @@ model Asset {
   code        String?  @unique         // 资产编号
   categoryId  String?                  // 分类ID
   status      String   @default("ACTIVE") // 状态: ACTIVE(在用), IDLE(闲置), DAMAGED(损坏), SCRAPPED(已报废)
-  data        String                   // 动态字段数据 (JSON 格式)
+  data        Json                     // 动态字段数据 (JSONB 类型，支持原生 JSON 查询)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?                // 软删除
 
-  category    Category?   @relation(fields: [categoryId], references: [id])
+  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   images      AssetImage[]
 
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdAt])
+  // GIN 索引用于 JSONB 查询 (需要手动创建: CREATE INDEX idx_assets_data ON assets USING GIN (data);)
   @@map("assets")
 }
 
@@ -92,8 +91,9 @@ model AssetImage {
   path        String                   // 存储路径
   createdAt   DateTime @default(now())
 
-  asset       Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  asset       Asset @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@index([assetId])
   @@map("asset_images")
 }
 
@@ -105,16 +105,19 @@ model OperationLog {
   entityId    String?                  // 实体ID
   userId      String?                  // 操作用户ID
   userName    String?                  // 操作用户名
-  oldValue    String?                  // 旧值 (JSON)
-  newValue    String?                  // 新值 (JSON)
+  oldValue    Json?                    // 旧值 (JSON)
+  newValue    Json?                    // 新值 (JSON)
   ip          String?                  // IP地址
   userAgent   String?                  // User Agent
   createdAt   DateTime @default(now())
 
+  @@index([entityType])
+  @@index([userId])
+  @@index([createdAt])
   @@map("operation_logs")
 }
 
-// 用户表 (后续扩展)
+// 用户表
 model User {
   id          String   @id @default(uuid())
   username    String   @unique
@@ -127,6 +130,8 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([username])
+  @@index([email])
   @@map("users")
 }
 
@@ -149,7 +154,7 @@ model ReportTemplate {
   description String?                  // 描述
   chartType   String                   // 图表类型: bar, pie, line
   dimension   String                   // 数据维度: status, categoryId, createdAt, 或动态字段名
-  filters     String?                  // 筛选条件 (JSON)
+  filters     Json?                    // 筛选条件 (JSON)
   dateRange   String?                  // 日期范围: all, today, week, month, year, custom
   customStartDate String?              // 自定义开始日期
   customEndDate   String?              // 自定义结束日期

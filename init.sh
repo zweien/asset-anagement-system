@@ -93,6 +93,42 @@ db_reset() {
     fi
 }
 
+# 数据库类型检测
+db_detect() {
+    log_info "检测数据库类型..."
+    if [ -n "$DATABASE_URL" ]; then
+        if [[ "$DATABASE_URL" == postgresql://* ]] || [[ "$DATABASE_URL" == postgres://* ]]; then
+            log_success "当前数据库: PostgreSQL"
+            log_info "连接: ${DATABASE_URL:0:50}..."
+        elif [[ "$DATABASE_URL" == file:* ]]; then
+            log_success "当前数据库: SQLite"
+            log_info "文件: $DATABASE_URL"
+        else
+            log_warning "未知数据库类型: $DATABASE_URL"
+        fi
+    else
+        log_success "当前数据库: SQLite (默认)"
+        log_info "文件: file:../data/assets.db"
+    fi
+}
+
+# 迁移到 PostgreSQL
+db_migrate_pg() {
+    log_info "迁移数据到 PostgreSQL..."
+    log_warning "请确保:"
+    echo "  1. PostgreSQL 服务已启动"
+    echo "  2. DATABASE_URL 环境变量已设置"
+    echo "  3. 已使用 PostgreSQL schema 运行 db:push"
+    echo ""
+    read -p "确认开始迁移？(y/N) " confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        cd server && npm run db:migrate-pg && cd ..
+        log_success "数据迁移完成"
+    else
+        log_info "操作已取消"
+    fi
+}
+
 # 构建项目
 build() {
     log_info "构建后端..."
@@ -251,6 +287,12 @@ case "${1:-help}" in
     db:reset)
         db_reset
         ;;
+    db:detect)
+        db_detect
+        ;;
+    db:migrate-pg)
+        db_migrate_pg
+        ;;
     # 构建和检查
     build)
         build
@@ -297,9 +339,11 @@ case "${1:-help}" in
         echo "  status      检查项目状态"
         echo ""
         echo "数据库命令:"
-        echo "  db:push     推送 schema 变更到数据库"
-        echo "  db:studio   打开 Prisma Studio GUI"
-        echo "  db:reset    重置数据库 (删除所有数据)"
+        echo "  db:push       推送 schema 变更到数据库"
+        echo "  db:studio     打开 Prisma Studio GUI"
+        echo "  db:reset      重置数据库 (删除所有数据)"
+        echo "  db:detect     检测当前数据库类型"
+        echo "  db:migrate-pg 迁移 SQLite 数据到 PostgreSQL"
         echo ""
         echo "测试命令:"
         echo "  test        运行后端单元测试"

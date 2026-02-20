@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client'
 import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/database'
 
 // 配置Logo上传存储
 const logoStorage = multer.diskStorage({
