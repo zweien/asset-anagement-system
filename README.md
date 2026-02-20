@@ -95,6 +95,45 @@ cd client && npm run dev
 
 Access the application at http://localhost:5173
 
+### Docker Deployment (Recommended)
+
+Deploy with Docker Compose in one command:
+
+```bash
+# Clone the repository
+git clone https://github.com/zweien/asset-anagement-system.git
+cd asset-management-system
+
+# Start with one command (build + run)
+docker-compose up -d --build
+
+# View logs (get the randomly generated admin password)
+docker-compose logs | grep -A4 "默认管理员"
+
+# Check status
+docker-compose ps
+```
+
+Access the application at http://localhost:3002
+
+**Production Configuration:**
+
+```bash
+# Set custom JWT secret
+export JWT_SECRET=your-secure-secret-key-at-least-32-chars
+docker-compose up -d
+```
+
+**Common Docker Commands:**
+
+```bash
+docker-compose up -d        # Start in background
+docker-compose logs -f      # View logs
+docker-compose ps           # Check status
+docker-compose down         # Stop services
+docker-compose down -v      # Stop and remove volumes
+```
+
 ### Configure AI Assistant (Optional)
 
 1. Login as administrator
@@ -180,6 +219,12 @@ AI_MAX_TOKENS=2000
 ```bash
 # Backend unit tests
 cd server && npm test
+
+# Frontend unit tests
+cd client && npm test
+
+# Frontend test coverage
+cd client && npm run test:coverage
 
 # E2E tests
 npm run test:e2e

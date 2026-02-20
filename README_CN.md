@@ -1,14 +1,15 @@
 # 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.3.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.3.0)
+[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.4.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 
 一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 版本 1.3.0 发布！** - 新增 AI 自定义字段查询、用户批量导入功能。
+**🎉 版本 1.4.0 发布！** - 新增 Docker 部署、前端单元测试、图片优化、键盘快捷键。
 
 [English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 
@@ -30,6 +31,8 @@
 - 📝 **操作日志** - 完整的操作历史和变更追踪
 - 💾 **备份与恢复** - 数据库备份和恢复功能
 - 📱 **响应式设计** - 基于 shadcn/ui 的移动端友好界面
+- ⌨️ **键盘快捷键** - Alt+N 新增资产、Alt+K 搜索、Alt+/ 帮助
+- 🐳 **Docker 部署** - 一键 Docker Compose 部署
 
 ## 🤖 AI 智能助手
 
@@ -91,6 +94,45 @@ cd client && npm run dev
 ```
 
 访问 http://localhost:5173 使用系统
+
+### Docker 部署（推荐）
+
+使用 Docker Compose 一键部署：
+
+```bash
+# 克隆仓库
+git clone https://github.com/zweien/asset-anagement-system.git
+cd asset-management-system
+
+# 一键启动（构建 + 运行）
+docker-compose up -d --build
+
+# 查看日志（获取随机生成的管理员密码）
+docker-compose logs | grep -A4 "默认管理员"
+
+# 查看运行状态
+docker-compose ps
+```
+
+访问 http://localhost:3002 使用系统
+
+**生产环境配置：**
+
+```bash
+# 设置自定义 JWT 密钥
+export JWT_SECRET=your-secure-secret-key-at-least-32-chars
+docker-compose up -d
+```
+
+**Docker 常用命令：**
+
+```bash
+docker-compose up -d        # 后台启动
+docker-compose logs -f      # 查看日志
+docker-compose ps           # 查看状态
+docker-compose down         # 停止服务
+docker-compose down -v      # 停止并删除数据卷
+```
 
 ### 配置 AI 助手（可选）
 
@@ -177,6 +219,12 @@ AI_MAX_TOKENS=2000
 ```bash
 # 后端单元测试
 cd server && npm test
+
+# 前端单元测试
+cd client && npm test
+
+# 前端测试覆盖率
+cd client && npm run test:coverage
 
 # E2E 测试
 npm run test:e2e
