@@ -2,6 +2,100 @@
 # 长运行代理 - 进度日志
 # =============================================================================
 
+## 2026-02-21 - 会话 19 (v1.5.0 发布 & PostgreSQL 测试)
+
+### 完成的工作
+- [x] 文档更新（README、CHANGELOG）
+- [x] 版本发布（v1.5.0）
+- [x] GitHub Release
+- [x] PostgreSQL 部署本地测试
+
+### 文档更新
+
+**README.md / README_CN.md**
+- 版本号更新至 v1.5.0
+- 添加 PostgreSQL 徽章
+- 添加"数据库选择"章节
+- 添加 PostgreSQL 部署说明
+- 添加 PostgreSQL 切换指南
+
+**docs/CHANGELOG.md**
+- 添加 v1.5.0 版本记录
+- 详细记录 PostgreSQL 支持的所有变更
+
+**package.json**
+- server/package.json: 1.4.0 → 1.5.0
+- client/package.json: 1.4.0 → 1.5.0
+
+### Git 提交和发布
+
+```bash
+# 提交文档更新
+git commit -m "docs: update README and CHANGELOG for v1.5.0"
+
+# 创建 tag
+git tag v1.5.0 -a -m "Release v1.5.0 - PostgreSQL Database Support"
+
+# 推送到 GitHub
+git push origin master
+git push origin v1.5.0
+
+# 创建 GitHub Release
+gh release create v1.5.0 --title "v1.5.0 - PostgreSQL Database Support"
+```
+
+### GitHub Release
+- **URL**: https://github.com/zweien/asset-anagement-system/releases/tag/v1.5.0
+- **内容**: PostgreSQL 支持、数据迁移工具、Docker PostgreSQL 服务
+
+### PostgreSQL 部署测试
+
+**测试结果**
+
+| 测试项 | 状态 | 说明 |
+|--------|------|------|
+| PostgreSQL 容器启动 | ✅ | `docker-compose up -d postgres` |
+| Schema 推送 | ✅ | 8 个表创建成功 |
+| JSONB 字段类型 | ✅ | `data` 字段为 `jsonb` 类型 |
+| 后端服务连接 | ✅ | 检测到 `postgresql` 数据库类型 |
+| 登录 API | ✅ | 返回有效 JWT token |
+| 创建资产 | ✅ | JSONB 数据正确存储 |
+| JSONB 查询 | ✅ | `data->>'field'` 语法工作正常 |
+| API 数据返回 | ✅ | 正确解析 JSONB 数据 |
+
+**测试验证日志**
+```
+[Database] 初始化数据库连接，类型: postgresql
+prisma:info Starting a postgresql pool with 29 connections.
+```
+
+**PostgreSQL 表结构验证**
+```sql
+-- assets 表
+Column   | Type
+---------+--------------------------------
+id       | text
+name     | text
+code     | text
+data     | jsonb  ← JSONB 类型正确
+status   | text
+...
+```
+
+### 环境清理
+- 停止 PostgreSQL 容器
+- 删除 Docker volume
+- 恢复 SQLite schema
+- 重新生成 Prisma 客户端
+
+### 当前状态
+- 进度: 73/73 功能通过 (100%) ✅
+- 后端服务: http://localhost:3002
+- 前端服务: http://localhost:5173
+- 版本: v1.5.0
+
+---
+
 ## 2026-02-20 - 会话 18 (PostgreSQL 多数据库支持)
 
 ### 完成的工作
