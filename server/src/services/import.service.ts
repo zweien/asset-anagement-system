@@ -63,9 +63,9 @@ export const ImportService = {
       const rowNum = i + 2 // Excel 行号从 2 开始（第 1 行是标题）
 
       try {
-        // 提取基础字段
-        const nameMapping = mapping.find((m) => m.fieldName === 'name')
-        const codeMapping = mapping.find((m) => m.fieldName === 'code')
+        // 提取基础字段（使用 fieldId 匹配：__name__ 和 sys-code）
+        const nameMapping = mapping.find((m) => m.fieldId === '__name__')
+        const codeMapping = mapping.find((m) => m.fieldId === 'sys-code')
 
         const name = nameMapping ? row[nameMapping.excelColumn] : null
         if (!name) {
@@ -79,7 +79,8 @@ export const ImportService = {
         // 提取动态字段数据
         const data: Record<string, any> = {}
         for (const map of mapping) {
-          if (map.fieldName === 'name' || map.fieldName === 'code') continue
+          // 跳过基础字段
+          if (map.fieldId === '__name__' || map.fieldId === 'sys-code') continue
 
           const config = fieldConfigMap.get(map.fieldId)
           if (!config) continue
