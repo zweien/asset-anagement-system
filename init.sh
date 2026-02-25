@@ -19,6 +19,23 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# 获取本机局域网 IP 地址
+get_lan_ip() {
+    local ip=""
+    # 尝试多种方式获取 IP
+    if command -v hostname &> /dev/null; then
+        ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+    fi
+    if [ -z "$ip" ] && command -v ipconfig &> /dev/null; then
+        # Windows WSL
+        ip=$(ipconfig 2>/dev/null | grep -E "IPv4|inet " | grep -v 127.0.0.1 | head -1 | awk '{print $NF}' | tr -d '\r')
+    fi
+    if [ -z "$ip" ] && command -v ifconfig &> /dev/null; then
+        ip=$(ifconfig 2>/dev/null | grep "inet " | grep -v 127.0.0.1 | head -1 | awk '{print $2}')
+    fi
+    echo "$ip"
+}
+
 # 安装所有依赖
 setup() {
     log_info "安装项目依赖..."
@@ -46,10 +63,52 @@ start_server() {
     cd server && npm run dev
 }
 
+# 启动后端服务（局域网模式）
+start_server_lan() {
+    local lan_ip=$(get_lan_ip)
+    log_info "启动后端服务（局域网模式）..."
+    echo ""
+    echo "=========================================="
+    echo "  🌐 局域网访问地址"
+    echo "=========================================="
+    if [ -n "$lan_ip" ]; then
+        echo "  后端 API:  http://${lan_ip}:3002/api"
+        echo "  API 文档:  http://${lan_ip}:3002/api-docs"
+    else
+        log_warning "无法获取局域网 IP，使用 localhost"
+        echo "  后端 API:  http://localhost:3002/api"
+    fi
+    echo "=========================================="
+    echo ""
+    cd server && npm run dev
+}
+
 # 启动前端服务
 start_client() {
     log_info "启动前端服务..."
     cd client && npm run dev
+}
+
+# 启动前端服务（局域网模式）
+start_client_lan() {
+    local lan_ip=$(get_lan_ip)
+    log_info "启动前端服务（局域网模式）..."
+    echo ""
+    echo "=========================================="
+    echo "  🌐 局域网访问地址"
+    echo "=========================================="
+    if [ -n "$lan_ip" ]; then
+        echo "  前端页面:  http://${lan_ip}:5173"
+        echo ""
+        log_info "手机或其他设备可通过上述地址访问"
+        echo ""
+    else
+        log_warning "无法获取局域网 IP，使用 localhost"
+        echo "  前端页面:  http://localhost:5173"
+    fi
+    echo "=========================================="
+    echo ""
+    cd client && npm run dev -- --host 0.0.0.0
 }
 
 # 启动所有服务
@@ -262,8 +321,14 @@ case "${1:-help}" in
     server)
         start_server
         ;;
+    server:lan)
+        start_server_lan
+        ;;
     client)
         start_client
+        ;;
+    client:lan)
+        start_client_lan
         ;;
     start)
         start
@@ -330,13 +395,15 @@ case "${1:-help}" in
         echo "用法: ./init.sh [command]"
         echo ""
         echo "服务命令:"
-        echo "  server      启动后端服务 (port 3002)"
-        echo "  client      启动前端服务 (port 5173)"
-        echo "  start       显示启动说明"
+        echo "  server        启动后端服务 (port 3002)"
+        echo "  server:lan    启动后端服务（局域网模式，显示局域网 IP）"
+        echo "  client        启动前端服务 (port 5173)"
+        echo "  client:lan    启动前端服务（局域网模式，显示局域网 IP）"
+        echo "  start         显示启动说明"
         echo ""
         echo "环境命令:"
-        echo "  setup       安装所有依赖"
-        echo "  status      检查项目状态"
+        echo "  setup         安装所有依赖"
+        echo "  status        检查项目状态"
         echo ""
         echo "数据库命令:"
         echo "  db:push       推送 schema 变更到数据库"
@@ -346,22 +413,22 @@ case "${1:-help}" in
         echo "  db:migrate-pg 迁移 SQLite 数据到 PostgreSQL"
         echo ""
         echo "测试命令:"
-        echo "  test        运行后端单元测试"
-        echo "  e2e         运行 E2E 测试 (Playwright)"
-        echo "  e2e:ui      带 UI 的 E2E 测试"
+        echo "  test          运行后端单元测试"
+        echo "  e2e           运行 E2E 测试 (Playwright)"
+        echo "  e2e:ui        带 UI 的 E2E 测试"
         echo ""
         echo "构建命令:"
-        echo "  build       构建前后端生产版本"
-        echo "  lint        运行代码检查"
+        echo "  build         构建前后端生产版本"
+        echo "  lint          运行代码检查"
         echo ""
         echo "Docker 命令:"
-        echo "  docker:build 构建 Docker 镜像"
-        echo "  docker:up    启动 Docker 容器"
-        echo "  docker:down  停止 Docker 容器"
-        echo "  docker:logs  查看 Docker 日志 [行数]"
-        echo "  docker:ps    查看 Docker 容器状态"
+        echo "  docker:build  构建 Docker 镜像"
+        echo "  docker:up     启动 Docker 容器"
+        echo "  docker:down   停止 Docker 容器"
+        echo "  docker:logs   查看 Docker 日志 [行数]"
+        echo "  docker:ps     查看 Docker 容器状态"
         echo "  docker:restart 重启 Docker 容器"
         echo ""
-        echo "  help        显示此帮助信息"
+        echo "  help          显示此帮助信息"
         ;;
 esac
