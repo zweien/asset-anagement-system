@@ -17,7 +17,8 @@ services:
     build: .
     container_name: asset-management
     ports:
-      - "3002:3002"
+      # 只监听本地，通过 Nginx 反向代理访问
+      - "127.0.0.1:3002:3002"
     volumes:
       - ./uploads:/app/server/uploads
       - ./data:/app/server/data
@@ -41,7 +42,8 @@ services:
     build: .
     container_name: asset-management-postgres
     ports:
-      - "3002:3002"
+      # 只监听本地，通过 Nginx 反向代理访问
+      - "127.0.0.1:3002:3002"
     volumes:
       - ./uploads:/app/server/uploads
       - ./logs:/app/server/logs

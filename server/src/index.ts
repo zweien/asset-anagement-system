@@ -17,12 +17,20 @@ const app = express()
 const PORT = process.env.PORT || 3002
 
 // 中间件
+// Helmet 安全配置：HTTPS 下启用完整安全策略
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  // 禁用需要 HTTPS 的 headers，支持 HTTP 访问
-  crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: false,
-  originAgentCluster: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'"],  // 允许 API 请求
+      imgSrc: ["'self'", "data:", "blob:"],  // 允许图片
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],  // TailwindCSS 需要 inline styles
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+    },
+  },
 }))
 app.use(cors())
 app.use(express.json())
