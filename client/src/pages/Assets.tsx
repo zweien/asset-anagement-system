@@ -13,6 +13,7 @@ import {
 import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2, Sparkles } from 'lucide-react'
 import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi, getToken } from '../lib/api'
+import { API_BASE_URL, API_BASE as API_BASE_CONFIG } from '../lib/config'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
@@ -55,7 +56,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 
-const API_BASE = 'http://localhost:3002/api'
+const API_BASE = API_BASE_URL
 
 // 图片上传模态框组件
 interface ImageUploadModalProps {
@@ -489,7 +490,7 @@ export function Assets() {
   const handleExport = async (format: 'excel' | 'csv') => {
     try {
       const fieldIds = fields.map((f) => f.id)
-      const response = await fetch('http://localhost:3002/api/export/' + format, {
+      const response = await fetch(`${API_BASE_URL}/export/${format}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -518,7 +519,7 @@ export function Assets() {
   // 导出图片
   const handleExportImages = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/images/export', {
+      const response = await fetch(`${API_BASE_URL}/images/export`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Upload, X, Camera } from 'lucide-react'
 import { getToken } from '@/lib/api'
+import { API_BASE_URL } from '@/lib/config'
 import { LazyImage } from '@/components/ui/lazy-image'
 
 // 压缩配置
@@ -65,7 +66,7 @@ interface ImageUploaderProps {
   onImagesChange: () => void
 }
 
-const API_BASE = 'http://localhost:3002/api'
+const API_BASE = API_BASE_URL
 
 export function ImageUploader({ assetId, images, onImagesChange }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)

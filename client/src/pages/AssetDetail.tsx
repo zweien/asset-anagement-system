@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Trash2, Calendar, Tag, Image as ImageIcon, X, Save, Camera } from 'lucide-react'
 import { assetApi, ASSET_STATUS_LABELS, getToken } from '../lib/api'
+import { API_BASE_URL } from '../lib/config'
 import type { Asset, AssetStatus, FieldConfig } from '../lib/api'
 import { fieldApi } from '../lib/api'
 import { ImageUploader } from '../components/ImageUploader'
 import { ImagePreview } from '../components/ui/image-preview'
 
-const API_BASE = 'http://localhost:3002/api'
+const API_BASE = API_BASE_URL
 
 interface ImageInfo {
   id: string

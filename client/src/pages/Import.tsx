@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Database, Server, Table, Download } from 'lucide-react'
 import { fieldApi, dbImportApi, type TableInfo, type DBConnectionConfig } from '../lib/api'
+import { API_BASE_URL } from '../lib/config'
 import type { FieldConfig } from '../lib/api'
 import api from '../lib/api'
 import { PageInstructions } from '@/components/PageInstructions'
@@ -295,7 +296,7 @@ export function Import() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('import.uploadExcel')}</h2>
                 <button
-                  onClick={() => window.open('http://localhost:3002/api/import/template', '_blank')}
+                  onClick={() => window.open(`${API_BASE_URL}/import/template`, '_blank')}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-primary-600 dark:text-primary-400 border border-primary-600 dark:border-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
                   <Download className="w-4 h-4" />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal } from './ui/Modal'
 import { assetApi, ASSET_STATUS_LABELS, getToken } from '../lib/api'
+import { API_BASE_URL } from '../lib/config'
 import type { Asset, FieldConfig, CreateAssetDto, UpdateAssetDto, AssetStatus } from '../lib/api'
 import { ImageUploader } from './ImageUploader'
 import { showSuccess, showError } from '../lib/toast'
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { useKeyboard } from '@/hooks/useKeyboard'
 
-const API_BASE = 'http://localhost:3002/api'
+const API_BASE = API_BASE_URL
 
 interface ImageInfo {
   id: string

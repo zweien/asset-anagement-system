@@ -1,4 +1,5 @@
 import { axiosInstance } from './api'
+import { API_BASE_URL } from './config'
 
 // AI 消息类型
 export interface AIMessage {
@@ -63,7 +64,7 @@ export const aiApi = {
       throw new Error('未登录')
     }
 
-    const response = await fetch('http://localhost:3002/api/ai/chat', {
+    const response = await fetch(`${API_BASE_URL}/ai/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

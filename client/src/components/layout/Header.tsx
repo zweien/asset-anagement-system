@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi, systemConfigApi, avatarApi } from '../../lib/api'
+import { API_BASE as API_BASE_CONFIG } from '../../lib/config'
 import { showSuccess, showError } from '../../lib/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
@@ -51,7 +52,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
-const API_BASE = 'http://localhost:3002'
+const API_BASE = API_BASE_CONFIG
 
 interface NavItem {
   path: string

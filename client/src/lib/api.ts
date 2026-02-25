@@ -1,6 +1,8 @@
 import axios, { type AxiosRequestConfig } from 'axios'
+import { API_BASE_URL } from './config'
 
-const API_BASE_URL = 'http://localhost:3002/api'
+// 导出供其他模块使用
+export { API_BASE_URL }
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,

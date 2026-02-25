@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, GripVertical, Save, X, Shield, Eye, EyeOff, Lock, Image, Upload, Sparkles, Eye as EyeIcon, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { fieldApi, FIELD_TYPES, systemConfigApi, hasPermission, getStoredUser } from '../lib/api'
+import { API_BASE as API_BASE_CONFIG } from '../lib/config'
 import { aiApi } from '../lib/ai-api'
 import type { FieldConfig, FieldType, CreateFieldDto, UpdateFieldDto, UserRole } from '../lib/api'
 import type { AIConfig } from '../lib/ai-api'
@@ -35,7 +36,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 
-const API_BASE = 'http://localhost:3002'
+const API_BASE = API_BASE_CONFIG
 
 // 预设的 AI Provider 配置
 interface ProviderPreset {
