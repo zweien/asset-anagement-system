@@ -18,7 +18,11 @@ const PORT = process.env.PORT || 3002
 
 // 中间件
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  // 禁用需要 HTTPS 的 headers，支持 HTTP 访问
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
+  originAgentCluster: false,
 }))
 app.use(cors())
 app.use(express.json())
