@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-table'
 import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2, Sparkles } from 'lucide-react'
-import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi } from '../lib/api'
+import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi, getToken } from '../lib/api'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
@@ -84,7 +84,12 @@ function ImageUploadModal({ isOpen, onClose, assetId, assetName, onSuccess }: Im
     if (!assetId) return
     try {
       setLoading(true)
-      const response = await fetch(`${API_BASE}/assets/${assetId}/images`)
+      const token = getToken()
+      const response = await fetch(`${API_BASE}/assets/${assetId}/images`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
       const result = await response.json()
       if (result.success) {
         setImages(result.data)

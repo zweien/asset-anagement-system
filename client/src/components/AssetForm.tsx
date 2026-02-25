@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal } from './ui/Modal'
-import { assetApi, ASSET_STATUS_LABELS } from '../lib/api'
+import { assetApi, ASSET_STATUS_LABELS, getToken } from '../lib/api'
 import type { Asset, FieldConfig, CreateAssetDto, UpdateAssetDto, AssetStatus } from '../lib/api'
 import { ImageUploader } from './ImageUploader'
 import { showSuccess, showError } from '../lib/toast'
@@ -143,7 +143,12 @@ export function AssetForm({ isOpen, onClose, onSuccess, asset, fields }: AssetFo
   const loadImages = async () => {
     if (!asset) return
     try {
-      const response = await fetch(`${API_BASE}/assets/${asset.id}/images`)
+      const token = getToken()
+      const response = await fetch(`${API_BASE}/assets/${asset.id}/images`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
       const result = await response.json()
       if (result.success) {
         setImages(result.data)
