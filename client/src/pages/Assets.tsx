@@ -13,7 +13,7 @@ import {
 import type { SortingState, VisibilityState, RowSelectionState } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Plus, Search, RefreshCw, Filter, X, Edit2, Trash2, Download, LayoutGrid, List, ChevronRight as ChevronRightIcon, Camera, ExternalLink, Code2, Sparkles } from 'lucide-react'
 import { assetApi, fieldApi, ASSET_STATUS_LABELS, hasPermission, getStoredUser, sqlQueryApi, getToken } from '../lib/api'
-import { API_BASE_URL, API_BASE as API_BASE_CONFIG } from '../lib/config'
+import { API_BASE_URL } from '../lib/config'
 import type { Asset, FieldConfig, FieldType, GroupedAssets, AssetStatus, UserRole } from '../lib/api'
 import { AssetForm } from '../components/AssetForm'
 import { ImageUploader } from '../components/ImageUploader'
