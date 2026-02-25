@@ -751,15 +751,15 @@ export function UserManagement() {
             <div className="space-y-2">
               <Label htmlFor="edit-role">{t('users.role')}</Label>
               <Select
-                value={editFormData.role || selectedUser?.role}
+                value={editFormData.role || ''}
                 onValueChange={(v) => setEditFormData({ ...editFormData, role: v as UserRole })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t('users.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(USER_ROLE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                    <SelectItem key={value} value={value}>{t(label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
