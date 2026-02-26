@@ -212,7 +212,8 @@ export function AppSidebar() {
 
   const handleLogout = () => {
     logout()
-    window.location.href = '/login'
+    // 使用 hash 路由兼容 Electron 的 file:// 协议
+    window.location.hash = '#/login'
   }
 
   return (

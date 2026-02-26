@@ -38,8 +38,9 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       // 如果不是登录页面，跳转到登录页
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
+      // 使用 hash 路由兼容 Electron 的 file:// 协议
+      if (!window.location.hash.includes('/login')) {
+        window.location.hash = '#/login'
       }
     }
     const message = error.response?.data?.error || error.message || '请求失败'
