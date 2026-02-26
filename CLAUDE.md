@@ -504,3 +504,8 @@ lsof -i :5173  # 前端
 5. **一次提交包含所有更改** - 代码、progress、feature_list 在同一个 commit
 6. **永远不要移除任务** - 只能将 `passes: false` 改为 `true`
 7. **阻塞时停止** - 需要人工介入时，不要提交，输出阻塞信息并停止
+8. **Git Tag 版本发布** - 更新 tag 时必须同步更新：
+   - `CLAUDE.md` 中的版本号
+   - `server/package.json` 和 `client/package.json` 中的版本号
+   - `README.md`（中文）
+   - `README_EN.md`（英文）
