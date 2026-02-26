@@ -31,29 +31,46 @@ export async function startServer(): Promise<number> {
       ELECTRON_MODE: 'true',
     }
 
-    // 使用端口 0 让系统自动分配
+    // 开发环境使用端口 0 自动分配，生产环境使用固定端口
+    const portToUse = isDev ? '0' : '3002'
+
+    // 获取项目根目录（server 的父目录）
+    const projectRoot = isDev
+      ? path.resolve(__dirname, '..', '..')
+      : path.resolve(process.resourcesPath, '..')
+
     serverProcess = spawn('node', [serverPath], {
-      env: { ...env, PORT: '0' },
+      env: { ...env, PORT: portToUse },
       stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: path.dirname(serverPath),
+      cwd: projectRoot, // 使用项目根目录作为工作目录
     })
 
     serverProcess.stdout?.on('data', (data) => {
       const output = data.toString()
-      console.log(`[Server] ${output}`)
+      console.log(`[Server stdout] ${output.trim()}`)
 
       // 解析端口号 - 支持多种日志格式
       // 格式1: "running on port 1234"
       // 格式2: "running on http://localhost:1234"
       const portMatch = output.match(/(?:port|localhost:)(\d+)/i)
-      if (portMatch) {
+      if (portMatch && actualPort === 0) {
         actualPort = parseInt(portMatch[1], 10)
+        console.log(`[Electron] Detected server port: ${actualPort}`)
         resolve(actualPort)
       }
     })
 
     serverProcess.stderr?.on('data', (data) => {
-      console.error(`[Server Error] ${data.toString()}`)
+      const output = data.toString()
+      console.error(`[Server stderr] ${output.trim()}`)
+
+      // 也尝试从 stderr 解析端口
+      const portMatch = output.match(/(?:port|localhost:)(\d+)/i)
+      if (portMatch && actualPort === 0) {
+        actualPort = parseInt(portMatch[1], 10)
+        console.log(`[Electron] Detected server port from stderr: ${actualPort}`)
+        resolve(actualPort)
+      }
     })
 
     serverProcess.on('error', (err) => {

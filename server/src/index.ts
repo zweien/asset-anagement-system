@@ -96,15 +96,17 @@ export async function startServer(preferredPort?: number): Promise<number> {
   return new Promise((resolve, reject) => {
     try {
       serverInstance = app.listen(PORT, async () => {
-        logger.info(`🚀 Server is running on http://localhost:${PORT}`)
-        logger.info(`📍 Health check: http://localhost:${PORT}/api/health`)
-        logger.info(`📍 API Docs: http://localhost:${PORT}/api-docs`)
-        logger.info(`📍 Fields API: http://localhost:${PORT}/api/fields`)
+        // 获取实际端口（当 PORT=0 时由系统分配）
+        const actualPort = (serverInstance?.address() as any)?.port || PORT
+        logger.info(`🚀 Server is running on http://localhost:${actualPort}`)
+        logger.info(`📍 Health check: http://localhost:${actualPort}/api/health`)
+        logger.info(`📍 API Docs: http://localhost:${actualPort}/api-docs`)
+        logger.info(`📍 Fields API: http://localhost:${actualPort}/api/fields`)
 
         // 创建默认管理员账户
         await AuthService.createDefaultAdmin()
 
-        resolve(PORT)
+        resolve(actualPort)
       })
 
       serverInstance.on('error', (err: Error & { code?: string }) => {
