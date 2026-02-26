@@ -69,3 +69,7 @@ server/prisma/migrations/*_*
 
 # Git worktrees
 .worktrees/
+
+# Electron 构建产物
+out/
+release/
