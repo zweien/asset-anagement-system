@@ -57,10 +57,12 @@ export function getFrontendPath(): string {
 
 /**
  * 获取后端编译产物路径
+ * 生产环境: server 代码在 resources/server/dist（不打包进 asar）
  */
 export function getServerPath(): string {
   if (isDev) {
     return path.resolve(__dirname, '..', '..', 'server', 'dist', 'index.js')
   }
-  return path.resolve(process.resourcesPath, 'server', 'index.js')
+  // 生产环境：从 resources 目录读取（extraResources）
+  return path.resolve(process.resourcesPath, 'server', 'dist', 'index.js')
 }

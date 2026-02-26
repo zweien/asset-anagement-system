@@ -21,12 +21,12 @@ files:
   - "!**/*.{ts,tsx,map}"
   - "!**/.*"
 
-# 额外资源
+# 额外资源（不解压到 asar）
 extraResources:
-  - from: "server/node_modules/.prisma"
-    to: "server/node_modules/.prisma"
-  - from: "server/node_modules/@prisma"
-    to: "server/node_modules/@prisma"
+  - from: "server/dist"
+    to: "server/dist"
+  - from: "server/node_modules"
+    to: "server/node_modules"
   - from: "server/prisma"
     to: "server/prisma"
 

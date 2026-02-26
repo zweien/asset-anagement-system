@@ -29,10 +29,13 @@ export async function startServer(): Promise<number> {
       LOG_DIR: getLogDir(),
       NODE_ENV: isDev ? 'development' : 'production',
       ELECTRON_MODE: 'true',
+      // 为 Electron 桌面应用生成固定的 JWT 密钥
+      // 注意：在实际生产部署中应该使用更安全的方式管理密钥
+      JWT_SECRET: process.env.JWT_SECRET || 'electron-desktop-app-jwt-secret-key-v1',
     }
 
-    // 开发环境使用端口 0 自动分配，生产环境使用固定端口
-    const portToUse = isDev ? '0' : '3002'
+    // 使用端口 0 让系统自动分配空闲端口
+    const portToUse = '0'
 
     // 获取项目根目录（server 的父目录）
     const projectRoot = isDev
@@ -49,13 +52,19 @@ export async function startServer(): Promise<number> {
       const output = data.toString()
       console.log(`[Server stdout] ${output.trim()}`)
 
-      // 解析端口号 - 支持多种日志格式
-      // 格式1: "running on port 1234"
-      // 格式2: "running on http://localhost:1234"
-      const portMatch = output.match(/(?:port|localhost:)(\d+)/i)
+      // 解析端口号 - 特殊格式 [SERVER_PORT]1234[/SERVER_PORT]
+      const portMatch = output.match(/\[SERVER_PORT\](\d+)\[\/SERVER_PORT\]/)
       if (portMatch && actualPort === 0) {
         actualPort = parseInt(portMatch[1], 10)
         console.log(`[Electron] Detected server port: ${actualPort}`)
+        resolve(actualPort)
+      }
+
+      // 也尝试解析 localhost:端口 格式
+      const localhostMatch = output.match(/localhost:(\d+)/i)
+      if (localhostMatch && actualPort === 0) {
+        actualPort = parseInt(localhostMatch[1], 10)
+        console.log(`[Electron] Detected server port from localhost: ${actualPort}`)
         resolve(actualPort)
       }
     })
@@ -65,10 +74,18 @@ export async function startServer(): Promise<number> {
       console.error(`[Server stderr] ${output.trim()}`)
 
       // 也尝试从 stderr 解析端口
-      const portMatch = output.match(/(?:port|localhost:)(\d+)/i)
+      const portMatch = output.match(/\[SERVER_PORT\](\d+)\[\/SERVER_PORT\]/)
       if (portMatch && actualPort === 0) {
         actualPort = parseInt(portMatch[1], 10)
         console.log(`[Electron] Detected server port from stderr: ${actualPort}`)
+        resolve(actualPort)
+      }
+
+      // 也尝试解析 localhost:端口 格式
+      const localhostMatch = output.match(/localhost:(\d+)/i)
+      if (localhostMatch && actualPort === 0) {
+        actualPort = parseInt(localhostMatch[1], 10)
+        console.log(`[Electron] Detected server port from stderr localhost: ${actualPort}`)
         resolve(actualPort)
       }
     })

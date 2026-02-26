@@ -98,6 +98,10 @@ export async function startServer(preferredPort?: number): Promise<number> {
       serverInstance = app.listen(PORT, async () => {
         // 获取实际端口（当 PORT=0 时由系统分配）
         const actualPort = (serverInstance?.address() as any)?.port || PORT
+
+        // 直接输出到 stdout，确保 Electron 可以捕获
+        console.log(`[SERVER_PORT]${actualPort}[/SERVER_PORT]`)
+
         logger.info(`🚀 Server is running on http://localhost:${actualPort}`)
         logger.info(`📍 Health check: http://localhost:${actualPort}/api/health`)
         logger.info(`📍 API Docs: http://localhost:${actualPort}/api-docs`)
@@ -135,9 +139,13 @@ export async function stopServer(): Promise<void> {
   }
 }
 
-// 仅在直接运行时启动（非 Electron 环境，非被导入模块）
-const isMainModule = require.main === module || process.env.ELECTRON_MODE !== 'true'
-if (isMainModule && process.env.ELECTRON_MODE === undefined) {
+// 仅在直接运行时启动
+// - 独立运行（非 Electron）：自动启动
+// - Electron spawn：通过环境变量控制，自动启动
+// - 被其他模块导入：不启动
+const isMainModule = require.main === module
+const shouldAutoStart = isMainModule || process.env.ELECTRON_MODE === 'true'
+if (shouldAutoStart) {
   startServer()
 }
 

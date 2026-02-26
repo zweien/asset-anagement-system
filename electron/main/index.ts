@@ -2,9 +2,10 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createWindow, getMainWindow } from './window'
 import { startServer, stopServer, getActualPort } from './server'
-import { getUserDataPath, getDatabasePath, getUploadDir, getLogDir } from './paths'
+import { getUserDataPath, getDatabasePath, getUploadDir, getLogDir, isDev } from './paths'
 import { mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
+import { execSync } from 'child_process'
 import path from 'path'
 
 /**
@@ -19,6 +20,41 @@ async function ensureDirectories(): Promise<void> {
   for (const dir of dirs) {
     if (!existsSync(dir)) {
       await mkdir(dir, { recursive: true })
+    }
+  }
+}
+
+/**
+ * 初始化数据库（运行 Prisma db push）
+ */
+async function initializeDatabase(): Promise<void> {
+  const dbPath = getDatabasePath()
+
+  // 如果数据库文件不存在，需要初始化
+  if (!existsSync(dbPath)) {
+    console.log('[Electron] Initializing database...')
+
+    // 获取 Prisma CLI 路径
+    const resourcesPath = isDev
+      ? path.resolve(__dirname, '..', '..')
+      : process.resourcesPath
+    const prismaPath = path.join(resourcesPath, 'server', 'node_modules', '.bin', 'prisma')
+    const schemaPath = path.join(resourcesPath, 'server', 'prisma', 'schema.prisma')
+
+    try {
+      // 运行 prisma db push
+      execSync(`node "${prismaPath}" db push --skip-generate`, {
+        cwd: path.join(resourcesPath, 'server'),
+        env: {
+          ...process.env,
+          DATABASE_URL: `file:${dbPath}`,
+        },
+        stdio: 'inherit',
+      })
+      console.log('[Electron] Database initialized')
+    } catch (error) {
+      console.error('[Electron] Failed to initialize database:', error)
+      throw error
     }
   }
 }
@@ -78,15 +114,19 @@ app.whenReady().then(async () => {
     await ensureDirectories()
     console.log('[Electron] Directories ensured')
 
-    // 2. 设置 IPC 处理器
+    // 2. 初始化数据库
+    await initializeDatabase()
+    console.log('[Electron] Database ready')
+
+    // 3. 设置 IPC 处理器
     setupIpcHandlers()
     console.log('[Electron] IPC handlers setup')
 
-    // 3. 启动后端服务
+    // 4. 启动后端服务
     const port = await startServer()
     console.log(`[Electron] Backend started on port ${port}`)
 
-    // 4. 创建窗口
+    // 5. 创建窗口
     await createWindow()
     console.log('[Electron] Window created')
 
