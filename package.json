@@ -8,6 +8,11 @@
     "test:e2e:report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.8.3",
+    "electron-vite": "^5.0.0"
   }
 }
