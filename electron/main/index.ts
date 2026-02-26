@@ -8,6 +8,15 @@ import { existsSync } from 'fs'
 import { execSync } from 'child_process'
 import path from 'path'
 
+// 禁用硬件加速（修复 WSL/Linux 环境下的鼠标和渲染问题）
+app.disableHardwareAcceleration()
+// 禁用 GPU 沙箱
+app.commandLine.appendSwitch('disable-gpu-sandbox')
+// 禁用 GPU
+app.commandLine.appendSwitch('disable-gpu')
+// 禁用软件光栅化
+app.commandLine.appendSwitch('disable-software-rasterizer')
+
 /**
  * 确保必要目录存在
  */
