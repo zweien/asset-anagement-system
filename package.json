@@ -1,11 +1,22 @@
 {
-  "name": "asset-management-app",
-  "version": "1.0.0",
-  "description": "资产录入管理系统 - E2E 测试",
+  "name": "asset-management-desktop",
+  "version": "1.6.0",
+  "description": "资产管理系统 - 桌面应用",
+  "main": "electron/dist/main/index.js",
   "scripts": {
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "npm run build:server && npm run build:client && electron-vite build",
+    "electron:preview": "electron-vite preview",
+    "electron:package": "npm run electron:build && electron-builder",
+    "electron:package:win": "npm run electron:build && electron-builder --win",
+    "electron:package:mac": "npm run electron:build && electron-builder --mac",
+    "electron:package:linux": "npm run electron:build && electron-builder --linux",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -14,5 +25,8 @@
     "electron-log": "^5.4.3",
     "electron-updater": "^6.8.3",
     "electron-vite": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
