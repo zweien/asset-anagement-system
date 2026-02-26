@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig } from 'axios'
-import { API_BASE_URL } from './config'
+import { API_BASE_URL, getApiBaseUrl } from './config'
 
 // 导出供其他模块使用
 export { API_BASE_URL }
@@ -11,9 +11,15 @@ const axiosInstance = axios.create({
   },
 })
 
-// 请求拦截器 - 自动添加 Token
+// 请求拦截器 - 自动添加 Token 和动态设置 baseURL（Electron 环境）
 axiosInstance.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // Electron 环境：动态获取 API URL
+    if (window.electronAPI?.isElectron && !config.baseURL) {
+      const apiUrl = await getApiBaseUrl()
+      config.baseURL = apiUrl
+    }
+
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
