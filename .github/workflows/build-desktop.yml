@@ -10,6 +10,9 @@ on:
         description: 'Version to build (e.g., 1.6.0)'
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -35,16 +38,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install root dependencies
+        run: npm install
 
       - name: Install server dependencies
-        run: cd server && npm ci
+        run: cd server && npm install
 
       - name: Install client dependencies
-        run: cd client && npm ci
+        run: cd client && npm install
 
       - name: Build server
         run: npm run build:server
@@ -90,33 +92,51 @@ jobs:
           name: macos-app
           path: |
             release/*.dmg
-            release/mac-unpacked/
+            release/mac/
 
   release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: linux-app
+          path: artifacts/linux
 
-      - name: Display structure of downloaded files
-        run: ls -R artifacts
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-app
+          path: artifacts/windows
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-app
+          path: artifacts/macos
+
+      - name: List artifacts
+        run: |
+          echo "=== Linux ===" && ls -la artifacts/linux/ || true
+          echo "=== Windows ===" && ls -la artifacts/windows/ || true
+          echo "=== macOS ===" && ls -la artifacts/macos/ || true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/**/*.exe
-            artifacts/**/*.deb
-            artifacts/**/*.AppImage
-            artifacts/**/*.dmg
+            artifacts/linux/*.deb
+            artifacts/linux/*.AppImage
+            artifacts/windows/*.exe
+            artifacts/macos/*.dmg
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
