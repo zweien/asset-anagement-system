@@ -1,6 +1,8 @@
 // electron/preload/index.ts
 import { contextBridge, ipcRenderer } from 'electron'
 
+console.log('[Preload] Loading preload script...')
+
 /**
  * 暴露安全的 API 给渲染进程
  */
@@ -27,3 +29,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 是否为 Electron 环境
   isElectron: true,
 })
+
+console.log('[Preload] electronAPI exposed successfully')

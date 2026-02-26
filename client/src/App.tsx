@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { Layout } from './components/layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -20,7 +20,7 @@ const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login }
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Toaster
         position="top-right"
         richColors
@@ -132,7 +132,7 @@ function App() {
           />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

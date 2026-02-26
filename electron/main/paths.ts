@@ -47,12 +47,15 @@ export function getLogDir(): string {
 
 /**
  * 获取前端资源路径
+ * 开发环境: Vite 开发服务器
+ * 生产环境: electron-vite 构建的 renderer 输出
  */
 export function getFrontendPath(): string {
   if (isDev) {
     return 'http://localhost:5173'
   }
-  return path.resolve(__dirname, '..', '..', 'client', 'dist')
+  // electron-vite 将前端构建到 out/renderer 目录
+  return path.resolve(__dirname, '..', 'renderer')
 }
 
 /**

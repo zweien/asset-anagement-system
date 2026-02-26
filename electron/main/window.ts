@@ -44,6 +44,8 @@ export async function createWindow(): Promise<BrowserWindow> {
   } else {
     const frontendPath = getFrontendPath()
     await mainWindow.loadFile(path.join(frontendPath, 'index.html'))
+    // 生产环境也打开开发者工具用于调试（正式发布时可移除）
+    mainWindow.webContents.openDevTools()
   }
 
   // 外部链接用默认浏览器打开
