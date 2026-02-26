@@ -9,7 +9,7 @@ directories:
 
 # 包含的文件
 files:
-  - "electron/dist/**/*"
+  - "out/**/*"
   - "client/dist/**/*"
   - "server/dist/**/*"
   - "server/prisma/**/*"
@@ -61,7 +61,6 @@ nsis:
 # Linux 配置
 linux:
   target:
-    - AppImage
     - deb
   category: Office
   maintainer: support@example.com
