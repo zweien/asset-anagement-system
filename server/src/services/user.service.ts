@@ -228,7 +228,8 @@ export const UserService = {
         where: { id },
         data: {
           name: data.name,
-          email: data.email,
+          // 空字符串转为 undefined，避免违反 unique 约束
+          email: data.email || undefined,
           role: data.role,
           active: data.active,
         },

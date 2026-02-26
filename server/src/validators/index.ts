@@ -33,6 +33,7 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().max(50, '姓名最多 50 个字符').optional(),
   email: emailSchema,
+  role: roleSchema.optional(),
 })
 
 export const updateRoleSchema = z.object({
