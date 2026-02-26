@@ -1,6 +1,6 @@
 # Asset Management System
 
-[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.5.0)
+[![Version](https://img.shields.io/badge/version-1.6.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.6.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -10,7 +10,7 @@
 
 A modern, full-stack asset management system with dynamic field configuration, Excel import/export, AI assistant, and comprehensive reporting capabilities.
 
-**🎉 Version 1.5.0 Released!** - Added PostgreSQL database support with migration tools.
+**🎉 Version 1.6.0 Released!** - HTTPS reverse proxy support, LAN access mode, user management fixes.
 
 [中文文档](./README_CN.md) | [Documentation](./docs/) | [API Reference](./docs/API.md) | [Changelog](./docs/CHANGELOG.md)
 

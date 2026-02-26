@@ -1,6 +1,6 @@
 # 资产管理系统
 
-[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.5.0)
+[![Version](https://img.shields.io/badge/version-1.6.0-green.svg)](https://github.com/zweien/asset-anagement-system/releases/tag/v1.6.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
@@ -10,7 +10,7 @@
 
 一个现代化的全栈资产管理系统，支持动态字段配置、Excel 导入导出、AI 智能助手和全面的报表功能。
 
-**🎉 版本 1.5.0 发布！** - 新增 PostgreSQL 数据库支持及数据迁移工具。
+**🎉 版本 1.6.0 发布！** - HTTPS 反向代理支持、局域网访问模式、用户管理修复。
 
 [English](./README.md) | [文档](./docs/) | [API 文档](./docs/API.md) | [更新日志](./docs/CHANGELOG.md)
 

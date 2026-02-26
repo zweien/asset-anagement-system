@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-02-26
+
+### Added
+- **HTTPS Reverse Proxy Support** - Full support for Nginx/Caddy reverse proxy deployment
+  - Dynamic API URL detection based on environment (production vs development)
+  - CSP headers configured for secure HTTPS access
+  - Docker port binding to localhost only (via Nginx proxy)
+- **LAN Access Mode** - Access the application from other devices on the same network
+  - Dynamic API URL based on current hostname
+  - `./init.sh server:lan` command for LAN mode startup
+- **Admin Password Reset Script** - Reset admin password via command line
+  - `npx tsx src/scripts/reset-admin.ts [password]` command
+  - Default password: `admin123`
+- **GitHub Actions CI/CD** - Automated deployment workflow
+  - VPS deployment on push to master branch
+  - Docker compose deployment with health checks
+- **Git Tag Version Release Guidelines** - Documented release process in CLAUDE.md
+
+### Fixed
+- **User Management Edit Dialog** - Role selection now works correctly
+  - Added `role` field to `updateUserSchema` validation
+  - Role dropdown displays translated labels instead of translation keys
+  - Empty email converted to undefined to avoid unique constraint violation
+- **Image Loading Authentication** - Added auth token to image loading requests
+- **Import Field Mapping** - Use fieldId instead of fieldName for reliable mapping
+- **Docker Build** - Run prisma generate before build to ensure client is available
+
+### Technical Details
+- Updated helmet CSP configuration for HTTPS compatibility
+- Created `server/src/scripts/reset-admin.ts` for password management
+- Added `VITE_API_BASE_URL` environment variable support
+- Enhanced `config.ts` with production/development URL detection
+
 ## [1.5.0] - 2026-02-20
 
 ### Added
@@ -255,7 +288,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
-| 1.4.0 | 2026-02-19 | Docker deployment, frontend testing, image optimization, keyboard shortcuts |
+| 1.6.0 | 2026-02-26 | HTTPS reverse proxy, LAN access, user management fixes |
+| 1.5.0 | 2026-02-20 | PostgreSQL support, database migration tools |
 | 1.3.0 | 2026-02-19 | AI custom field queries, user batch import |
 | 1.2.0 | 2026-02-18 | API endpoint selection, Markdown rendering, Chat export |
 | 1.1.0 | 2026-02-18 | AI assistant integration, frontend LLM configuration |
@@ -282,6 +316,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.6.0
+[1.5.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.5.0
 [1.4.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.4.0
 [1.3.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.3.0
 [1.2.0]: https://github.com/zweien/asset-management-system/releases/tag/v1.2.0

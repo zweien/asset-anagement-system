@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-资产录入管理系统 (Asset Management System) v1.3.0 - A full-stack web application for managing assets with:
+资产录入管理系统 (Asset Management System) v1.6.0 - A full-stack web application for managing assets with:
 - Dynamic field configuration (TEXT, NUMBER, DATE, SELECT, MULTISELECT)
 - Excel import/export with template support
 - Image attachment management
@@ -507,5 +507,6 @@ lsof -i :5173  # 前端
 8. **Git Tag 版本发布** - 更新 tag 时必须同步更新：
    - `CLAUDE.md` 中的版本号
    - `server/package.json` 和 `client/package.json` 中的版本号
+   - docs/ 目录下的文档
    - `README.md`（中文）
    - `README_EN.md`（英文）
