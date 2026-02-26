@@ -34,6 +34,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { hasPermission, USER_ROLE_LABELS, type UserRole, authApi, systemConfigApi, avatarApi } from '../../lib/api'
 import { API_BASE as API_BASE_CONFIG } from '../../lib/config'
+import { APP_VERSION } from '../../lib/version'
 import { showSuccess, showError } from '../../lib/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
@@ -349,6 +350,10 @@ export function AppSidebar() {
           onChange={handleAvatarUpload}
           className="hidden"
         />
+        {/* 版本号显示 */}
+        <div className="px-2 py-2 text-xs text-muted-foreground text-center border-t border-sidebar-border">
+          v{APP_VERSION}
+        </div>
       </SidebarFooter>
       <SidebarRail />
 
