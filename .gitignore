@@ -66,3 +66,6 @@ server/prisma/migrations/*_*
 # 备份文件
 *.bak
 *.backup
+
+# Git worktrees
+.worktrees/
