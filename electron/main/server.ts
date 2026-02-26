@@ -42,8 +42,10 @@ export async function startServer(): Promise<number> {
       const output = data.toString()
       console.log(`[Server] ${output}`)
 
-      // 解析端口号
-      const portMatch = output.match(/running on port (\d+)/i)
+      // 解析端口号 - 支持多种日志格式
+      // 格式1: "running on port 1234"
+      // 格式2: "running on http://localhost:1234"
+      const portMatch = output.match(/(?:port|localhost:)(\d+)/i)
       if (portMatch) {
         actualPort = parseInt(portMatch[1], 10)
         resolve(actualPort)

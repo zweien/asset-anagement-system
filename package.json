@@ -2,7 +2,7 @@
   "name": "asset-management-desktop",
   "version": "1.6.0",
   "description": "资产管理系统 - 桌面应用",
-  "main": "electron/dist/main/index.js",
+  "main": "out/main/index.js",
   "scripts": {
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
