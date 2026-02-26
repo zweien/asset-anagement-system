@@ -41,8 +41,9 @@ app.use(express.urlencoded({ extended: true }))
 // 静态文件服务 - 用于访问上传的文件（Logo、头像等）
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
-// 静态文件服务 - 用于生产环境服务前端构建产物
-if (process.env.NODE_ENV === 'production') {
+// 静态文件服务 - 用于生产环境服务前端构建产物（非 Electron 模式）
+// Electron 模式下前端由 Electron 窗口加载，不需要服务器提供静态文件
+if (process.env.NODE_ENV === 'production' && process.env.ELECTRON_MODE !== 'true') {
   const publicPath = path.join(process.cwd(), 'public')
   app.use(express.static(publicPath))
 
