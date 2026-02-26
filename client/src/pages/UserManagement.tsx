@@ -689,7 +689,7 @@ export function UserManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(USER_ROLE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                    <SelectItem key={value} value={value}>{t(label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
